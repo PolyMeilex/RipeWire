@@ -1,0 +1,25 @@
+[package]
+name = "libspa-consts"
+version = "0.6.0"
+authors = ["Guillaume Desmottes <guillaume.desmottes@collabora.com>"]
+edition = "2018"
+categories = ["api-bindings", "multimedia"]
+description = "Rust FFI bindings for libspa"
+repository = "https://gitlab.freedesktop.org/pipewire/pipewire-rs"
+license = "MIT"
+readme = "README.md"
+homepage = "https://pipewire.org"
+documentation = "https://pipewire.pages.freedesktop.org/pipewire-rs/libspa_sys/"
+keywords = ["ffi", "pipewire", "multimedia", "audio", "video"]
+
+[dependencies]
+bitflags = "2.0.0"
+
+[build-dependencies]
+bindgen = { version = "0.64", default-features = false }
+cc = "1.0"
+system-deps = "6"
+
+[package.metadata.system-deps]
+libspa = { name = "libspa-0.2", version = "0.2" }
+libpipewire = { name = "libpipewire-0.3", version = "0.3" }

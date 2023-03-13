@@ -1,0 +1,29 @@
+<interface name="pw_client">
+    <method name="add_listener" unused="true" />
+
+    <method name="error" type="struct">
+        <field type="uint" name="id" />
+        <field type="uint" name="res" />
+        <field type="string" name="error" />
+    </method>
+
+    <method name="update_properties" type="struct">
+        <field type="dict" name="properties" />
+    </method>
+
+    <!-- Events -->
+
+    <enum name="change_mask" type="ulong" bitfield="true">
+      <entry name="props" value="1" />
+    </enum>
+
+    <event name="info" type="struct">
+        <field type="uint" name="id" />
+        <field type="change_mask" name="change_mask" />
+        <field type="dict" name="properties" />
+    </event>
+
+    <event name="permissions" type="struct">
+    </event>
+
+</interface>

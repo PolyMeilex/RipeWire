@@ -1,0 +1,24 @@
+<interface name="pw_device">
+    <method name="add_listener" unused="true" />
+
+    <method name="subscribe_params" type="struct">
+    </method>
+
+    <method name="enum_params" type="struct">
+    </method>
+
+    <method name="set_param" type="struct">
+        <field type="id" name="id" />
+        <field type="int" name="flags" />
+        <field type="value" name="param" />
+    </method>
+
+    <!-- Events -->
+
+    <event name="info" type="struct">
+    </event>
+
+    <event name="param" type="struct">
+    </event>
+
+</interface>

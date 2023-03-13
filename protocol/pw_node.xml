@@ -1,0 +1,12 @@
+<interface name="pw_node">
+    <method name="add_listener" unused="true" />
+
+    <!-- Events -->
+
+    <event name="info" type="struct">
+    </event>
+
+    <event name="param" type="struct">
+    </event>
+
+</interface>

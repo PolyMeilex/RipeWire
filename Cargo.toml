@@ -1,0 +1,21 @@
+[package]
+name = "ripewire"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = ["pod", "pod-derive", "libspa-consts", "scanner"]
+
+[dependencies]
+calloop = "0.10.5"
+nix = "0.26.2"
+bitflags = "2.0.0"
+
+libspa-consts = { path = "./libspa-consts" }
+pod = { path = "./pod" }
+pod-derive = { path = "./pod-derive" }
+quick-xml = "0.28.0"
+
+
+serde = {version = "1", features = ["derive"]}
+ron = "0.8.0"

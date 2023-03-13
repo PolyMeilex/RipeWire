@@ -1,0 +1,218 @@
+<interface name="pw_core">
+    <method name="add_listener" unused="true" />
+
+    <method name="hello" type="struct">
+        <description>
+            Start a conversation with the server. This will send
+            the core info and will destroy all resources for the client
+            (except the core and client resource).
+        </description>
+
+        <field type="uint" name="version" />
+    </method>
+
+    <method name="sync" type="struct">
+        <description>
+            Do server roundtrip
+
+            Ask the server to emit the 'done' event with \a seq.
+
+            Since methods are handled in-order and events are delivered
+            in-order, this can be used as a barrier to ensure all previous
+            methods and the resulting events have been handled.
+
+            seq - the seq number passed to the done event
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="int" name="seq" />
+    </method>
+
+    <method name="pong" type="struct">
+        <description>
+            Reply to a server ping event.
+
+            Reply to the server ping event with the same seq.
+
+            seq - the seq number received in the ping event
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="int" name="seq" />
+    </method>
+
+    <method name="error" type="struct">
+        <description>
+            Fatal error event
+
+            The error method is sent out when a fatal (non-recoverable)
+            error has occurred. The id argument is the proxy object where
+            the error occurred, most often in response to an event on that
+            object. The message is a brief description of the error,
+            for (debugging) convenience.
+
+            This method is usually also emitted on the resource object with
+            id.
+
+            id - object where the error occurred
+            res - error code
+            message - error description
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="int" name="seq" />
+        <field type="int" name="res" />
+        <field type="string" name="error" />
+    </method>
+
+    <method name="get_registry" type="struct">
+        <description>
+            Get the registry object
+
+            Create a registry object that allows the client to list and bind
+            the global objects available from the PipeWire server
+
+            version - the client version
+            user_data_size - extra size
+        </description>
+
+        <field type="uint" name="version" />
+        <field type="uint" name="new_id" />
+    </method>
+
+    <method name="create_object" type="struct">
+        <description>
+            Create a new object on the PipeWire server from a factory.
+
+            factory_name - the factory name to use
+            obj_type - the interface to bind to
+            version - the version of the interface
+            properties - extra properties
+        </description>
+
+        <field type="string" name="factory_name" />
+        <field type="string" name="obj_type" />
+        <field type="uint" name="version" />
+        <field type="dict" name="properties" />
+        <field type="uint" name="new_id" />
+    </method>
+
+    <method name="destroy" type="struct">
+        <description>
+            Destroy an resource
+
+            Destroy the server resource
+
+            id - id of object to destroy
+        </description>
+
+        <field type="uint" name="id" />
+    </method>
+
+    <!-- Events -->
+
+    <enum name="change_mask" type="ulong" bitfield="true">
+        <entry name="props" value="1" />
+    </enum>
+
+    <event name="info" type="struct">
+        <description>
+            This event is emitted when first bound to the core or when the
+            hello method is called.
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="uint" name="cookie" />
+        <field type="string" name="user_name" />
+        <field type="string" name="host_name" />
+        <field type="string" name="version" />
+        <field type="string" name="name" />
+        <field type="change_mask" name="change_mask" />
+        <field type="dict" name="properties" />
+    </event>
+
+    <event name="done" type="struct">
+        <description>
+            The done event is emitted as a result of a sync method with the
+            same seq number.
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="int" name="seq" />
+    </event>
+
+    <event name="ping" type="struct">
+        <description>
+            The client should reply with a pong reply with the same seq
+            number.
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="int" name="seq" />
+    </event>
+
+    <event name="error" type="struct">
+        <description>
+            Fatal error event
+
+            The error event is sent out when a fatal (non-recoverable)
+            error has occurred. The `id` is the object where
+            the error occurred, most often in response to a request to that
+            object. The message is a brief description of the error,
+            for (debugging) convenience.
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="int" name="seq" />
+        <field type="uint" name="res" />
+        <field type="string" name="error" />
+    </event>
+
+    <event name="remove_id" type="struct">
+        <description>
+            This event is used by the object ID management
+            logic. When a client deletes an object, the server will send
+            this event to acknowledge that it has seen the delete request.
+            When the client receives this event, it will know that it can
+            safely reuse the object ID.
+        </description>
+
+        <field type="uint" name="id" />
+    </event>
+
+    <event name="bound_id" type="struct">
+        <description>
+            This event is emitted when a local object ID is bound to a
+            global ID. It is emitted before the global becomes visible in the
+            registry.
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="uint" name="global_id" />
+    </event>
+
+    <event name="add_mem" type="struct">
+        <description>
+            Add memory for a client
+
+            Memory is given to a client as `fd` of a certain
+            memory `type`.
+
+            Further references to this fd will be made with the per memory
+            unique identifier `id`.
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="id" name="ty" />
+        <field type="fd" name="fd" />
+        <field type="uint" name="flags" />
+    </event>
+
+    <event name="remove_mem" type="struct">
+        <description>
+            Remove memory for a client
+        </description>
+
+        <field type="uint" name="id" />
+    </event>
+</interface>

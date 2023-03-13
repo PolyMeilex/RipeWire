@@ -1,0 +1,67 @@
+<interface name="pw_client_node">
+    <method name="add_listener" type="struct">
+    </method>
+
+    <method name="get_node" type="struct">
+    </method>
+
+    <method name="update" type="struct">
+        <field type="int" name="change_mask" />
+        <field type="int" name="n_params" />
+        <field type="value" name="info" />
+    </method>
+
+    <method name="port_update" type="struct">
+        <field type="int" name="direction" />
+        <field type="int" name="port_id" />
+        <field type="int" name="change_mask" />
+        <field type="int" name="n_params" />
+        <field type="value" name="info" />
+
+    </method>
+
+    <method name="set_active" type="struct">
+        <field type="bool" name="active" />
+    </method>
+
+    <method name="event" type="struct">
+    </method>
+
+    <!-- Events -->
+
+    <event name="transport" type="struct">
+    </event>
+
+    <event name="set_param" type="struct">
+    </event>
+
+    <event name="set_io" type="struct">
+    </event>
+
+    <event name="event" type="struct">
+    </event>
+
+    <event name="command" type="struct">
+    </event>
+
+    <event name="add_port" type="struct">
+    </event>
+
+    <event name="remove_port" type="struct">
+    </event>
+
+    <event name="port_set_param" type="struct">
+    </event>
+
+    <event name="port_use_buffers" type="struct">
+    </event>
+
+    <event name="port_set_io" type="struct">
+    </event>
+
+    <event name="set_activation" type="struct">
+    </event>
+
+    <event name="port_set_mix_info" type="struct">
+    </event>
+</interface>
