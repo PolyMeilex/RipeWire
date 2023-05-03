@@ -259,6 +259,160 @@ pub mod pw_client_node {
             Command, PortSetIo, PortSetParam, SetIo, Transport,
         };
 
+        #[derive(Debug, Clone)]
+        pub struct PortBufferData {
+            pub type_: pod::utils::Id,
+            pub data_id: u32,
+            pub flags: u32,
+            pub mapoffset: u32,
+            pub maxsize: u32,
+        }
+
+        impl PortBufferData {
+            fn visit<'de>(
+                struct_deserializer: &mut pod::deserialize::StructPodDeserializer<'de>,
+            ) -> Result<Self, pod::deserialize::DeserializeError<&'de [u8]>> {
+                Ok(Self {
+                    type_: struct_deserializer
+                        .deserialize_field()?
+                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
+                    data_id: struct_deserializer
+                        .deserialize_field()?
+                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
+                    flags: struct_deserializer
+                        .deserialize_field()?
+                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
+                    mapoffset: struct_deserializer
+                        .deserialize_field()?
+                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
+                    maxsize: struct_deserializer
+                        .deserialize_field()?
+                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
+                })
+            }
+        }
+
+        #[derive(Debug, Clone)]
+        pub struct PortBuffer {
+            pub mem_id: u32,
+            pub offset: u32,
+            pub size: u32,
+            pub metas: Vec<(pod::utils::Id, u32)>,
+            pub datas: Vec<PortBufferData>,
+        }
+
+        impl PortBuffer {
+            fn visit<'de>(
+                struct_deserializer: &mut pod::deserialize::StructPodDeserializer<'de>,
+            ) -> Result<Self, pod::deserialize::DeserializeError<&'de [u8]>> {
+                let mem_id = struct_deserializer
+                    .deserialize_field()?
+                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                let offset = struct_deserializer
+                    .deserialize_field()?
+                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                let size = struct_deserializer
+                    .deserialize_field()?
+                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                let n_metas: i32 = struct_deserializer
+                    .deserialize_field()?
+                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+
+                let mut metas = Vec::new();
+
+                for _ in 0..n_metas.max(0) {
+                    let type_ = struct_deserializer
+                        .deserialize_field()?
+                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                    let size = struct_deserializer
+                        .deserialize_field()?
+                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                    metas.push((type_, size));
+                }
+
+                let n_datas: i32 = struct_deserializer
+                    .deserialize_field()?
+                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+
+                let mut datas = Vec::new();
+                for _ in 0..n_datas.max(0) {
+                    datas.push(PortBufferData::visit(struct_deserializer)?);
+                }
+
+                Ok(PortBuffer {
+                    mem_id,
+                    offset,
+                    size,
+                    metas,
+                    datas,
+                })
+            }
+        }
+
+        #[derive(Debug, Clone)]
+        pub struct PortUseBuffers {
+            pub direction: u32,
+            pub port_id: u32,
+            pub mix_id: u32,
+            pub flags: u32,
+            pub buffers: Vec<PortBuffer>,
+        }
+
+        impl<'de> pod::deserialize::PodDeserialize<'de> for PortUseBuffers {
+            fn deserialize(
+                deserializer: pod::deserialize::PodDeserializer<'de>,
+            ) -> Result<
+                (Self, pod::deserialize::DeserializeSuccess<'de>),
+                pod::deserialize::DeserializeError<&'de [u8]>,
+            >
+            where
+                Self: Sized,
+            {
+                struct TestVisitor;
+                impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
+                    type Value = PortUseBuffers;
+                    type ArrayElem = std::convert::Infallible;
+
+                    fn visit_struct(
+                        &self,
+                        struct_deserializer: &mut pod::deserialize::StructPodDeserializer<'de>,
+                    ) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>>
+                    {
+                        let direction = struct_deserializer
+                            .deserialize_field()?
+                            .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                        let port_id = struct_deserializer
+                            .deserialize_field()?
+                            .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                        let mix_id = struct_deserializer
+                            .deserialize_field()?
+                            .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                        let flags = struct_deserializer
+                            .deserialize_field()?
+                            .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+                        let n_buffers: i32 = struct_deserializer
+                            .deserialize_field()?
+                            .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
+
+                        let mut buffers = Vec::new();
+                        for _ in 0..n_buffers.max(0) {
+                            buffers.push(PortBuffer::visit(struct_deserializer)?);
+                        }
+
+                        Ok(Self::Value {
+                            direction,
+                            port_id,
+                            mix_id,
+                            flags,
+                            buffers,
+                        })
+                    }
+                }
+
+                deserializer.deserialize_struct(TestVisitor)
+            }
+        }
+
         #[derive(Debug, Clone, pod_derive::EventDeserialize)]
         pub enum Event {
             Transport(Transport),
@@ -269,7 +423,7 @@ pub mod pw_client_node {
             AddPort(Value),
             RemovePort(Value),
             PortSetParam(PortSetParam),
-            PortUseBuffers(Value),
+            PortUseBuffers(PortUseBuffers),
             PortSetIo(PortSetIo),
             SetActivation(Value),
             PortSetMixInfo(Value),
