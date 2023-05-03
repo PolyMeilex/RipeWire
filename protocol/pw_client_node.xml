@@ -30,18 +30,28 @@
     <!-- Events -->
 
     <event name="transport" type="struct">
+        <field type="fd" name="readfd" />
+        <field type="fd" name="writefd" />
+        <field type="uint" name="memid" />
+        <field type="uint" name="offset" />
+        <field type="uint" name="size" />
     </event>
 
     <event name="set_param" type="struct">
     </event>
 
     <event name="set_io" type="struct">
+        <field type="id" name="id" />
+        <field type="uint" name="memid" />
+        <field type="uint" name="off" />
+        <field type="uint" name="sz" />
     </event>
 
     <event name="event" type="struct">
     </event>
 
     <event name="command" type="struct">
+        <field type="value" name="command" />
     </event>
 
     <event name="add_port" type="struct">
@@ -51,12 +61,24 @@
     </event>
 
     <event name="port_set_param" type="struct">
+        <field type="uint" name="direction" />
+        <field type="uint" name="port_id" />
+        <field type="id" name="id" />
+        <field type="uint" name="flags" />
+        <field type="value" name="param" />
     </event>
 
     <event name="port_use_buffers" type="struct">
     </event>
 
     <event name="port_set_io" type="struct">
+        <field type="uint" name="direction" />
+        <field type="uint" name="port_id" />
+        <field type="uint" name="mix_id" />
+        <field type="id" name="id" />
+        <field type="uint" name="memid" />
+        <field type="uint" name="off" />
+        <field type="uint" name="sz" />
     </event>
 
     <event name="set_activation" type="struct">

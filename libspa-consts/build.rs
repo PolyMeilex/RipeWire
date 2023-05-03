@@ -27,6 +27,8 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         .ignore_methods()
         .allowlist_type("spa_choice_type")
         .allowlist_type("spa_pod")
+        .allowlist_type("spa_format")
+        .rustified_enum("spa_format")
         .allowlist_var("SPA_POD_PROP_FLAG.*")
         .allowlist_var("SPA_TYPE_.*")
         .blocklist_item("SPA_TYPE_INFO_.*")

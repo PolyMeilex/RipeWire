@@ -693,7 +693,7 @@ pub enum ChoiceValue {
 }
 
 /// An object from a pod.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Object {
     /// the object type.
     pub type_: u32,
@@ -701,6 +701,33 @@ pub struct Object {
     pub id: u32,
     /// the object properties.
     pub properties: Vec<Property>,
+}
+
+impl std::fmt::Debug for Object {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut dbg = f.debug_struct("Object");
+
+        let last = spa_sys::SpaType::VendorPipeWire as u32;
+
+        let mut found = false;
+        for id in 0..last {
+            if id == self.type_ {
+                let enu = &id as *const _ as *const spa_sys::SpaType;
+                let enu = unsafe { *enu };
+                dbg.field("type_", &enu);
+                found = true;
+                break;
+            }
+        }
+
+        if !found {
+            dbg.field("type_", &self.type_);
+        }
+
+        dbg.field("id", &self.id)
+            .field("properties", &self.properties)
+            .finish()
+    }
 }
 
 /// An object property.

@@ -176,18 +176,101 @@ pub mod pw_client_node {
     pub mod event {
         use super::*;
 
+        #[derive(Debug, Clone)]
+        pub struct PortUpdateInfo {
+            pub change_mask: u64,
+            pub flags: u64,
+            pub rate_num: u32,
+            pub rate_denom: u32,
+            pub items: Vec<(String, String)>,
+            pub params: Vec<(pod::utils::Id, u32)>,
+        }
+
+        impl pod::serialize::PodSerialize for PortUpdateInfo {
+            fn serialize<O: std::io::Write + std::io::Seek>(
+                &self,
+                serializer: pod::serialize::PodSerializer<O>,
+            ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
+                let mut s = serializer.serialize_struct()?;
+
+                s.serialize_field(&self.change_mask)?;
+                s.serialize_field(&self.flags)?;
+                s.serialize_field(&self.rate_num)?;
+                s.serialize_field(&self.rate_denom)?;
+
+                s.serialize_field(&(self.items.len() as i32))?;
+
+                for (key, value) in self.items.iter() {
+                    s.serialize_field(key)?;
+                    s.serialize_field(value)?;
+                }
+
+                s.serialize_field(&(self.params.len() as i32))?;
+
+                for (id, flags) in self.params.iter() {
+                    s.serialize_field(id)?;
+                    s.serialize_field(flags)?;
+                }
+
+                s.end()
+            }
+        }
+
+        #[derive(Debug, Clone)]
+        pub struct PortUpdate {
+            pub direction: i32,
+            pub port_id: i32,
+            pub change_mask: i32,
+            pub params: Vec<pod::Value>,
+            pub info: Option<PortUpdateInfo>,
+        }
+
+        impl pod::serialize::PodSerialize for PortUpdate {
+            fn serialize<O: std::io::Write + std::io::Seek>(
+                &self,
+                serializer: pod::serialize::PodSerializer<O>,
+            ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
+                let mut s = serializer.serialize_struct()?;
+                s.serialize_field(&self.direction)?;
+                s.serialize_field(&self.port_id)?;
+                s.serialize_field(&self.change_mask)?;
+
+                s.serialize_field(&(self.params.len() as i32))?;
+
+                for param in self.params.iter() {
+                    s.serialize_field(param)?;
+                }
+
+                if let Some(info) = self.info.as_ref() {
+                    s.serialize_field(info)?;
+                } else {
+                    s.serialize_field(&Value::None)?;
+                }
+
+                s.end()
+            }
+        }
+
+        impl HasOpCode for PortUpdate {
+            const OPCODE: u8 = 3;
+        }
+
+        use generated::pw_client_node::events::{
+            Command, PortSetIo, PortSetParam, SetIo, Transport,
+        };
+
         #[derive(Debug, Clone, pod_derive::EventDeserialize)]
         pub enum Event {
-            Transport(Value),
+            Transport(Transport),
             SetParam(Value),
-            SetIo(Value),
+            SetIo(SetIo),
             Event(Value),
-            Command(Value),
+            Command(Command),
             AddPort(Value),
             RemovePort(Value),
-            PortSetParam(Value),
+            PortSetParam(PortSetParam),
             PortUseBuffers(Value),
-            PortSetIo(Value),
+            PortSetIo(PortSetIo),
             SetActivation(Value),
             PortSetMixInfo(Value),
         }

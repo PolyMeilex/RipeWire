@@ -113,7 +113,7 @@ pub fn run_rust() {
                             let client =
                                 pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
 
-                            // dbg!(&client);
+                            dbg!(&client);
                             state.client_event(msg.header.object_id, client);
                         }
                         id if id == state.registry.id().protocol_id() => {
@@ -131,9 +131,9 @@ pub fn run_rust() {
                             state.device_event(msg.header.object_id, device);
                         }
                         id if client_node == Some(id) => {
-                            let _client_node =
+                            let client_node =
                                 pw_client_node::Event::from(msg.header.opcode, &msg.body).unwrap();
-                            // dbg!(client_node);
+                            dbg!(client_node);
                         }
                         _ => {
                             unimplemented!("{:?}", msg.header);
@@ -267,9 +267,9 @@ impl State {
                         String("media.role".into()),
                         String("DSP".into()),
                         String("media.name".into()),
-                        String("rustypipe".into()),
+                        String("ripewire".into()),
                         String("node.name".into()),
-                        String("rustypipe".into()),
+                        String("ripewire".into()),
                         String("node.want-driver".into()),
                         String("true".into()),
                         Int(3),
@@ -289,74 +289,69 @@ impl State {
 
             {
                 use Value::*;
-                let body = Struct(vec![
-                    Int(0),
-                    Int(0),
-                    Int(3),
-                    Int(2),
-                    Object(pod::Object {
-                        type_: 262147,
-                        id: 3,
-                        properties: vec![
-                            pod::Property {
-                                key: 1,
-                                flags: pod::PropertyFlags::empty(),
-                                value: Id(pod::utils::Id(6)),
-                            },
-                            pod::Property {
-                                key: 2,
-                                flags: pod::PropertyFlags::empty(),
-                                value: Id(pod::utils::Id(393217)),
-                            },
+
+                let body = protocol::pw_client_node::event::PortUpdate {
+                    direction: 0,
+                    port_id: 0,
+                    change_mask: 3,
+                    params: vec![
+                        Object(pod::Object {
+                            type_: libspa_consts::SpaType::ObjectFormat as u32,
+                            id: libspa_consts::SpaParamType::EnumFormat as u32,
+                            properties: vec![
+                                pod::Property {
+                                    key: libspa_consts::spa_format::SPA_FORMAT_mediaType as u32,
+                                    flags: pod::PropertyFlags::empty(),
+                                    // application
+                                    value: Id(pod::utils::Id(6)),
+                                },
+                                pod::Property {
+                                    key: libspa_consts::spa_format::SPA_FORMAT_mediaSubtype as u32,
+                                    flags: pod::PropertyFlags::empty(),
+                                    // control
+                                    value: Id(pod::utils::Id(393217)),
+                                },
+                            ],
+                        }),
+                        Object(pod::Object {
+                            type_: libspa_consts::SpaType::ObjectParamIo as u32,
+                            id: libspa_consts::SpaParamType::IO as u32,
+                            properties: vec![
+                                pod::Property {
+                                    key: 1,
+                                    flags: pod::PropertyFlags::empty(),
+                                    value: Id(pod::utils::Id(1)),
+                                },
+                                pod::Property {
+                                    key: 2,
+                                    flags: pod::PropertyFlags::empty(),
+                                    value: Int(8),
+                                },
+                            ],
+                        }),
+                    ],
+                    info: Some(protocol::pw_client_node::event::PortUpdateInfo {
+                        change_mask: 15,
+                        flags: 0,
+                        rate_num: 0,
+                        rate_denom: 1,
+                        items: vec![
+                            ("format.dsp".into(), "8 bit raw midi".into()),
+                            ("port.name".into(), "input".into()),
+                            ("port.id".into(), "0".into()),
+                            ("port.direction".into(), "in".into()),
+                            ("port.alias".into(), "rustypipe:input".into()),
+                        ],
+                        params: vec![
+                            (pod::utils::Id(3), 3),
+                            (pod::utils::Id(6), 0),
+                            (pod::utils::Id(7), 3),
+                            (pod::utils::Id(4), 4),
+                            (pod::utils::Id(5), 0),
+                            (pod::utils::Id(15), 4),
                         ],
                     }),
-                    Object(pod::Object {
-                        type_: 262150,
-                        id: 7,
-                        properties: vec![
-                            pod::Property {
-                                key: 1,
-                                flags: pod::PropertyFlags::empty(),
-                                value: Id(pod::utils::Id(1)),
-                            },
-                            pod::Property {
-                                key: 2,
-                                flags: pod::PropertyFlags::empty(),
-                                value: Int(8),
-                            },
-                        ],
-                    }),
-                    Struct(vec![
-                        Long(15),
-                        Long(0),
-                        Int(0),
-                        Int(1),
-                        Int(5),
-                        String("format.dsp".into()),
-                        String("8 bit raw midi".into()),
-                        String("port.name".into()),
-                        String("input".into()),
-                        String("port.id".into()),
-                        String("0".into()),
-                        String("port.direction".into()),
-                        String("in".into()),
-                        String("port.alias".into()),
-                        String("rustypipe:input".into()),
-                        Int(6),
-                        Id(pod::utils::Id(3)),
-                        Int(3),
-                        Id(pod::utils::Id(6)),
-                        Int(0),
-                        Id(pod::utils::Id(7)),
-                        Int(3),
-                        Id(pod::utils::Id(4)),
-                        Int(4),
-                        Id(pod::utils::Id(5)),
-                        Int(0),
-                        Id(pod::utils::Id(15)),
-                        Int(4),
-                    ]),
-                ]);
+                };
 
                 let msg = protocol::manual_create_msg(id, 3, &body);
 

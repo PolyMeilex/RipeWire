@@ -424,7 +424,13 @@ pub mod pw_client_node {
     pub mod events {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct Transport {}
+        pub struct Transport {
+            pub readfd: pod::utils::Fd,
+            pub writefd: pod::utils::Fd,
+            pub memid: u32,
+            pub offset: u32,
+            pub size: u32,
+        }
         impl HasOpCode for Transport {
             const OPCODE: u8 = 0;
         }
@@ -434,7 +440,12 @@ pub mod pw_client_node {
             const OPCODE: u8 = 1;
         }
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct SetIo {}
+        pub struct SetIo {
+            pub id: pod::utils::Id,
+            pub memid: u32,
+            pub off: u32,
+            pub sz: u32,
+        }
         impl HasOpCode for SetIo {
             const OPCODE: u8 = 2;
         }
@@ -444,7 +455,9 @@ pub mod pw_client_node {
             const OPCODE: u8 = 3;
         }
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct Command {}
+        pub struct Command {
+            pub command: pod::Value,
+        }
         impl HasOpCode for Command {
             const OPCODE: u8 = 4;
         }
@@ -459,7 +472,13 @@ pub mod pw_client_node {
             const OPCODE: u8 = 6;
         }
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct PortSetParam {}
+        pub struct PortSetParam {
+            pub direction: u32,
+            pub port_id: u32,
+            pub id: pod::utils::Id,
+            pub flags: u32,
+            pub param: pod::Value,
+        }
         impl HasOpCode for PortSetParam {
             const OPCODE: u8 = 7;
         }
@@ -469,7 +488,15 @@ pub mod pw_client_node {
             const OPCODE: u8 = 8;
         }
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct PortSetIo {}
+        pub struct PortSetIo {
+            pub direction: u32,
+            pub port_id: u32,
+            pub mix_id: u32,
+            pub id: pod::utils::Id,
+            pub memid: u32,
+            pub off: u32,
+            pub sz: u32,
+        }
         impl HasOpCode for PortSetIo {
             const OPCODE: u8 = 9;
         }
