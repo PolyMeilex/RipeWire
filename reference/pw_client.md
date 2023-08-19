@@ -1,12 +1,10 @@
 # Methods
-```
-PW_CLIENT_METHOD_ADD_LISTENER		0
-PW_CLIENT_METHOD_ERROR			1
-PW_CLIENT_METHOD_UPDATE_PROPERTIES	2
-PW_CLIENT_METHOD_GET_PERMISSIONS	3
-PW_CLIENT_METHOD_UPDATE_PERMISSIONS	4
-PW_CLIENT_METHOD_NUM			5
-```
+- PW_CLIENT_METHOD_ADD_LISTENER 0
+- [PW_CLIENT_METHOD_ERROR 1](#error)
+- [PW_CLIENT_METHOD_UPDATE_PROPERTIES 2](#update-properties)
+- [PW_CLIENT_METHOD_GET_PERMISSIONS 3](#get-permissions)
+- [PW_CLIENT_METHOD_UPDATE_PERMISSIONS 4](#update-permissions)
+- PW_CLIENT_METHOD_NUM 5
 
 ## Error
 Send an error to a client
@@ -194,11 +192,9 @@ static int client_demarshal_update_permissions(void *object, const struct pw_pro
 ```
 
 # Events
-```
-PW_CLIENT_EVENT_INFO		0
-PW_CLIENT_EVENT_PERMISSIONS	1
-PW_CLIENT_EVENT_NUM		2
-```
+- [PW_CLIENT_EVENT_INFO 0](#info)
+- [PW_CLIENT_EVENT_PERMISSIONS 1](#permissions)
+- PW_CLIENT_EVENT_NUM 2
 
 ## Info
 Notify client info

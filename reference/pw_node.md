@@ -1,12 +1,10 @@
 # Methods
-```
-PW_NODE_METHOD_ADD_LISTENER	0
-PW_NODE_METHOD_SUBSCRIBE_PARAMS	1
-PW_NODE_METHOD_ENUM_PARAMS	2
-PW_NODE_METHOD_SET_PARAM	3
-PW_NODE_METHOD_SEND_COMMAND	4
-PW_NODE_METHOD_NUM		5
-```
+- PW_NODE_METHOD_ADD_LISTENER 0
+- [PW_NODE_METHOD_SUBSCRIBE_PARAMS 1](#subscribe-params)
+- [PW_NODE_METHOD_ENUM_PARAMS 2](#enum-params)
+- [PW_NODE_METHOD_SET_PARAM 3](#set-param)
+- [PW_NODE_METHOD_SEND_COMMAND 4](#send-command)
+- PW_NODE_METHOD_NUM 5
 
 ## Subscribe params
 Subscribe to parameter changes
@@ -192,11 +190,9 @@ static int node_demarshal_send_command(void *object, const struct pw_protocol_na
 ```
 
 # Events
-```
-PW_NODE_EVENT_INFO	0
-PW_NODE_EVENT_PARAM	1
-PW_NODE_EVENT_NUM	2
-```
+- [PW_NODE_EVENT_INFO 0](#info)
+- [PW_NODE_EVENT_PARAM 1](#param)
+- PW_NODE_EVENT_NUM	2
 
 ## Info
 Notify node info

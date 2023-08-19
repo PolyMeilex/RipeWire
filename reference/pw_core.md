@@ -1,15 +1,13 @@
 # Methods
-```
-PW_CORE_METHOD_ADD_LISTENER	0
-PW_CORE_METHOD_HELLO		1
-PW_CORE_METHOD_SYNC		2
-PW_CORE_METHOD_PONG		3
-PW_CORE_METHOD_ERROR		4
-PW_CORE_METHOD_GET_REGISTRY	5
-PW_CORE_METHOD_CREATE_OBJECT	6
-PW_CORE_METHOD_DESTROY		7
-PW_CORE_METHOD_NUM		8
-```
+- PW_CORE_METHOD_ADD_LISTENER 0
+- [PW_CORE_METHOD_HELLO	1](#hello)
+- [PW_CORE_METHOD_SYNC 2](#sync)
+- [PW_CORE_METHOD_PONG 3](#pong)
+- [PW_CORE_METHOD_ERROR 4](#error)
+- [PW_CORE_METHOD_GET_REGISTRY 5](#get-registry)
+- [PW_CORE_METHOD_CREATE_OBJECT 6](#create-object)
+- [PW_CORE_METHOD_DESTROY 7](#destroy)
+- PW_CORE_METHOD_NUM 8
 
 ## Hello
 Start a conversation with the server. This will send
@@ -362,18 +360,16 @@ static int core_method_demarshal_destroy(void *object, const struct pw_protocol_
 ```
 
 # Events
-```
-PW_CORE_EVENT_INFO		0
-PW_CORE_EVENT_DONE		1
-PW_CORE_EVENT_PING		2
-PW_CORE_EVENT_ERROR		3
-PW_CORE_EVENT_REMOVE_ID		4
-PW_CORE_EVENT_BOUND_ID		5
-PW_CORE_EVENT_ADD_MEM		6
-PW_CORE_EVENT_REMOVE_MEM	7
-PW_CORE_EVENT_BOUND_PROPS	8
-PW_CORE_EVENT_NUM		9
-```
+- [PW_CORE_EVENT_INFO 0](#info)
+- [PW_CORE_EVENT_DONE 1](#done)
+- [PW_CORE_EVENT_PING 2](#ping)
+- [PW_CORE_EVENT_ERROR 3](#error)
+- [PW_CORE_EVENT_REMOVE_ID 4](#remove-id)
+- [PW_CORE_EVENT_BOUND_ID 5](#bound-id)
+- [PW_CORE_EVENT_ADD_MEM 6](#add-mem)
+- [PW_CORE_EVENT_REMOVE_MEM 7](#remove-mem)
+- [PW_CORE_EVENT_BOUND_PROPS 8](#bound-props)
+- PW_CORE_EVENT_NUM 9
 
 ## Info
 This event is emitted when first bound to the core or when the

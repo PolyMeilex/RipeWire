@@ -1,10 +1,8 @@
 # Methods
-```
-PW_PORT_METHOD_ADD_LISTENER	0
-PW_PORT_METHOD_SUBSCRIBE_PARAMS	1
-PW_PORT_METHOD_ENUM_PARAMS	2
-PW_PORT_METHOD_NUM		3
-```
+- PW_PORT_METHOD_ADD_LISTENER 0
+- [PW_PORT_METHOD_SUBSCRIBE_PARAMS 1](#subscribe-params)
+- [PW_PORT_METHOD_ENUM_PARAMS 2](#enum-params)
+- PW_PORT_METHOD_NUM 3
 
 ## Subscribe params
 Subscribe to parameter changes
@@ -112,11 +110,9 @@ static int port_demarshal_enum_params(void *object, const struct pw_protocol_nat
 ```
 
 # Events
-```
-PW_PORT_EVENT_INFO	0
-PW_PORT_EVENT_PARAM	1
-PW_PORT_EVENT_NUM	2
-```
+- [PW_PORT_EVENT_INFO 0](#info)
+- [PW_PORT_EVENT_PARAM 1](#param)
+- PW_PORT_EVENT_NUM 2
 
 ## Info
 Notify port info

@@ -1,10 +1,8 @@
 # Methods
-```
-PW_REGISTRY_METHOD_ADD_LISTENER	0
-PW_REGISTRY_METHOD_BIND		1
-PW_REGISTRY_METHOD_DESTROY	2
-PW_REGISTRY_METHOD_NUM		3
-```
+- PW_REGISTRY_METHOD_ADD_LISTENER 0
+- [PW_REGISTRY_METHOD_BIND 1](#bind)
+- [PW_REGISTRY_METHOD_DESTROY 2](#destroy)
+- PW_REGISTRY_METHOD_NUM 3
 
 ## Bind
 Bind to a global object
@@ -105,11 +103,9 @@ static int registry_demarshal_destroy(void *object, const struct pw_protocol_nat
 ```
 
 # Events
-```
-PW_REGISTRY_EVENT_GLOBAL             0
-PW_REGISTRY_EVENT_GLOBAL_REMOVE      1
-PW_REGISTRY_EVENT_NUM                2
-```
+- [PW_REGISTRY_EVENT_GLOBAL 0](#global)
+- [PW_REGISTRY_EVENT_GLOBAL_REMOVE 1](#global-remove)
+- PW_REGISTRY_EVENT_NUM 2
 
 ## Global
 Notify of a new global object

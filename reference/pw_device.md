@@ -1,11 +1,9 @@
 # Methods
-```
-PW_DEVICE_METHOD_ADD_LISTENER		0
-PW_DEVICE_METHOD_SUBSCRIBE_PARAMS	1
-PW_DEVICE_METHOD_ENUM_PARAMS		2
-PW_DEVICE_METHOD_SET_PARAM		3
-PW_DEVICE_METHOD_NUM			4
-```
+- PW_DEVICE_METHOD_ADD_LISTENER 0
+- [PW_DEVICE_METHOD_SUBSCRIBE_PARAMS 1](#subscribe-params)
+- [PW_DEVICE_METHOD_ENUM_PARAMS 2](#enum-params)
+- [PW_DEVICE_METHOD_SET_PARAM 3](#set-param)
+- PW_DEVICE_METHOD_NUM 4
 
 ## Subscribe params
 Subscribe to parameter changes
@@ -158,11 +156,9 @@ static int device_demarshal_set_param(void *object, const struct pw_protocol_nat
 ```
 
 # Events
-```
-PW_DEVICE_EVENT_INFO	0
-PW_DEVICE_EVENT_PARAM	1
-PW_DEVICE_EVENT_NUM	2
-```
+- [PW_DEVICE_EVENT_INFO 0](#info)
+- [PW_DEVICE_EVENT_PARAM 1](#param)
+- PW_DEVICE_EVENT_NUM 2
 
 ## Info
 Notify device info
