@@ -1,4 +1,15 @@
 # Methods
+```
+PW_CORE_METHOD_ADD_LISTENER	0
+PW_CORE_METHOD_HELLO		1
+PW_CORE_METHOD_SYNC		2
+PW_CORE_METHOD_PONG		3
+PW_CORE_METHOD_ERROR		4
+PW_CORE_METHOD_GET_REGISTRY	5
+PW_CORE_METHOD_CREATE_OBJECT	6
+PW_CORE_METHOD_DESTROY		7
+PW_CORE_METHOD_NUM		8
+```
 
 ## Hello
 Start a conversation with the server. This will send
@@ -351,6 +362,18 @@ static int core_method_demarshal_destroy(void *object, const struct pw_protocol_
 ```
 
 # Events
+```
+PW_CORE_EVENT_INFO		0
+PW_CORE_EVENT_DONE		1
+PW_CORE_EVENT_PING		2
+PW_CORE_EVENT_ERROR		3
+PW_CORE_EVENT_REMOVE_ID		4
+PW_CORE_EVENT_BOUND_ID		5
+PW_CORE_EVENT_ADD_MEM		6
+PW_CORE_EVENT_REMOVE_MEM	7
+PW_CORE_EVENT_BOUND_PROPS	8
+PW_CORE_EVENT_NUM		9
+```
 
 ## Info
 This event is emitted when first bound to the core or when the
@@ -411,6 +434,8 @@ static int core_event_demarshal_info(void *data, const struct pw_protocol_native
 ```
 
 ## Done
+The done event is emitted as a result of a sync method with the
+same seq number.
 
 ```c
 static void core_event_marshal_done(void *data, uint32_t id, int seq)
@@ -449,6 +474,8 @@ static int core_event_demarshal_done(void *data, const struct pw_protocol_native
 ```
 
 ## Ping
+The client should reply with a pong reply with the same seq
+number.
 
 ```c
 static void core_event_marshal_ping(void *data, uint32_t id, int seq)
@@ -484,6 +511,11 @@ static int core_event_demarshal_ping(void *data, const struct pw_protocol_native
 ```
 
 ## Remove id
+This event is used by the object ID management
+logic. When a client deletes an object, the server will send
+this event to acknowledge that it has seen the delete request.
+When the client receives this event, it will know that it can
+safely reuse the object ID.
 
 ```c
 static void core_event_marshal_remove_id(void *data, uint32_t id)
@@ -515,6 +547,8 @@ static int core_event_demarshal_remove_id(void *data, const struct pw_protocol_n
 ```
 
 ## Bound id
+This event is emitted when a local object ID is bound to a
+global ID. It is emitted before the global becomes visible in the
 
 ```c
 static void core_event_marshal_bound_id(void *data, uint32_t id, uint32_t global_id)
@@ -600,6 +634,13 @@ static int core_event_demarshal_bound_props(void *data, const struct pw_protocol
 ```
 
 ## Add mem
+Add memory for a client
+
+Memory is given to a client as `fd` of a certain
+memory `type`.
+
+Further references to this fd will be made with the per memory
+unique identifier `id`.
 
 ```c
 static void core_event_marshal_add_mem(void *data, uint32_t id, uint32_t type, int fd, uint32_t flags)
@@ -642,6 +683,7 @@ static int core_event_demarshal_add_mem(void *data, const struct pw_protocol_nat
 ```
 
 ## Remove mem
+Remove memory for a client
 
 ```c
 static void core_event_marshal_remove_mem(void *data, uint32_t id)
@@ -674,6 +716,13 @@ static int core_event_demarshal_remove_mem(void *data, const struct pw_protocol_
 ```
 
 ## Error
+Fatal error event
+
+The error event is sent out when a fatal (non-recoverable)
+error has occurred. The `id` is the object where
+the error occurred, most often in response to a request to that
+object. The message is a brief description of the error,
+for (debugging) convenience.
 
 ```c
 static void core_event_marshal_error(void *data, uint32_t id, int seq, int res, const char *error)
@@ -713,195 +762,3 @@ static int core_method_demarshal_error(void *object, const struct pw_protocol_na
 }
 ```
 
-# Dictionary stuff
-```c
-static inline void push_item(struct spa_pod_builder *b, const struct spa_dict_item *item)
-{
-	const char *str;
-	spa_pod_builder_string(b, item->key);
-	str = item->value;
-	if (spa_strstartswith(str, "pointer:"))
-		str = "";
-	spa_pod_builder_string(b, str);
-}
-
-static void push_dict(struct spa_pod_builder *b, const struct spa_dict *dict)
-{
-	uint32_t i, n_items;
-	struct spa_pod_frame f;
-
-	n_items = dict ? dict->n_items : 0;
-
-	spa_pod_builder_push_struct(b, &f);
-	spa_pod_builder_int(b, n_items);
-	for (i = 0; i < n_items; i++)
-		push_item(b, &dict->items[i]);
-	spa_pod_builder_pop(b, &f);
-}
-
-static inline int parse_item(struct spa_pod_parser *prs, struct spa_dict_item *item)
-{
-	int res;
-	if ((res = spa_pod_parser_get(prs,
-		       SPA_POD_String(&item->key),
-		       SPA_POD_String(&item->value),
-		       NULL)) < 0)
-		return res;
-	if (spa_strstartswith(item->value, "pointer:"))
-		item->value = "";
-	return 0;
-}
-
-#define parse_dict(prs,d)									\
-do {												\
-	if (spa_pod_parser_get(prs,								\
-			 SPA_POD_Int(&(d)->n_items), NULL) < 0)					\
-		return -EINVAL;									\
-	(d)->items = NULL;									\
-	if ((d)->n_items > 0) {									\
-		uint32_t i;									\
-		if ((d)->n_items > MAX_DICT)							\
-			return -ENOSPC;								\
-		(d)->items = alloca((d)->n_items * sizeof(struct spa_dict_item));		\
-		for (i = 0; i < (d)->n_items; i++) {						\
-			if (parse_item(prs, (struct spa_dict_item *) &(d)->items[i]) < 0)	\
-				return -EINVAL;							\
-		}										\
-	}											\
-} while(0)
-
-#define parse_dict_struct(prs,f,dict)						\
-do {										\
-	if (spa_pod_parser_push_struct(prs, f) < 0)				\
-		return -EINVAL;							\
-	parse_dict(prs, dict);							\
-	spa_pod_parser_pop(prs, f);						\
-} while(0)
-
-static void push_params(struct spa_pod_builder *b, uint32_t n_params,
-		const struct spa_param_info *params)
-{
-	uint32_t i;
-	struct spa_pod_frame f;
-
-	spa_pod_builder_push_struct(b, &f);
-	spa_pod_builder_int(b, n_params);
-	for (i = 0; i < n_params; i++) {
-		spa_pod_builder_id(b, params[i].id);
-		spa_pod_builder_int(b, params[i].flags);
-	}
-	spa_pod_builder_pop(b, &f);
-}
-
-
-#define parse_params_struct(prs,f,params,n_params)					\
-do {											\
-	if (spa_pod_parser_push_struct(prs, f) < 0 ||					\
-	    spa_pod_parser_get(prs,							\
-			       SPA_POD_Int(&(n_params)), NULL) < 0)			\
-		return -EINVAL;								\
-	(params) = NULL;									\
-	if ((n_params) > 0) {								\
-		uint32_t i;								\
-		if ((n_params) > MAX_PARAM_INFO)						\
-			return -ENOSPC;							\
-		(params) = alloca((n_params) * sizeof(struct spa_param_info));		\
-		for (i = 0; i < (n_params); i++) {					\
-			if (spa_pod_parser_get(prs,					\
-				       SPA_POD_Id(&(params)[i].id),			\
-				       SPA_POD_Int(&(params)[i].flags), NULL) < 0)	\
-				return -EINVAL;						\
-		}									\
-	}										\
-	spa_pod_parser_pop(prs, f);							\
-} while(0)
-
-
-#define parse_permissions_struct(prs,f,n_permissions,permissions)				\
-do {												\
-	if (spa_pod_parser_push_struct(prs, f) < 0 ||						\
-	    spa_pod_parser_get(prs,								\
-		    SPA_POD_Int(&(n_permissions)), NULL) < 0)					\
-		return -EINVAL;									\
-	(permissions) = NULL;									\
-	if ((n_permissions) > 0) {								\
-		uint32_t i;									\
-		if ((n_permissions) > MAX_PERMISSIONS)						\
-			return -ENOSPC;								\
-		(permissions) = alloca((n_permissions) * sizeof(struct pw_permission));		\
-		for (i = 0; i < (n_permissions); i++) {						\
-			if (spa_pod_parser_get(prs,						\
-					SPA_POD_Int(&(permissions)[i].id),			\
-					SPA_POD_Int(&(permissions)[i].permissions), NULL) < 0)	\
-				return -EINVAL;							\
-		}										\
-	}											\
-	spa_pod_parser_pop(prs, f);								\
-} while(0)
-```
-
-# Other
-
-```c
-static const struct pw_core_methods pw_protocol_native_core_method_marshal = {
-	PW_VERSION_CORE_METHODS,
-	.add_listener = &core_method_marshal_add_listener,
-	.hello = &core_method_marshal_hello,
-	.sync = &core_method_marshal_sync,
-	.pong = &core_method_marshal_pong,
-	.error = &core_method_marshal_error,
-	.get_registry = &core_method_marshal_get_registry,
-	.create_object = &core_method_marshal_create_object,
-	.destroy = &core_method_marshal_destroy,
-};
-
-static const struct pw_protocol_native_demarshal pw_protocol_native_core_method_demarshal[PW_CORE_METHOD_NUM] = {
-	[PW_CORE_METHOD_ADD_LISTENER] = { NULL, 0, },
-	[PW_CORE_METHOD_HELLO] = { &core_method_demarshal_hello, 0, },
-	[PW_CORE_METHOD_SYNC] = { &core_method_demarshal_sync, 0, },
-	[PW_CORE_METHOD_PONG] = { &core_method_demarshal_pong, 0, },
-	[PW_CORE_METHOD_ERROR] = { &core_method_demarshal_error, 0, },
-	[PW_CORE_METHOD_GET_REGISTRY] = { &core_method_demarshal_get_registry, 0, },
-	[PW_CORE_METHOD_CREATE_OBJECT] = { &core_method_demarshal_create_object, 0, },
-	[PW_CORE_METHOD_DESTROY] = { &core_method_demarshal_destroy, 0, }
-};
-
-static const struct pw_core_events pw_protocol_native_core_event_marshal = {
-	PW_VERSION_CORE_EVENTS,
-	.info = &core_event_marshal_info,
-	.done = &core_event_marshal_done,
-	.ping = &core_event_marshal_ping,
-	.error = &core_event_marshal_error,
-	.remove_id = &core_event_marshal_remove_id,
-	.bound_id = &core_event_marshal_bound_id,
-	.add_mem = &core_event_marshal_add_mem,
-	.remove_mem = &core_event_marshal_remove_mem,
-	.bound_props = &core_event_marshal_bound_props,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_core_event_demarshal[PW_CORE_EVENT_NUM] =
-{
-	[PW_CORE_EVENT_INFO] = { &core_event_demarshal_info, 0, },
-	[PW_CORE_EVENT_DONE] = { &core_event_demarshal_done, 0, },
-	[PW_CORE_EVENT_PING] = { &core_event_demarshal_ping, 0, },
-	[PW_CORE_EVENT_ERROR] = { &core_event_demarshal_error, 0, },
-	[PW_CORE_EVENT_REMOVE_ID] = { &core_event_demarshal_remove_id, 0, },
-	[PW_CORE_EVENT_BOUND_ID] = { &core_event_demarshal_bound_id, 0, },
-	[PW_CORE_EVENT_ADD_MEM] = { &core_event_demarshal_add_mem, 0, },
-	[PW_CORE_EVENT_REMOVE_MEM] = { &core_event_demarshal_remove_mem, 0, },
-	[PW_CORE_EVENT_BOUND_PROPS] = { &core_event_demarshal_bound_props, 0, },
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_core_marshal = {
-	PW_TYPE_INTERFACE_Core,
-	PW_VERSION_CORE,
-	0,
-	PW_CORE_METHOD_NUM,
-	PW_CORE_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_core_method_marshal,
-	.server_demarshal = pw_protocol_native_core_method_demarshal,
-	.server_marshal = &pw_protocol_native_core_event_marshal,
-	.client_demarshal = pw_protocol_native_core_event_demarshal,
-};
-```

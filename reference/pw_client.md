@@ -1,4 +1,12 @@
 # Methods
+```
+PW_CLIENT_METHOD_ADD_LISTENER		0
+PW_CLIENT_METHOD_ERROR			1
+PW_CLIENT_METHOD_UPDATE_PROPERTIES	2
+PW_CLIENT_METHOD_GET_PERMISSIONS	3
+PW_CLIENT_METHOD_UPDATE_PERMISSIONS	4
+PW_CLIENT_METHOD_NUM			5
+```
 
 ## Error
 Send an error to a client
@@ -186,6 +194,11 @@ static int client_demarshal_update_permissions(void *object, const struct pw_pro
 ```
 
 # Events
+```
+PW_CLIENT_EVENT_INFO		0
+PW_CLIENT_EVENT_PERMISSIONS	1
+PW_CLIENT_EVENT_NUM		2
+```
 
 ## Info
 Notify client info
@@ -299,49 +312,3 @@ static int client_demarshal_permissions(void *data, const struct pw_protocol_nat
 }
 ```
 
-# Other
-```c
-static const struct pw_client_methods pw_protocol_native_client_method_marshal = {
-	PW_VERSION_CLIENT_METHODS,
-	.add_listener = &client_method_marshal_add_listener,
-	.error = &client_marshal_error,
-	.update_properties = &client_marshal_update_properties,
-	.get_permissions = &client_marshal_get_permissions,
-	.update_permissions = &client_marshal_update_permissions,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_client_method_demarshal[PW_CLIENT_METHOD_NUM] =
-{
-	[PW_CLIENT_METHOD_ADD_LISTENER] = { NULL, 0, },
-	[PW_CLIENT_METHOD_ERROR] = { &client_demarshal_error, PW_PERM_W, },
-	[PW_CLIENT_METHOD_UPDATE_PROPERTIES] = { &client_demarshal_update_properties, PW_PERM_W, },
-	[PW_CLIENT_METHOD_GET_PERMISSIONS] = { &client_demarshal_get_permissions, 0, },
-	[PW_CLIENT_METHOD_UPDATE_PERMISSIONS] = { &client_demarshal_update_permissions, PW_PERM_W, },
-};
-
-static const struct pw_client_events pw_protocol_native_client_event_marshal = {
-	PW_VERSION_CLIENT_EVENTS,
-	.info = &client_marshal_info,
-	.permissions = &client_marshal_permissions,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_client_event_demarshal[PW_CLIENT_EVENT_NUM] =
-{
-	[PW_CLIENT_EVENT_INFO] = { &client_demarshal_info, 0, },
-	[PW_CLIENT_EVENT_PERMISSIONS] = { &client_demarshal_permissions, 0, }
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_client_marshal = {
-	PW_TYPE_INTERFACE_Client,
-	PW_VERSION_CLIENT,
-	0,
-	PW_CLIENT_METHOD_NUM,
-	PW_CLIENT_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_client_method_marshal,
-	.server_demarshal = pw_protocol_native_client_method_demarshal,
-	.server_marshal = &pw_protocol_native_client_event_marshal,
-	.client_demarshal = pw_protocol_native_client_event_demarshal,
-};
-```

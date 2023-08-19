@@ -1,4 +1,10 @@
 # Methods
+```
+PW_REGISTRY_METHOD_ADD_LISTENER	0
+PW_REGISTRY_METHOD_BIND		1
+PW_REGISTRY_METHOD_DESTROY	2
+PW_REGISTRY_METHOD_NUM		3
+```
 
 ## Bind
 Bind to a global object
@@ -99,6 +105,11 @@ static int registry_demarshal_destroy(void *object, const struct pw_protocol_nat
 ```
 
 # Events
+```
+PW_REGISTRY_EVENT_GLOBAL             0
+PW_REGISTRY_EVENT_GLOBAL_REMOVE      1
+PW_REGISTRY_EVENT_NUM                2
+```
 
 ## Global
 Notify of a new global object
@@ -200,45 +211,3 @@ static int registry_demarshal_global_remove(void *data, const struct pw_protocol
 }
 ```
 
-# Other
-```c
-static const struct pw_registry_methods pw_protocol_native_registry_method_marshal = {
-	PW_VERSION_REGISTRY_METHODS,
-	.add_listener = &registry_method_marshal_add_listener,
-	.bind = &registry_marshal_bind,
-	.destroy = &registry_marshal_destroy,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_registry_method_demarshal[PW_REGISTRY_METHOD_NUM] =
-{
-	[PW_REGISTRY_METHOD_ADD_LISTENER] = { NULL, 0, },
-	[PW_REGISTRY_METHOD_BIND] = { &registry_demarshal_bind, 0, },
-	[PW_REGISTRY_METHOD_DESTROY] = { &registry_demarshal_destroy, 0, },
-};
-
-static const struct pw_registry_events pw_protocol_native_registry_event_marshal = {
-	PW_VERSION_REGISTRY_EVENTS,
-	.global = &registry_marshal_global,
-	.global_remove = &registry_marshal_global_remove,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_registry_event_demarshal[PW_REGISTRY_EVENT_NUM] =
-{
-	[PW_REGISTRY_EVENT_GLOBAL] = { &registry_demarshal_global, 0, },
-	[PW_REGISTRY_EVENT_GLOBAL_REMOVE] = { &registry_demarshal_global_remove, 0, }
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_registry_marshal = {
-	PW_TYPE_INTERFACE_Registry,
-	PW_VERSION_REGISTRY,
-	0,
-	PW_REGISTRY_METHOD_NUM,
-	PW_REGISTRY_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_registry_method_marshal,
-	.server_demarshal = pw_protocol_native_registry_method_demarshal,
-	.server_marshal = &pw_protocol_native_registry_event_marshal,
-	.client_demarshal = pw_protocol_native_registry_event_demarshal,
-};
-```

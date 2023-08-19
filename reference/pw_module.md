@@ -1,6 +1,14 @@
 # Methods
+```
+PW_MODULE_METHOD_ADD_LISTENER	0
+PW_MODULE_METHOD_NUM		1
+```
 
 # Events
+```
+PW_MODULE_EVENT_INFO		0
+PW_MODULE_EVENT_NUM		1
+```
 
 ## Info
 Notify module info
@@ -56,39 +64,3 @@ static int module_demarshal_info(void *data, const struct pw_protocol_native_mes
 }
 ```
 
-# Other
-```c
-static const struct pw_module_events pw_protocol_native_module_event_marshal = {
-	PW_VERSION_MODULE_EVENTS,
-	.info = &module_marshal_info,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_module_event_demarshal[PW_MODULE_EVENT_NUM] =
-{
-	[PW_MODULE_EVENT_INFO] = { &module_demarshal_info, 0, },
-};
-
-static const struct pw_module_methods pw_protocol_native_module_method_marshal = {
-	PW_VERSION_MODULE_METHODS,
-	.add_listener = &module_method_marshal_add_listener,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_module_method_demarshal[PW_MODULE_METHOD_NUM] =
-{
-	[PW_MODULE_METHOD_ADD_LISTENER] = { NULL, 0, },
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_module_marshal = {
-	PW_TYPE_INTERFACE_Module,
-	PW_VERSION_MODULE,
-	0,
-	PW_MODULE_METHOD_NUM,
-	PW_MODULE_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_module_method_marshal,
-	.server_demarshal = pw_protocol_native_module_method_demarshal,
-	.server_marshal = &pw_protocol_native_module_event_marshal,
-	.client_demarshal = pw_protocol_native_module_event_demarshal,
-};
-```

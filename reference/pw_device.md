@@ -1,4 +1,11 @@
 # Methods
+```
+PW_DEVICE_METHOD_ADD_LISTENER		0
+PW_DEVICE_METHOD_SUBSCRIBE_PARAMS	1
+PW_DEVICE_METHOD_ENUM_PARAMS		2
+PW_DEVICE_METHOD_SET_PARAM		3
+PW_DEVICE_METHOD_NUM			4
+```
 
 ## Subscribe params
 Subscribe to parameter changes
@@ -151,6 +158,11 @@ static int device_demarshal_set_param(void *object, const struct pw_protocol_nat
 ```
 
 # Events
+```
+PW_DEVICE_EVENT_INFO	0
+PW_DEVICE_EVENT_PARAM	1
+PW_DEVICE_EVENT_NUM	2
+```
 
 ## Info
 Notify device info
@@ -254,48 +266,5 @@ static int device_demarshal_param(void *data, const struct pw_protocol_native_me
 	return pw_proxy_notify(proxy, struct pw_device_events, param, 0,
 			seq, id, index, next, param);
 }
-```
-
-# Other
-```c
-static const struct pw_device_methods pw_protocol_native_device_method_marshal = {
-	PW_VERSION_DEVICE_METHODS,
-	.add_listener = &device_method_marshal_add_listener,
-	.subscribe_params = &device_marshal_subscribe_params,
-	.enum_params = &device_marshal_enum_params,
-	.set_param = &device_marshal_set_param,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_device_method_demarshal[PW_DEVICE_METHOD_NUM] = {
-	[PW_DEVICE_METHOD_ADD_LISTENER] = { NULL, 0, },
-	[PW_DEVICE_METHOD_SUBSCRIBE_PARAMS] = { &device_demarshal_subscribe_params, 0, },
-	[PW_DEVICE_METHOD_ENUM_PARAMS] = { &device_demarshal_enum_params, 0, },
-	[PW_DEVICE_METHOD_SET_PARAM] = { &device_demarshal_set_param, PW_PERM_W, },
-};
-
-static const struct pw_device_events pw_protocol_native_device_event_marshal = {
-	PW_VERSION_DEVICE_EVENTS,
-	.info = &device_marshal_info,
-	.param = &device_marshal_param,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_device_event_demarshal[PW_DEVICE_EVENT_NUM] = {
-	[PW_DEVICE_EVENT_INFO] = { &device_demarshal_info, 0, },
-	[PW_DEVICE_EVENT_PARAM] = { &device_demarshal_param, 0, }
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_device_marshal = {
-	PW_TYPE_INTERFACE_Device,
-	PW_VERSION_DEVICE,
-	0,
-	PW_DEVICE_METHOD_NUM,
-	PW_DEVICE_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_device_method_marshal,
-	.server_demarshal = pw_protocol_native_device_method_demarshal,
-	.server_marshal = &pw_protocol_native_device_event_marshal,
-	.client_demarshal = pw_protocol_native_device_event_demarshal,
-};
 ```
 

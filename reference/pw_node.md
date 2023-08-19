@@ -1,4 +1,12 @@
 # Methods
+```
+PW_NODE_METHOD_ADD_LISTENER	0
+PW_NODE_METHOD_SUBSCRIBE_PARAMS	1
+PW_NODE_METHOD_ENUM_PARAMS	2
+PW_NODE_METHOD_SET_PARAM	3
+PW_NODE_METHOD_SEND_COMMAND	4
+PW_NODE_METHOD_NUM		5
+```
 
 ## Subscribe params
 Subscribe to parameter changes
@@ -184,6 +192,11 @@ static int node_demarshal_send_command(void *object, const struct pw_protocol_na
 ```
 
 # Events
+```
+PW_NODE_EVENT_INFO	0
+PW_NODE_EVENT_PARAM	1
+PW_NODE_EVENT_NUM	2
+```
 
 ## Info
 Notify node info
@@ -299,48 +312,3 @@ static int node_demarshal_param(void *data, const struct pw_protocol_native_mess
 }
 ```
 
-# Other
-```c
-static const struct pw_node_methods pw_protocol_native_node_method_marshal = {
-	PW_VERSION_NODE_METHODS,
-	.add_listener = &node_method_marshal_add_listener,
-	.subscribe_params = &node_marshal_subscribe_params,
-	.enum_params = &node_marshal_enum_params,
-	.set_param = &node_marshal_set_param,
-	.send_command = &node_marshal_send_command,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_node_method_demarshal[PW_NODE_METHOD_NUM] =
-{
-	[PW_NODE_METHOD_ADD_LISTENER] = { NULL, 0, },
-	[PW_NODE_METHOD_SUBSCRIBE_PARAMS] = { &node_demarshal_subscribe_params, 0, },
-	[PW_NODE_METHOD_ENUM_PARAMS] = { &node_demarshal_enum_params, 0, },
-	[PW_NODE_METHOD_SET_PARAM] = { &node_demarshal_set_param, PW_PERM_W, },
-	[PW_NODE_METHOD_SEND_COMMAND] = { &node_demarshal_send_command, PW_PERM_W, },
-};
-
-static const struct pw_node_events pw_protocol_native_node_event_marshal = {
-	PW_VERSION_NODE_EVENTS,
-	.info = &node_marshal_info,
-	.param = &node_marshal_param,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_node_event_demarshal[PW_NODE_EVENT_NUM] = {
-	[PW_NODE_EVENT_INFO] = { &node_demarshal_info, 0, },
-	[PW_NODE_EVENT_PARAM] = { &node_demarshal_param, 0, }
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_node_marshal = {
-	PW_TYPE_INTERFACE_Node,
-	PW_VERSION_NODE,
-	0,
-	PW_NODE_METHOD_NUM,
-	PW_NODE_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_node_method_marshal,
-	.server_demarshal = pw_protocol_native_node_method_demarshal,
-	.server_marshal = &pw_protocol_native_node_event_marshal,
-	.client_demarshal = pw_protocol_native_node_event_demarshal,
-};
-```

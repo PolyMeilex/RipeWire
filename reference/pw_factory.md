@@ -1,6 +1,14 @@
 # Methods
+```
+PW_FACTORY_METHOD_ADD_LISTENER	0
+PW_FACTORY_METHOD_NUM		1
+```
 
 # Events
+```
+PW_FACTORY_EVENT_INFO		0
+PW_FACTORY_EVENT_NUM		1
+```
 
 ## Info
 Notify factory info
@@ -56,40 +64,3 @@ static int factory_demarshal_info(void *data, const struct pw_protocol_native_me
 }
 ```
 
-# Other
-
-```c
-static const struct pw_factory_events pw_protocol_native_factory_event_marshal = {
-	PW_VERSION_FACTORY_EVENTS,
-	.info = &factory_marshal_info,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_factory_event_demarshal[PW_FACTORY_EVENT_NUM] =
-{
-	[PW_FACTORY_EVENT_INFO] = { &factory_demarshal_info, 0, },
-};
-
-static const struct pw_factory_methods pw_protocol_native_factory_method_marshal = {
-	PW_VERSION_FACTORY_METHODS,
-	.add_listener = &factory_method_marshal_add_listener,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_factory_method_demarshal[PW_FACTORY_METHOD_NUM] =
-{
-	[PW_FACTORY_METHOD_ADD_LISTENER] = { NULL, 0, },
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_factory_marshal = {
-	PW_TYPE_INTERFACE_Factory,
-	PW_VERSION_FACTORY,
-	0,
-	PW_FACTORY_METHOD_NUM,
-	PW_FACTORY_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_factory_method_marshal,
-	.server_demarshal = pw_protocol_native_factory_method_demarshal,
-	.server_marshal = &pw_protocol_native_factory_event_marshal,
-	.client_demarshal = pw_protocol_native_factory_event_demarshal,
-};
-```

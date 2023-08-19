@@ -1,6 +1,14 @@
 # Methods
+```
+PW_LINK_METHOD_ADD_LISTENER	0
+PW_LINK_METHOD_NUM		1
+```
 
 # Events
+```
+PW_LINK_EVENT_INFO	0
+PW_LINK_EVENT_NUM	1
+```
 
 ## Info
 Notify link info
@@ -64,39 +72,3 @@ static int link_demarshal_info(void *data, const struct pw_protocol_native_messa
 }
 ```
 
-# Other
-```c
-static const struct pw_link_methods pw_protocol_native_link_method_marshal = {
-	PW_VERSION_LINK_METHODS,
-	.add_listener = &link_method_marshal_add_listener,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_link_method_demarshal[PW_LINK_METHOD_NUM] =
-{
-	[PW_LINK_METHOD_ADD_LISTENER] = { NULL, 0, },
-};
-
-static const struct pw_link_events pw_protocol_native_link_event_marshal = {
-	PW_VERSION_LINK_EVENTS,
-	.info = &link_marshal_info,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_link_event_demarshal[PW_LINK_EVENT_NUM] =
-{
-	[PW_LINK_EVENT_INFO] = { &link_demarshal_info, 0, }
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_link_marshal = {
-	PW_TYPE_INTERFACE_Link,
-	PW_VERSION_LINK,
-	0,
-	PW_LINK_METHOD_NUM,
-	PW_LINK_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_link_method_marshal,
-	.server_demarshal = pw_protocol_native_link_method_demarshal,
-	.server_marshal = &pw_protocol_native_link_event_marshal,
-	.client_demarshal = pw_protocol_native_link_event_demarshal,
-};
-```

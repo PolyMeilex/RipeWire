@@ -1,4 +1,10 @@
 # Methods
+```
+PW_PORT_METHOD_ADD_LISTENER	0
+PW_PORT_METHOD_SUBSCRIBE_PARAMS	1
+PW_PORT_METHOD_ENUM_PARAMS	2
+PW_PORT_METHOD_NUM		3
+```
 
 ## Subscribe params
 Subscribe to parameter changes
@@ -106,6 +112,11 @@ static int port_demarshal_enum_params(void *object, const struct pw_protocol_nat
 ```
 
 # Events
+```
+PW_PORT_EVENT_INFO	0
+PW_PORT_EVENT_PARAM	1
+PW_PORT_EVENT_NUM	2
+```
 
 ## Info
 Notify port info
@@ -213,45 +224,3 @@ static int port_demarshal_param(void *data, const struct pw_protocol_native_mess
 }
 ```
 
-# Other
-```c
-static const struct pw_port_methods pw_protocol_native_port_method_marshal = {
-	PW_VERSION_PORT_METHODS,
-	.add_listener = &port_method_marshal_add_listener,
-	.subscribe_params = &port_marshal_subscribe_params,
-	.enum_params = &port_marshal_enum_params,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_port_method_demarshal[PW_PORT_METHOD_NUM] =
-{
-	[PW_PORT_METHOD_ADD_LISTENER] = { NULL, 0, },
-	[PW_PORT_METHOD_SUBSCRIBE_PARAMS] = { &port_demarshal_subscribe_params, 0, },
-	[PW_PORT_METHOD_ENUM_PARAMS] = { &port_demarshal_enum_params, 0, },
-};
-
-static const struct pw_port_events pw_protocol_native_port_event_marshal = {
-	PW_VERSION_PORT_EVENTS,
-	.info = &port_marshal_info,
-	.param = &port_marshal_param,
-};
-
-static const struct pw_protocol_native_demarshal
-pw_protocol_native_port_event_demarshal[PW_PORT_EVENT_NUM] =
-{
-	[PW_PORT_EVENT_INFO] = { &port_demarshal_info, 0, },
-	[PW_PORT_EVENT_PARAM] = { &port_demarshal_param, 0, }
-};
-
-static const struct pw_protocol_marshal pw_protocol_native_port_marshal = {
-	PW_TYPE_INTERFACE_Port,
-	PW_VERSION_PORT,
-	0,
-	PW_PORT_METHOD_NUM,
-	PW_PORT_EVENT_NUM,
-	.client_marshal = &pw_protocol_native_port_method_marshal,
-	.server_demarshal = pw_protocol_native_port_method_demarshal,
-	.server_marshal = &pw_protocol_native_port_event_marshal,
-	.client_demarshal = pw_protocol_native_port_event_demarshal,
-};
-```
