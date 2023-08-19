@@ -1,16 +1,22 @@
-#[allow(unused)]
-mod raw;
-use raw::HasOpCode;
+#![allow(unused)]
 
 use pod::serialize::{PodSerialize, PodSerializer};
 use std::io::Cursor;
 
-pub use raw::pw_client;
-pub use raw::pw_client_node;
-pub use raw::pw_core;
-pub use raw::pw_device;
-pub use raw::pw_node;
-pub use raw::pw_registry;
+pub trait HasOpCode {
+    const OPCODE: u8;
+}
+
+pub mod pw_client;
+pub mod pw_client_node;
+pub mod pw_core;
+pub mod pw_device;
+pub mod pw_factory;
+pub mod pw_link;
+pub mod pw_module;
+pub mod pw_node;
+pub mod pw_port;
+pub mod pw_registry;
 
 pub fn create_msg<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
 where
