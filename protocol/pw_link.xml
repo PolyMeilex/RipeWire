@@ -1,0 +1,25 @@
+<interface name="pw_link">
+    <method name="add_listener" unused="true" />
+
+    <!-- Events -->
+
+    <event name="info" type="struct">
+        <description>
+          Notify link info
+
+          info - info about the link
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="uint" name="output_node_id" />
+        <field type="uint" name="output_port_id" />
+        <field type="uint" name="input_node_id" />
+        <field type="uint" name="input_port_id" />
+        <field type="ulong" name="change_mask" />
+        <field type="uint" name="state" />
+        <field type="string" name="error" />
+        <field type="value" name="format" />
+        <field type="dict" name="props" />
+    </event>
+
+</interface>

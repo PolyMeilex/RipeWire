@@ -1,0 +1,21 @@
+<interface name="pw_module">
+    <method name="add_listener" unused="true" />
+
+    <!-- Events -->
+
+    <event name="info" type="struct">
+        <description>
+          Notify module info
+
+          info - info about the module
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="string" name="name" />
+        <field type="string" name="filename" />
+        <field type="string" name="args" />
+        <field type="ulong" name="change_mask" />
+        <field type="dict" name="props" />
+    </event>
+
+</interface>

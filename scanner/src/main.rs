@@ -19,6 +19,8 @@ fn main() {
     let client = gen(include_str!("../../protocol/pw_client.xml"));
     let device = gen(include_str!("../../protocol/pw_device.xml"));
     let factory = gen(include_str!("../../protocol/pw_factory.xml"));
+    let link = gen(include_str!("../../protocol/pw_link.xml"));
+    let module = gen(include_str!("../../protocol/pw_module.xml"));
     let node = gen(include_str!("../../protocol/pw_node.xml"));
     let client_node = gen(include_str!("../../protocol/pw_client_node.xml"));
     let registry = gen(include_str!("../../protocol/pw_registry.xml"));
@@ -29,6 +31,8 @@ fn main() {
         client,
         device,
         factory,
+        link,
+        module,
         node,
         client_node,
         registry,
