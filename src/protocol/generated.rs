@@ -4,34 +4,9 @@ pub trait HasOpCode {
 pub mod pw_core {
     use super::*;
     bitflags::bitflags! {
-        #[derive(Debug, Clone, Copy)]
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
         pub struct ChangeMask: u64 {
             const PROPS = 1;
-        }
-    }
-    impl<'de> pod::deserialize::PodDeserialize<'de> for ChangeMask {
-        fn deserialize(
-            deserializer: pod::deserialize::PodDeserializer<'de>,
-        ) -> Result<
-            (Self, pod::deserialize::DeserializeSuccess<'de>),
-            pod::deserialize::DeserializeError<&'de [u8]>,
-        >
-        where
-            Self: Sized,
-        {
-            struct TestVisitor;
-            impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
-                type Value = ChangeMask;
-                type ArrayElem = std::convert::Infallible;
-                fn visit_long(
-                    &self,
-                    v: i64,
-                ) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>>
-                {
-                    Ok(Self::Value::from_bits_retain(v as u64))
-                }
-            }
-            deserializer.deserialize_long(TestVisitor)
         }
     }
 
@@ -216,34 +191,9 @@ pub mod pw_core {
 pub mod pw_client {
     use super::*;
     bitflags::bitflags! {
-        #[derive(Debug, Clone, Copy)]
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
         pub struct ChangeMask: u64 {
             const PROPS = 1;
-        }
-    }
-    impl<'de> pod::deserialize::PodDeserialize<'de> for ChangeMask {
-        fn deserialize(
-            deserializer: pod::deserialize::PodDeserializer<'de>,
-        ) -> Result<
-            (Self, pod::deserialize::DeserializeSuccess<'de>),
-            pod::deserialize::DeserializeError<&'de [u8]>,
-        >
-        where
-            Self: Sized,
-        {
-            struct TestVisitor;
-            impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
-                type Value = ChangeMask;
-                type ArrayElem = std::convert::Infallible;
-                fn visit_long(
-                    &self,
-                    v: i64,
-                ) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>>
-                {
-                    Ok(Self::Value::from_bits_retain(v as u64))
-                }
-            }
-            deserializer.deserialize_long(TestVisitor)
         }
     }
 
@@ -531,37 +481,12 @@ pub mod pw_client_node {
 pub mod pw_registry {
     use super::*;
     bitflags::bitflags! {
-        #[derive(Debug, Clone, Copy)]
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
         pub struct Permission: u32 {
             const R = 0o400;
             const W = 0o200;
             const X = 0o100;
             const M = 0o010;
-        }
-    }
-    impl<'de> pod::deserialize::PodDeserialize<'de> for Permission {
-        fn deserialize(
-            deserializer: pod::deserialize::PodDeserializer<'de>,
-        ) -> Result<
-            (Self, pod::deserialize::DeserializeSuccess<'de>),
-            pod::deserialize::DeserializeError<&'de [u8]>,
-        >
-        where
-            Self: Sized,
-        {
-            struct TestVisitor;
-            impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
-                type Value = Permission;
-                type ArrayElem = std::convert::Infallible;
-                fn visit_int(
-                    &self,
-                    v: i32,
-                ) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>>
-                {
-                    Ok(Self::Value::from_bits_retain(v as u32))
-                }
-            }
-            deserializer.deserialize_int(TestVisitor)
         }
     }
 

@@ -63,7 +63,7 @@ fn gen(src: &str) -> String {
             if enu.bitfield {
                 out += "bitflags::bitflags! {\n";
                 out += &" ".repeat(4);
-                out += "#[derive(Debug, Clone, Copy)]\n";
+                out += "#[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]\n";
                 out += &" ".repeat(4);
                 out += &format!("pub struct {name}: {ty} {{\n");
 
@@ -80,8 +80,6 @@ fn gen(src: &str) -> String {
                 out += &format!("}}");
                 out += "\n}\n";
 
-                let name = Ident::new(&name, Span::call_site());
-                out += &impl_deserialize_for_bitflat(name, ty).to_string();
                 out += "\n\n";
             } else {
                 let varians = enu.entries.iter().map(|entry| {
@@ -264,60 +262,6 @@ fn pw_ty_to_rust_ty(ty: &str) -> Option<&str> {
         "fd" => "pod::utils::Fd",
         _ => return None,
     })
-}
-
-fn impl_deserialize_for_bitflat(name: Ident, ty: &str) -> TokenStream {
-    let ident = Ident::new(ty, Span::call_site());
-
-    let visit = match ty {
-        "i32" | "u32" => {
-            quote! {
-                struct TestVisitor;
-                impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
-                    type Value = #name;
-                    type ArrayElem = std::convert::Infallible;
-
-                    fn visit_int(&self, v: i32) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>> {
-                        Ok(Self::Value::from_bits_retain(v as #ident))
-                    }
-                }
-
-                deserializer.deserialize_int(TestVisitor)
-            }
-        }
-        "u64" | "i64" => {
-            quote! {
-                struct TestVisitor;
-                impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
-                    type Value = #name;
-                    type ArrayElem = std::convert::Infallible;
-
-                    fn visit_long(&self, v: i64) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>> {
-                        Ok(Self::Value::from_bits_retain(v as #ident))
-                    }
-                }
-
-                deserializer.deserialize_long(TestVisitor)
-            }
-        }
-        _ => unimplemented!("unsupported enum type: {ty}"),
-    };
-
-    quote! {
-        impl<'de> pod::deserialize::PodDeserialize<'de> for #name {
-            fn deserialize(
-                deserializer: pod::deserialize::PodDeserializer<'de>,
-            ) -> Result<
-                (Self, pod::deserialize::DeserializeSuccess<'de>),
-                pod::deserialize::DeserializeError<&'de [u8]>,
-            >
-            where
-                Self: Sized,
-            {
-                #visit
-            }
-        }
-    }
 }
 
 #[derive(Debug, Default)]

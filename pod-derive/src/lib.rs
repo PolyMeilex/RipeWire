@@ -86,6 +86,57 @@ pub fn pod_deserialize(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+#[proc_macro_derive(PodBitflagDeserialize)]
+pub fn pod_bitflag_deserialize(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+
+    let expanded = quote! {
+        impl<'de> pod::deserialize::PodDeserialize<'de> for #name {
+            fn deserialize(
+                deserializer: pod::deserialize::PodDeserializer<'de>,
+            ) -> Result<
+                (Self, pod::deserialize::DeserializeSuccess<'de>),
+                pod::deserialize::DeserializeError<&'de [u8]>,
+            >
+            where
+                Self: Sized,
+            {
+                struct TestVisitor;
+                impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
+                    type Value = #name;
+                    type ArrayElem = std::convert::Infallible;
+
+                    fn visit_int(
+                        &self,
+                        v: i32,
+                    ) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>>
+                    {
+                        Ok(Self::Value::from_bits_retain(v as _))
+                    }
+
+                    fn visit_long(
+                        &self,
+                        v: i64,
+                    ) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>>
+                    {
+                        Ok(Self::Value::from_bits_retain(v as _))
+                    }
+                }
+
+                match std::mem::size_of::<Self>() {
+                    8 => deserializer.deserialize_long(TestVisitor),
+                    4 => deserializer.deserialize_int(TestVisitor),
+                    _ => unreachable!(),
+                }
+            }
+        }
+    };
+
+    // Hand the output tokens back to the compiler
+    TokenStream::from(expanded)
+}
+
 #[proc_macro_derive(EventDeserialize)]
 pub fn event_deserialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
