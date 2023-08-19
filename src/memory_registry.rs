@@ -3,7 +3,7 @@ use std::{
     os::fd::{FromRawFd, OwnedFd, RawFd},
 };
 
-use libspa_consts::{PwMemblockFlags, SpaDataType};
+use libspa_consts::SpaDataType;
 
 use crate::protocol::pw_core;
 
@@ -13,7 +13,7 @@ pub type MemId = u32;
 pub struct Mem {
     id: u32,
     mem_type: SpaDataType,
-    flags: PwMemblockFlags,
+    flags: pw_core::MemblockFlags,
     fd: OwnedFd,
 }
 
@@ -39,7 +39,7 @@ impl MemoryRegistry {
             Mem {
                 id: add_mem.id,
                 mem_type,
-                flags: PwMemblockFlags::from_bits_retain(add_mem.flags),
+                flags: add_mem.flags,
                 fd: unsafe { OwnedFd::from_raw_fd(fd) },
             },
         );

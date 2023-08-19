@@ -17,6 +17,13 @@ pub mod pw_core {
 
     pub const OBJECT_ID: u32 = 0;
 
+    pub use generated::pw_core::{ChangeMask, MemblockFlags};
+
+    impl MemblockFlags {
+        pub const READWRITE: Self =
+            Self::from_bits_retain(Self::READABLE.bits() | Self::WRITABLE.bits());
+    }
+
     pub mod methods {
         use super::*;
         pub use generated::pw_core::methods::{

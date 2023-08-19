@@ -115,6 +115,15 @@
         <entry name="props" value="1" />
     </enum>
 
+    <enum name="memblock_flags" type="uint" bitfield="true">
+        <entry name="readable" description="memory is readable" value="1" />
+        <entry name="writable" description="memory is writable" value="2" />
+        <entry name="seal" description="seal the fd" value="4" />
+	    <entry name="map" description="mmap the fd" value="8" />
+        <entry name="dont_close" description="don't close fd" value="16" />
+        <entry name="dont_notify" description="don't notify events" value="32" />
+    </enum>
+
     <event name="info" type="struct">
         <description>
             This event is emitted when first bound to the core or when the
@@ -205,7 +214,7 @@
         <field type="uint" name="id" />
         <field type="id" name="ty" />
         <field type="fd" name="fd" />
-        <field type="uint" name="flags" />
+        <field type="memblock_flags" name="flags" />
     </event>
 
     <event name="remove_mem" type="struct">

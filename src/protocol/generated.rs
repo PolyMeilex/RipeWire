@@ -253,6 +253,18 @@ pub mod pw_core {
         }
     }
 
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+        pub struct MemblockFlags: u32 {
+            const READABLE = 1;
+            const WRITABLE = 2;
+            const SEAL = 4;
+            const MAP = 8;
+            const DONT_CLOSE = 16;
+            const DONT_NOTIFY = 32;
+        }
+    }
+
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -396,7 +408,7 @@ pub mod pw_core {
             pub id: u32,
             pub ty: pod::utils::Id,
             pub fd: pod::utils::Fd,
-            pub flags: u32,
+            pub flags: MemblockFlags,
         }
         impl HasOpCode for AddMem {
             const OPCODE: u8 = 6;
