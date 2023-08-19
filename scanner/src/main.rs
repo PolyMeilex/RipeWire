@@ -15,26 +15,28 @@ fn main() {
     }
     .to_string();
 
-    let core = gen(include_str!("../../protocol/pw_core.xml"));
     let client = gen(include_str!("../../protocol/pw_client.xml"));
+    let client_node = gen(include_str!("../../protocol/pw_client_node.xml"));
+    let core = gen(include_str!("../../protocol/pw_core.xml"));
     let device = gen(include_str!("../../protocol/pw_device.xml"));
     let factory = gen(include_str!("../../protocol/pw_factory.xml"));
     let link = gen(include_str!("../../protocol/pw_link.xml"));
     let module = gen(include_str!("../../protocol/pw_module.xml"));
     let node = gen(include_str!("../../protocol/pw_node.xml"));
-    let client_node = gen(include_str!("../../protocol/pw_client_node.xml"));
+    let port = gen(include_str!("../../protocol/pw_port.xml"));
     let registry = gen(include_str!("../../protocol/pw_registry.xml"));
 
     let full = [
         has_opcode,
-        core,
         client,
+        client_node,
+        core,
         device,
         factory,
         link,
         module,
         node,
-        client_node,
+        port,
         registry,
     ]
     .join("\n");
