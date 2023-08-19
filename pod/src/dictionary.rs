@@ -12,7 +12,7 @@ pub struct Dictionary(pub HashMap<String, String>);
 impl<I, Item> From<I> for Dictionary
 where
     Item: Into<String>,
-    I: Iterator<Item = (Item, Item)>,
+    I: IntoIterator<Item = (Item, Item)>,
 {
     fn from(value: I) -> Self {
         let mut map = HashMap::new();

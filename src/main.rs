@@ -28,37 +28,34 @@ fn properties() -> Dictionary {
 
     let pid = nix::unistd::getpid().to_string();
 
-    Dictionary::from(
-        [
-            ("log.level", "0"),
-            ("cpu.max-align", "32"),
-            ("default.clock.rate", "48000"),
-            ("default.clock.quantum", "1024"),
-            ("default.clock.min-quantum", "32"),
-            ("default.clock.max-quantum", "2048"),
-            ("default.clock.quantum-limit", "8192"),
-            ("default.video.width", "640"),
-            ("default.video.height", "480"),
-            ("default.video.rate.num", "25"),
-            ("default.video.rate.denom", "1"),
-            ("clock.power-of-two-quantum", "true"),
-            ("link.max-buffers", "64"),
-            ("mem.warn-mlock", "false"),
-            ("mem.allow-mlock", "true"),
-            ("settings.check-quantum", "false"),
-            ("settings.check-rate", "false"),
-            ("application.name", "ripewire"),
-            ("application.process.binary", "ripewire"),
-            ("application.language", "en_US.UTF-8"),
-            ("application.process.id", &pid),
-            ("application.process.user", &user.name),
-            ("application.process.host", host),
-            ("window.x11.display", ":0"),
-            ("core.version", "0.3.58"),
-            ("core.name", "pipewire-poly-185501"),
-        ]
-        .into_iter(),
-    )
+    Dictionary::from([
+        ("log.level", "0"),
+        ("cpu.max-align", "32"),
+        ("default.clock.rate", "48000"),
+        ("default.clock.quantum", "1024"),
+        ("default.clock.min-quantum", "32"),
+        ("default.clock.max-quantum", "2048"),
+        ("default.clock.quantum-limit", "8192"),
+        ("default.video.width", "640"),
+        ("default.video.height", "480"),
+        ("default.video.rate.num", "25"),
+        ("default.video.rate.denom", "1"),
+        ("clock.power-of-two-quantum", "true"),
+        ("link.max-buffers", "64"),
+        ("mem.warn-mlock", "false"),
+        ("mem.allow-mlock", "true"),
+        ("settings.check-quantum", "false"),
+        ("settings.check-rate", "false"),
+        ("application.name", "ripewire"),
+        ("application.process.binary", "ripewire"),
+        ("application.language", "en_US.UTF-8"),
+        ("application.process.id", &pid),
+        ("application.process.user", &user.name),
+        ("application.process.host", host),
+        ("window.x11.display", ":0"),
+        ("core.version", "0.3.58"),
+        ("core.name", "pipewire-poly-185501"),
+    ])
 }
 
 pub fn run_rust() {
@@ -242,15 +239,12 @@ impl State {
                         factory_name: "client-node".into(),
                         obj_type: "PipeWire:Interface:ClientNode".into(),
                         version: 3,
-                        properties: Dictionary::from(
-                            [
-                                ("application.name", "rustypipe"),
-                                ("media.type", "Midi"),
-                                ("format.dsp", "8 bit raw midi"),
-                                ("stream.is-live", "true"),
-                            ]
-                            .into_iter(),
-                        ),
+                        properties: Dictionary::from([
+                            ("application.name", "rustypipe"),
+                            ("media.type", "Midi"),
+                            ("format.dsp", "8 bit raw midi"),
+                            ("stream.is-live", "true"),
+                        ]),
                         new_id: 4,
                     });
 
@@ -348,16 +342,13 @@ impl State {
                         flags: 0,
                         rate_num: 0,
                         rate_denom: 1,
-                        items: pod::dictionary::Dictionary::from(
-                            [
-                                ("format.dsp", "8 bit raw midi"),
-                                ("port.name", "input"),
-                                ("port.id", "0"),
-                                ("port.direction", "in"),
-                                ("port.alias", "rustypipe:input"),
-                            ]
-                            .into_iter(),
-                        ),
+                        items: pod::dictionary::Dictionary::from([
+                            ("format.dsp", "8 bit raw midi"),
+                            ("port.name", "input"),
+                            ("port.id", "0"),
+                            ("port.direction", "in"),
+                            ("port.alias", "rustypipe:input"),
+                        ]),
                         params: vec![
                             (pod::utils::Id(3), 3),
                             (pod::utils::Id(6), 0),
