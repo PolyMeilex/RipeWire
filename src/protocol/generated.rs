@@ -433,6 +433,14 @@ pub mod pw_core {
 
 pub mod pw_device {
     use super::*;
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+        pub struct ChangeMask: u64 {
+            const PROPS = 1;
+            const PARAMS = 2;
+        }
+    }
+
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -477,7 +485,7 @@ pub mod pw_device {
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
         pub struct Info {
             pub id: u32,
-            pub change_mask: u64,
+            pub change_mask: ChangeMask,
             pub props: pod::dictionary::Dictionary,
             pub params: pod::pod_struct::Struct,
         }
@@ -508,6 +516,13 @@ pub mod pw_device {
 
 pub mod pw_factory {
     use super::*;
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+        pub struct ChangeMask: u64 {
+            const PROPS = 1;
+        }
+    }
+
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -525,7 +540,7 @@ pub mod pw_factory {
             pub name: String,
             pub obj_type: String,
             pub version: u32,
-            pub change_mask: u64,
+            pub change_mask: ChangeMask,
             pub props: pod::dictionary::Dictionary,
         }
         impl HasOpCode for Info {
@@ -541,6 +556,15 @@ pub mod pw_factory {
 
 pub mod pw_link {
     use super::*;
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+        pub struct ChangeMask: u64 {
+            const STATE = 1;
+            const FORMAT = 2;
+            const PROPS = 4;
+        }
+    }
+
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -559,7 +583,7 @@ pub mod pw_link {
             pub output_port_id: u32,
             pub input_node_id: u32,
             pub input_port_id: u32,
-            pub change_mask: u64,
+            pub change_mask: ChangeMask,
             pub state: u32,
             pub error: String,
             pub format: pod::Value,
@@ -578,6 +602,13 @@ pub mod pw_link {
 
 pub mod pw_module {
     use super::*;
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+        pub struct ChangeMask: u64 {
+            const PROPS = 1;
+        }
+    }
+
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -595,7 +626,7 @@ pub mod pw_module {
             pub name: String,
             pub filename: String,
             pub args: String,
-            pub change_mask: u64,
+            pub change_mask: ChangeMask,
             pub props: pod::dictionary::Dictionary,
         }
         impl HasOpCode for Info {
@@ -611,6 +642,17 @@ pub mod pw_module {
 
 pub mod pw_node {
     use super::*;
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+        pub struct ChangeMask: u64 {
+            const INPUT_PORTS = 1;
+            const OUTPUT_PORTS = 2;
+            const STATE = 4;
+            const PROPS = 8;
+            const PARAMS = 16;
+        }
+    }
+
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -665,7 +707,7 @@ pub mod pw_node {
             pub id: u32,
             pub max_input_ports: u32,
             pub max_output_ports: u32,
-            pub change_mask: u64,
+            pub change_mask: ChangeMask,
             pub n_input_ports: u32,
             pub n_output_ports: u32,
             pub state: pod::utils::Id,
@@ -700,6 +742,14 @@ pub mod pw_node {
 
 pub mod pw_port {
     use super::*;
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+        pub struct ChangeMask: u64 {
+            const PROPS = 1;
+            const PARAMS = 2;
+        }
+    }
+
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -735,7 +785,7 @@ pub mod pw_port {
         pub struct Info {
             pub id: u32,
             pub direction: u32,
-            pub change_mask: u64,
+            pub change_mask: ChangeMask,
             pub props: pod::dictionary::Dictionary,
             pub params: pod::pod_struct::Struct,
         }

@@ -3,6 +3,10 @@
 
     <!-- Events -->
 
+    <enum name="change_mask" type="ulong" bitfield="true">
+        <entry name="props" value="1" />
+    </enum>
+
     <event name="info" type="struct">
         <description>
           Notify factory info
@@ -14,7 +18,7 @@
         <field type="string" name="name" />
         <field type="string" name="obj_type" />
         <field type="uint" name="version" />
-        <field type="ulong" name="change_mask" />
+        <field type="change_mask" name="change_mask" />
         <field type="dict" name="props" />
     </event>
 

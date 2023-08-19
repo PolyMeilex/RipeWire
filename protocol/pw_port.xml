@@ -40,6 +40,11 @@
 
     <!-- Events -->
 
+    <enum name="change_mask" type="ulong" bitfield="true">
+        <entry name="props" value="1" />
+        <entry name="params" value="2" />
+    </enum>
+
     <event name="info" type="struct">
         <description>
           Notify port info
@@ -49,7 +54,7 @@
 
         <field type="uint" name="id" />
         <field type="uint" name="direction" />
-        <field type="ulong" name="change_mask" />
+        <field type="change_mask" name="change_mask" />
         <field type="dict" name="props" />
         <field type="struct" name="params" />
     </event>

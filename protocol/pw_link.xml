@@ -3,6 +3,12 @@
 
     <!-- Events -->
 
+    <enum name="change_mask" type="ulong" bitfield="true">
+        <entry name="state" value="1" />
+        <entry name="format" value="2" />
+        <entry name="props" value="4" />
+    </enum>
+
     <event name="info" type="struct">
         <description>
           Notify link info
@@ -15,7 +21,7 @@
         <field type="uint" name="output_port_id" />
         <field type="uint" name="input_node_id" />
         <field type="uint" name="input_port_id" />
-        <field type="ulong" name="change_mask" />
+        <field type="change_mask" name="change_mask" />
         <field type="uint" name="state" />
         <field type="string" name="error" />
         <field type="value" name="format" />

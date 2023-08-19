@@ -69,6 +69,14 @@
 
     <!-- Events -->
 
+    <enum name="change_mask" type="ulong" bitfield="true">
+        <entry name="input_ports" value="1" />
+        <entry name="output_ports" value="2" />
+        <entry name="state" value="4" />
+        <entry name="props" value="8" />
+        <entry name="params" value="16" />
+    </enum>
+
     <event name="info" type="struct">
         <description>
           Notify node info
@@ -79,7 +87,7 @@
         <field type="uint" name="id" />
         <field type="uint" name="max_input_ports" />
         <field type="uint" name="max_output_ports" />
-        <field type="ulong" name="change_mask" />
+        <field type="change_mask" name="change_mask" />
         <field type="uint" name="n_input_ports" />
         <field type="uint" name="n_output_ports" />
         <field type="id" name="state" />
