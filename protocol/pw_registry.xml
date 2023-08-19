@@ -1,5 +1,15 @@
 <interface name="pw_registry">
     <method name="bind" type="struct">
+        <description>
+          Bind to a global object
+
+          Bind to the global object with \a id and use the client proxy with new_id as the proxy. After this call, methods can be send to the remote global object and events can be received
+
+          id - the global id to bind to 
+          type - the interface type to bind to 
+          version - the interface version to use 
+        </description>
+
         <field type="uint" name="id" />
         <field type="string" name="obj_type" />
         <field type="uint" name="version" />
@@ -7,12 +17,34 @@
     </method>
 
     <method name="destroy" type="struct">
+        <description>
+          Attempt to destroy a global object
+
+          Try to destroy the global object.
+
+          id - the global id to destroy. 
+
+          The client needs X permissions on the global.
+        </description>
+
         <field type="uint" name="id" />
     </method>
 
     <!-- Events -->
 
     <event name="global" type="struct">
+        <description>
+          Notify of a new global object
+
+          The registry emits this event when a new global object is available.
+
+          id - the global object id 
+          permissions - the permissions of the object 
+          type - the type of the interface 
+          version - the version of the interface 
+          props - extra properties of the global
+        </description>
+
         <field type="uint" name="id" />
         <field type="permission_flags" name="permissions" />
         <field type="string" name="obj_type" />
@@ -21,6 +53,15 @@
     </event>
 
     <event name="global_remove" type="struct">
+        <description>
+          Notify of a global object removal
+
+          Emitted when a global object was removed from the registry.
+          If the client has any bindings to the global, it should destroy those.
+
+          id - the id of the global that was removed
+        </description>
+
         <field type="uint" name="id" />
     </event>
 

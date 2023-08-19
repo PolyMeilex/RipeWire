@@ -599,6 +599,7 @@ pub mod pw_registry {
     use super::*;
     pub mod methods {
         use super::*;
+        #[doc = "Bind to a global object\n\nBind to the global object with \\a id and use the client proxy with new_id as the proxy. After this call, methods can be send to the remote global object and events can be received\n\nid - the global id to bind to\ntype - the interface type to bind to\nversion - the interface version to use"]
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
         pub struct Bind {
             pub id: u32,
@@ -609,6 +610,7 @@ pub mod pw_registry {
         impl HasOpCode for Bind {
             const OPCODE: u8 = 0;
         }
+        #[doc = "Attempt to destroy a global object\n\nTry to destroy the global object.\n\nid - the global id to destroy.\n\nThe client needs X permissions on the global."]
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
         pub struct Destroy {
             pub id: u32,
@@ -619,6 +621,7 @@ pub mod pw_registry {
     }
     pub mod events {
         use super::*;
+        #[doc = "Notify of a new global object\n\nThe registry emits this event when a new global object is available.\n\nid - the global object id\npermissions - the permissions of the object\ntype - the type of the interface\nversion - the version of the interface\nprops - extra properties of the global"]
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
         pub struct Global {
             pub id: u32,
@@ -630,6 +633,7 @@ pub mod pw_registry {
         impl HasOpCode for Global {
             const OPCODE: u8 = 0;
         }
+        #[doc = "Notify of a global object removal\n\nEmitted when a global object was removed from the registry.\nIf the client has any bindings to the global, it should destroy those.\n\nid - the id of the global that was removed"]
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
         pub struct GlobalRemove {
             pub id: u32,
@@ -640,7 +644,9 @@ pub mod pw_registry {
     }
     #[derive(Debug, Clone, pod_derive :: EventDeserialize)]
     pub enum Event {
+        #[doc = "Notify of a new global object\n\nThe registry emits this event when a new global object is available.\n\nid - the global object id\npermissions - the permissions of the object\ntype - the type of the interface\nversion - the version of the interface\nprops - extra properties of the global"]
         Global(events::Global),
+        #[doc = "Notify of a global object removal\n\nEmitted when a global object was removed from the registry.\nIf the client has any bindings to the global, it should destroy those.\n\nid - the id of the global that was removed"]
         GlobalRemove(events::GlobalRemove),
     }
 }
