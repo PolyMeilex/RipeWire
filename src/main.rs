@@ -348,13 +348,16 @@ impl State {
                         flags: 0,
                         rate_num: 0,
                         rate_denom: 1,
-                        items: vec![
-                            ("format.dsp".into(), "8 bit raw midi".into()),
-                            ("port.name".into(), "input".into()),
-                            ("port.id".into(), "0".into()),
-                            ("port.direction".into(), "in".into()),
-                            ("port.alias".into(), "rustypipe:input".into()),
-                        ],
+                        items: pod::dictionary::Dictionary::from(
+                            [
+                                ("format.dsp", "8 bit raw midi"),
+                                ("port.name", "input"),
+                                ("port.id", "0"),
+                                ("port.direction", "in"),
+                                ("port.alias", "rustypipe:input"),
+                            ]
+                            .into_iter(),
+                        ),
                         params: vec![
                             (pod::utils::Id(3), 3),
                             (pod::utils::Id(6), 0),

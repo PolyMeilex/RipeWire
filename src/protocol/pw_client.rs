@@ -71,8 +71,9 @@ pub mod methods {
         fn serialize<O: std::io::Write + std::io::Seek>(
             &self,
             serializer: pod::serialize::PodSerializer<O>,
+            flatten: bool,
         ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            self.0.serialize(serializer)
+            self.0.serialize(serializer, flatten)
         }
     }
 

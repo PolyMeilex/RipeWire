@@ -15,6 +15,7 @@ where
     fn serialize<O: std::io::Write + std::io::Seek>(
         &self,
         serializer: pod::serialize::PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
         let mut s = serializer.serialize_array(self.0.len() as u32)?;
         for e in self.0.iter() {

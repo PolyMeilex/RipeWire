@@ -111,6 +111,7 @@ pub trait PodSerialize {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError>;
 }
 
@@ -119,6 +120,7 @@ impl PodSerialize for str {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialize_string(self)
     }
@@ -129,6 +131,7 @@ impl PodSerialize for [u8] {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialize_bytes(self)
     }
@@ -139,6 +142,7 @@ impl PodSerialize for Value {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         /// Helper function that fully serializes an array containing FixedSizedPod elements.
         fn serialize_array<E: FixedSizedPod, O: Write + Seek>(
@@ -178,7 +182,7 @@ impl PodSerialize for Value {
                 ValueArray::Fd(arr) => serialize_array(arr, serializer),
             },
             Value::Struct(array) => {
-                let mut struct_serializer = serializer.serialize_struct()?;
+                let mut struct_serializer = serializer.serialize_struct(flatten)?;
                 for elem in array.iter() {
                     struct_serializer.serialize_field(elem)?;
                 }
@@ -210,6 +214,7 @@ impl<P: FixedSizedPod> PodSerialize for [P] {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         let mut arr_serializer = serializer.serialize_array(
             self.len()
@@ -229,6 +234,7 @@ impl<T> PodSerialize for (u32, *const T) {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialize_pointer(self.0, self.1)
     }
@@ -270,7 +276,7 @@ impl<O: Write + Seek> PodSerializer<O> {
     {
         let serializer = Self { out: Some(out) };
 
-        pod.serialize(serializer).map(|success| {
+        pod.serialize(serializer, false).map(|success| {
             (
                 success
                     .serializer
@@ -385,21 +391,28 @@ impl<O: Write + Seek> PodSerializer<O> {
     }
 
     /// Begin serializing a `Struct` pod.
-    pub fn serialize_struct(mut self) -> Result<StructPodSerializer<O>, GenError> {
-        let header_position = self
-            .out
-            .as_mut()
-            .expect("PodSerializer does not contain a writer")
-            .stream_position()
-            .expect("Could not get current position in writer");
+    pub fn serialize_struct(mut self, flatten: bool) -> Result<StructPodSerializer<O>, GenError> {
+        let header_position = if !flatten {
+            let header_position = self
+                .out
+                .as_mut()
+                .expect("PodSerializer does not contain a writer")
+                .stream_position()
+                .expect("Could not get current position in writer");
 
-        // Write a size of 0 for now, this will be updated when calling `StructPodSerializer.end()`.
-        self.gen(Self::header(0, spa_sys::SPA_TYPE_Struct))?;
+            // Write a size of 0 for now, this will be updated when calling `StructPodSerializer.end()`.
+            self.gen(Self::header(0, spa_sys::SPA_TYPE_Struct))?;
+
+            header_position
+        } else {
+            0
+        };
 
         Ok(StructPodSerializer {
             serializer: Some(self),
             header_position,
             written: 0,
+            flatten,
         })
     }
 
@@ -583,6 +596,7 @@ pub struct StructPodSerializer<O: Write + Seek> {
     /// The position to seek to when modifying header.
     header_position: u64,
     written: usize,
+    flatten: bool,
 }
 
 impl<O: Write + Seek> StructPodSerializer<O> {
@@ -597,6 +611,25 @@ impl<O: Write + Seek> StructPodSerializer<O> {
             self.serializer
                 .take()
                 .expect("StructSerializer does not contain a serializer"),
+            false,
+        )?;
+        self.written += success.len as usize;
+        self.serializer = Some(success.serializer);
+        Ok(success.len)
+    }
+
+    /// Serialize a multiple field of the struct.
+    ///
+    /// Returns the amount of bytes written for this field.
+    pub fn serialize_flattened<P>(&mut self, field: &P) -> Result<u64, GenError>
+    where
+        P: PodSerialize + ?Sized,
+    {
+        let success = field.serialize(
+            self.serializer
+                .take()
+                .expect("StructSerializer does not contain a serializer"),
+            true,
         )?;
         self.written += success.len as usize;
         self.serializer = Some(success.serializer);
@@ -609,33 +642,36 @@ impl<O: Write + Seek> StructPodSerializer<O> {
             .serializer
             .expect("StructSerializer does not contain a serializer");
 
-        // Seek to header position, write header with updates size, seek back.
-        serializer
-            .out
-            .as_mut()
-            .expect("Serializer does not contain a writer")
-            .seek(SeekFrom::Start(self.header_position))
-            .expect("Failed to seek to header position");
+        let len = if !self.flatten {
+            // Seek to header position, write header with updates size, seek back.
+            serializer
+                .out
+                .as_mut()
+                .expect("Serializer does not contain a writer")
+                .seek(SeekFrom::Start(self.header_position))
+                .expect("Failed to seek to header position");
 
-        serializer.gen(PodSerializer::header(
-            self.written,
-            spa_sys::SPA_TYPE_Struct,
-        ))?;
+            serializer.gen(PodSerializer::header(
+                self.written,
+                spa_sys::SPA_TYPE_Struct,
+            ))?;
 
-        serializer
-            .out
-            .as_mut()
-            .expect("Serializer does not contain a writer")
-            .seek(SeekFrom::End(0))
-            .expect("Failed to seek to end");
+            serializer
+                .out
+                .as_mut()
+                .expect("Serializer does not contain a writer")
+                .seek(SeekFrom::End(0))
+                .expect("Failed to seek to end");
+
+            self.written as u64 + 8
+        } else {
+            self.written as u64
+        };
 
         // No padding needed: Last field will already end aligned.
 
         // Return full length of written pod.
-        Ok(SerializeSuccess {
-            serializer,
-            len: self.written as u64 + 8,
-        })
+        Ok(SerializeSuccess { serializer, len })
     }
 }
 
@@ -676,7 +712,7 @@ impl<O: Write + Seek> ObjectPodSerializer<O> {
             .expect("ObjectPodSerializer does not contain a serializer");
 
         serializer.gen(pair(ne_u32(key), ne_u32(flags.bits())))?;
-        let mut success = value.serialize(serializer)?;
+        let mut success = value.serialize(serializer, false)?;
         success.len += 8; // add the key and flags len
 
         self.written += success.len as usize;
@@ -726,6 +762,7 @@ impl<T: CanonicalFixedSizedPod + FixedSizedPod> PodSerialize for Choice<T> {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialize_choice(self)
     }

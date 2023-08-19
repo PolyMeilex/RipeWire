@@ -322,6 +322,7 @@ impl<T: FixedSizedPod> PodSerialize for T {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<serialize::SerializeSuccess<O>, GenError> {
         serializer.serialized_fixed_sized_pod(self)
     }
@@ -787,6 +788,7 @@ impl PodSerialize for u32 {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialized_fixed_sized_pod(&(*self as i32))
     }
@@ -812,6 +814,7 @@ impl PodSerialize for u64 {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialized_fixed_sized_pod(&(*self as i64))
     }
@@ -821,6 +824,7 @@ impl PodSerialize for String {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
+        _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialize_string(self)
     }

@@ -51,7 +51,7 @@ pub mod methods {
         /// Updated rate denominator, when info.change_mask has (1<<1)
         pub rate_denom: u32,
         /// Updated properties, valid when info.change_mask has (1<<2)
-        pub items: Vec<(String, String)>,
+        pub items: pod::dictionary::Dictionary,
         /// Updated struct spa_param_info, valid when info.change_mask has (1<<3)
         pub params: Vec<(pod::utils::Id, u32)>,
     }
@@ -59,21 +59,17 @@ pub mod methods {
     impl pod::serialize::PodSerialize for PortInfo {
         fn serialize<O: std::io::Write + std::io::Seek>(
             &self,
-            serializer: pod::serialize::PodSerializer<O>,
+            mut serializer: pod::serialize::PodSerializer<O>,
+            flatten: bool,
         ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            let mut s = serializer.serialize_struct()?;
+            let mut s = serializer.serialize_struct(flatten)?;
 
             s.serialize_field(&self.change_mask)?;
             s.serialize_field(&self.flags)?;
             s.serialize_field(&self.rate_num)?;
             s.serialize_field(&self.rate_denom)?;
 
-            s.serialize_field(&(self.items.len() as i32))?;
-
-            for (key, value) in self.items.iter() {
-                s.serialize_field(key)?;
-                s.serialize_field(value)?;
-            }
+            s.serialize_flattened(&self.items)?;
 
             s.serialize_field(&(self.params.len() as i32))?;
 
@@ -108,8 +104,9 @@ pub mod methods {
         fn serialize<O: std::io::Write + std::io::Seek>(
             &self,
             serializer: pod::serialize::PodSerializer<O>,
+            flatten: bool,
         ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            let mut s = serializer.serialize_struct()?;
+            let mut s = serializer.serialize_struct(flatten)?;
             s.serialize_field(&self.direction)?;
             s.serialize_field(&self.port_id)?;
             s.serialize_field(&self.change_mask)?;

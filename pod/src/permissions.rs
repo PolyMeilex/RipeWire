@@ -37,8 +37,9 @@ impl PodSerialize for Permissions {
     fn serialize<O: std::io::Write + std::io::Seek>(
         &self,
         serializer: pod::serialize::PodSerializer<O>,
+        flatten: bool,
     ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-        let mut s = serializer.serialize_struct()?;
+        let mut s = serializer.serialize_struct(flatten)?;
 
         s.serialize_field(&(self.0.len() as i32))?;
 

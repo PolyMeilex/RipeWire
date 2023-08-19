@@ -21,8 +21,9 @@ pub fn pod_serialize(input: TokenStream) -> TokenStream {
             fn serialize<O: std::io::Write + std::io::Seek>(
                 &self,
                 serializer: pod::serialize::PodSerializer<O>,
+                flatten: bool,
             ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-                let mut s = serializer.serialize_struct()?;
+                let mut s = serializer.serialize_struct(flatten)?;
                 #(#out)*
                 s.end()
             }
