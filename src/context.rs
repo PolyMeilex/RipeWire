@@ -9,7 +9,7 @@ use crate::{
     connection::{Connection, Message},
     memory_registry::MemoryRegistry,
     object_map::{Object, ObjectMap},
-    protocol::pw_core,
+    protocol::{pw_client, pw_core},
     proxy::{ObjectId, PwClient, PwCore},
 };
 
@@ -48,11 +48,11 @@ impl Context {
     }
 
     pub fn core(&self) -> PwCore {
-        PwCore::new(0, self)
+        PwCore::new(pw_core::OBJECT_ID, self)
     }
 
     pub fn client(&self) -> PwClient {
-        PwClient::new(1, self)
+        PwClient::new(pw_client::OBJECT_ID, self)
     }
 
     pub fn new_object(&self) -> ObjectId {

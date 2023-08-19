@@ -130,15 +130,10 @@ pub mod pw_device {
         }
     }
 
-    pub use event::Event;
+    pub use generated::pw_device::Event;
     pub mod event {
         use super::*;
-
-        #[derive(Debug, Clone, pod_derive::EventDeserialize)]
-        pub enum Event {
-            Info(Value),
-            Param(Value),
-        }
+        pub use generated::pw_device::events::*;
     }
 }
 

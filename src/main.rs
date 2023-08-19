@@ -101,45 +101,30 @@ pub fn run_rust() {
                 for msg in messages {
                     let device = state.device.as_ref().map(|obj| obj.id().protocol_id());
                     let client_node = state.client_node.as_ref().map(|obj| obj.id().protocol_id());
-
                     match msg.header.object_id {
-                        protocol::pw_core::OBJECT_ID => {
+                        id if id == state.context.core().id().protocol_id() => {
                             let event = pw_core::Event::from(msg.header.opcode, &msg.body).unwrap();
-
-                            // dbg!(&event);
                             state.core_event(msg.header.object_id, event, &fds);
                         }
-                        protocol::pw_client::OBJECT_ID => {
-                            let client =
+                        id if id == state.context.client().id().protocol_id() || id == 3 => {
+                            let event =
                                 pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
-
-                            dbg!(&client);
-                            state.client_event(msg.header.object_id, client);
+                            state.client_event(msg.header.object_id, event);
                         }
                         id if id == state.registry.id().protocol_id() => {
                             let event =
                                 pw_registry::Event::from(msg.header.opcode, &msg.body).unwrap();
-
-                            // dbg!(&event);
                             state.registry_event(msg.header.object_id, event);
                         }
                         id if device == Some(id) => {
-                            let device =
+                            let event =
                                 pw_device::Event::from(msg.header.opcode, &msg.body).unwrap();
-
-                            // dbg!(&device);
-                            state.device_event(msg.header.object_id, device);
+                            state.device_event(msg.header.object_id, event);
                         }
                         id if client_node == Some(id) => {
                             let client_node =
                                 pw_client_node::Event::from(msg.header.opcode, &msg.body).unwrap();
                             dbg!(client_node);
-                        }
-                        3 => {
-                            let client =
-                                pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
-
-                            dbg!(&client);
                         }
                         _ => {
                             unimplemented!("{:?}", msg.header);
@@ -171,9 +156,9 @@ struct State {
 }
 
 impl State {
-    pub fn core_event(&mut self, _object_id: u32, event: pw_core::Event, fds: &[RawFd]) {
-        dbg!(&event);
-        match event {
+    pub fn core_event(&mut self, _object_id: u32, core_event: pw_core::Event, fds: &[RawFd]) {
+        dbg!(&core_event);
+        match core_event {
             pw_core::Event::Done(done) => {
                 if done.id == 0 && done.seq == 0 {
                     self.done();
@@ -195,15 +180,18 @@ impl State {
         }
     }
 
-    pub fn client_event(&mut self, _object_id: u32, _event: pw_client::Event) {
-        //
+    pub fn client_event(&mut self, _object_id: u32, client_event: pw_client::Event) {
+        dbg!(&client_event);
     }
 
-    pub fn registry_event(&mut self, _object_id: u32, event: pw_registry::Event) {
-        self.globals.handle_event(&event);
+    pub fn registry_event(&mut self, _object_id: u32, registry_event: pw_registry::Event) {
+        dbg!(&registry_event);
+        self.globals.handle_event(&registry_event);
     }
 
-    pub fn device_event(&mut self, _object_id: u32, _event: pw_device::Event) {}
+    pub fn device_event(&mut self, _object_id: u32, device_event: pw_device::Event) {
+        dbg!(&device_event);
+    }
 
     pub fn done(&mut self) {
         let client = self
@@ -218,7 +206,7 @@ impl State {
             global.obj_type == "PipeWire:Interface:Device"
                 && matches!(
                     global.properties.0.get("device.name").map(|s| s.as_str()),
-                    Some("alsa_card.pci-0000_03_00.6")
+                    Some("alsa_card.pci-0000_0b_00.6")
                 )
         });
 
@@ -233,17 +221,17 @@ impl State {
             client.get_permissions(pw_client::methods::GetPermissions { index: 0, num: 50 });
         }
 
-        if let Some(_global) = device {
-            // let device = self.registry.bind::<PwDevice>(pw_registry::methods::Bind {
-            //     id: global.id,
-            //     obj_type: global.obj_type.clone(),
-            //     version: global.version,
-            //     new_id: 3,
-            // });
+        if let Some(global) = device {
+            let device = self.registry.bind::<PwDevice>(pw_registry::methods::Bind {
+                id: global.id,
+                obj_type: global.obj_type.clone(),
+                version: global.version,
+                new_id: 4,
+            });
 
-            // device.set_mute(false);
+            device.set_mute(4, 4, false);
 
-            // self.device = Some(device);
+            self.device = Some(device);
         }
 
         {
