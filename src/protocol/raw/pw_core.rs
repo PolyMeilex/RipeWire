@@ -1,5 +1,7 @@
 use super::HasOpCode;
 
+pub const OBJECT_ID: u32 = 0;
+
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
     pub struct ChangeMask: u64 {
@@ -16,6 +18,8 @@ bitflags::bitflags! {
         const MAP = 8;
         const DONT_CLOSE = 16;
         const DONT_NOTIFY = 32;
+
+        const READWRITE = Self::READABLE.bits() | Self::WRITABLE.bits();
     }
 }
 

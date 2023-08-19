@@ -4,6 +4,8 @@
 
 use super::HasOpCode;
 
+pub const OBJECT_ID: u32 = 1;
+
 pub mod methods {
     use super::*;
 

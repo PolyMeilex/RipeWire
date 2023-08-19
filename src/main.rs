@@ -303,7 +303,7 @@ impl State {
             {
                 use Value::*;
 
-                let body = protocol::pw_client_node::event::PortUpdate {
+                let body = protocol::pw_client_node::methods::PortUpdate {
                     direction: 0,
                     port_id: 0,
                     change_mask: 3,
@@ -343,7 +343,7 @@ impl State {
                             ],
                         }),
                     ],
-                    info: Some(protocol::pw_client_node::event::PortUpdateInfo {
+                    info: Some(protocol::pw_client_node::methods::PortInfo {
                         change_mask: 15,
                         flags: 0,
                         rate_num: 0,
