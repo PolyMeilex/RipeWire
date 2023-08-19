@@ -58,7 +58,7 @@ fn gen(src: &str) -> String {
 
         for enu in interface.enums.iter() {
             let name = enu.name.to_upper_camel_case();
-            let ty = pw_ty_to_rust_ty(&enu.ty).expect("Unknown Type");
+            let ty = pw_ty_to_rust_ty(&enu.ty).expect("Unknown Type").to_string();
 
             if enu.bitfield {
                 out += "bitflags::bitflags! {\n";
@@ -144,7 +144,7 @@ fn gen(src: &str) -> String {
                     let fields = method.fields.iter().map(|field| {
                         let name = Ident::new(&field.name, Span::call_site());
 
-                        let ty = if let Some(ty) = pw_ty_to_rust_ty_quote(&field.ty) {
+                        let ty = if let Some(ty) = pw_ty_to_rust_ty(&field.ty) {
                             ty
                         } else {
                             let ty = field.ty.to_upper_camel_case();
@@ -195,7 +195,7 @@ fn gen(src: &str) -> String {
                 .map(|field| {
                     let name = Ident::new(&field.name, Span::call_site());
 
-                    let ty = if let Some(ty) = pw_ty_to_rust_ty_quote(&field.ty) {
+                    let ty = if let Some(ty) = pw_ty_to_rust_ty(&field.ty) {
                         ty
                     } else {
                         let ty = field.ty.to_upper_camel_case();
@@ -255,7 +255,7 @@ fn gen(src: &str) -> String {
     out
 }
 
-fn pw_ty_to_rust_ty_quote(ty: &str) -> Option<TokenStream> {
+fn pw_ty_to_rust_ty(ty: &str) -> Option<TokenStream> {
     Some(match ty {
         "bool" => quote!(bool),
         "int" => quote!(i32),
@@ -278,32 +278,11 @@ fn pw_ty_to_rust_ty_quote(ty: &str) -> Option<TokenStream> {
                     .strip_suffix(")")
                     .unwrap();
 
-                let ty = pw_ty_to_rust_ty_quote(ty).unwrap();
+                let ty = pw_ty_to_rust_ty(ty).expect("Unknown Type");
                 quote!(pod::array::Array<#ty>)
             } else {
                 return None;
             }
-        }
-    })
-}
-
-fn pw_ty_to_rust_ty(ty: &str) -> Option<&str> {
-    Some(match ty {
-        "bool" => "bool",
-        "int" => "i32",
-        "long" => "i64",
-        "uint" => "u32",
-        "ulong" => "u64",
-        "string" => "String",
-        "dict" => "pod::dictionary::Dictionary",
-        "struct" => "pod::pod_struct::Struct",
-        "permission_list" => "pod::permissions::Permissions",
-        "permission_flags" => "pod::permissions::PermissionFlags",
-        "value" => "pod::Value",
-        "id" => "pod::utils::Id",
-        "fd" => "pod::utils::Fd",
-        _ => {
-            return None;
         }
     })
 }
