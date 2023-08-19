@@ -12,16 +12,9 @@
 
     <!-- Events -->
 
-    <enum name="permission" type="uint" bitfield="true">
-        <entry name="r" value="0o400" />
-        <entry name="w" value="0o200" />
-        <entry name="x" value="0o100" />
-        <entry name="m" value="0o010" />
-    </enum>
-
     <event name="global" type="struct">
         <field type="uint" name="id" />
-        <field type="permission" name="permissions" />
+        <field type="permission_flags" name="permissions" />
         <field type="string" name="obj_type" />
         <field type="uint" name="version" />
         <field type="dict" name="properties" />

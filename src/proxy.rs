@@ -123,6 +123,23 @@ impl PwClient {
                 .unwrap();
         }
     }
+
+    pub fn get_permissions(self, data: pw_client::methods::GetPermissions) {
+        if let Some(context) = self.context.upgrade() {
+            context
+                .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
+                .unwrap();
+        }
+    }
+}
+
+impl Proxy for PwClient {
+    fn from_id(object_id: ObjectId, context: &Context) -> Self {
+        Self {
+            object_id,
+            context: context.downgrade(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

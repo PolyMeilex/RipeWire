@@ -5,7 +5,9 @@
 //! [libspa](https://gitlab.freedesktop.org/pipewire/pipewire/-/tree/master/doc/spa).
 
 pub mod dictionary;
+pub mod permissions;
 pub mod pod;
+pub mod pod_struct;
 pub mod utils;
 
 pub use pod::*;

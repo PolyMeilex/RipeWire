@@ -2,28 +2,97 @@
     <method name="add_listener" unused="true" />
 
     <method name="error" type="struct">
+        <description>
+          Send an error to a client
+
+          id - the global id to report the error on
+          ram - res an errno style error code
+          message - an error string
+
+          This requires W and X permissions on the client.
+        </description>
+
         <field type="uint" name="id" />
         <field type="uint" name="res" />
         <field type="string" name="error" />
     </method>
 
     <method name="update_properties" type="struct">
+        <description>
+          Update client properties
+
+          props - new properties
+
+          This requires W and X permissions on the client.
+        </description>
+
         <field type="dict" name="properties" />
     </method>
+
+    <method name="get_permissions" type="struct">
+        <description>
+          Get client permissions
+
+          A permissions event will be emitted with the permissions.
+
+          index - the first index to query, 0 for first
+          num - the maximum number of items to get
+
+          This requires W and X permissions on the client.
+        </description>
+
+        <field type="uint" name="index" />
+        <field type="uint" name="num" />
+    </method>
+
+    <method name="update_permissions" type="permission_list">
+        <description>
+          Manage the permissions of the global objects for this client
+
+          Update the permissions of the global objects using the provided array with permissions
+
+          Globals can use the default permissions or can have specific permissions assigned to them.
+
+          n_permissions - number of permissions
+          permissions - array of permissions
+
+          This requires W and X permissions on the client.
+        </description>
+    </method>
+
 
     <!-- Events -->
 
     <enum name="change_mask" type="ulong" bitfield="true">
-      <entry name="props" value="1" />
+        <entry name="props" value="1" />
     </enum>
 
     <event name="info" type="struct">
+        <description>
+          Notify client info
+
+          info - info about the client
+        </description>
+
         <field type="uint" name="id" />
         <field type="change_mask" name="change_mask" />
         <field type="dict" name="properties" />
     </event>
 
     <event name="permissions" type="struct">
+        <description>
+          Notify a client permission
+
+          Event emitted as a result of the get_permissions method.
+
+          default_permissions - the default permissions 
+          index - the index of the first permission entry 
+          n_permissions - the number of permissions 
+          permissions - the permissions
+        </description>
+
+        <field type="uint" name="index" />
+        <field type="permission_list" name="permissions" />
     </event>
 
 </interface>

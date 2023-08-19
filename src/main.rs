@@ -9,7 +9,7 @@ mod connection;
 mod global_list;
 use global_list::GlobalList;
 use protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_registry};
-use proxy::{PwClientNode, PwDevice, PwRegistry};
+use proxy::{PwClient, PwClientNode, PwDevice, PwRegistry};
 
 pub mod context;
 pub mod memory_registry;
@@ -135,6 +135,12 @@ pub fn run_rust() {
                                 pw_client_node::Event::from(msg.header.opcode, &msg.body).unwrap();
                             dbg!(client_node);
                         }
+                        3 => {
+                            let client =
+                                pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
+
+                            dbg!(&client);
+                        }
                         _ => {
                             unimplemented!("{:?}", msg.header);
                             // let value = PodDeserializer::deserialize_from(&msg.body).unwrap().1;
@@ -200,6 +206,14 @@ impl State {
     pub fn device_event(&mut self, _object_id: u32, _event: pw_device::Event) {}
 
     pub fn done(&mut self) {
+        let client = self
+            .globals
+            .globals
+            .iter()
+            .filter(|global| global.obj_type == "PipeWire:Interface:Client")
+            .skip(1)
+            .next();
+
         let device = self.globals.globals.iter().find(|global| {
             global.obj_type == "PipeWire:Interface:Device"
                 && matches!(
@@ -207,6 +221,17 @@ impl State {
                     Some("alsa_card.pci-0000_03_00.6")
                 )
         });
+
+        if let Some(global) = client {
+            let client = self.registry.bind::<PwClient>(pw_registry::methods::Bind {
+                id: global.id,
+                obj_type: global.obj_type.clone(),
+                version: global.version,
+                new_id: 3,
+            });
+
+            client.get_permissions(pw_client::methods::GetPermissions { index: 0, num: 50 });
+        }
 
         if let Some(_global) = device {
             // let device = self.registry.bind::<PwDevice>(pw_registry::methods::Bind {

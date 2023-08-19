@@ -83,7 +83,9 @@ pub mod pw_client {
 
     pub mod methods {
         use super::*;
-        pub use generated::pw_client::methods::{Error, UpdateProperties};
+        pub use generated::pw_client::methods::{
+            Error, GetPermissions, UpdatePermissions, UpdateProperties,
+        };
 
         impl Error {
             pub fn to_msg(&self) -> Vec<u8> {
@@ -98,17 +100,11 @@ pub mod pw_client {
         }
     }
 
-    pub use event::Event;
+    // pub use event::Event;
+    pub use generated::pw_client::Event;
     pub mod event {
         use super::*;
-        use generated::pw_client::events::Info;
-
-        #[derive(Debug, Clone, pod_derive::EventDeserialize)]
-        pub enum Event {
-            Info(Info),
-            // Info(Value),
-            Permissions(Value),
-        }
+        pub use generated::pw_client::events::*;
     }
 }
 

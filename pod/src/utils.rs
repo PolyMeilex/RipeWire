@@ -22,6 +22,7 @@ pub struct Choice<T: CanonicalFixedSizedPod>(pub ChoiceFlags, pub ChoiceEnum<T>)
 
 bitflags! {
     /// [`Choice`] flags
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct ChoiceFlags: u32 {
         // no flags defined yet but we need at least one to keep bitflags! happy
         #[doc(hidden)]

@@ -204,6 +204,7 @@ pub mod pw_client {
         impl HasOpCode for AddListener {
             const OPCODE: u8 = 0;
         }
+        #[doc = "Send an error to a client\n\nid - the global id to report the error on\nram - res an errno style error code\nmessage - an error string\n\nThis requires W and X permissions on the client."]
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
         pub struct Error {
             pub id: u32,
@@ -213,6 +214,7 @@ pub mod pw_client {
         impl HasOpCode for Error {
             const OPCODE: u8 = 1;
         }
+        #[doc = "Update client properties\n\nprops - new properties\n\nThis requires W and X permissions on the client."]
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
         pub struct UpdateProperties {
             pub properties: pod::dictionary::Dictionary,
@@ -220,9 +222,33 @@ pub mod pw_client {
         impl HasOpCode for UpdateProperties {
             const OPCODE: u8 = 2;
         }
+        #[doc = "Get client permissions\n\nA permissions event will be emitted with the permissions.\n\nindex - the first index to query, 0 for first\nnum - the maximum number of items to get\n\nThis requires W and X permissions on the client."]
+        #[derive(Debug, Clone, pod_derive :: PodSerialize)]
+        pub struct GetPermissions {
+            pub index: u32,
+            pub num: u32,
+        }
+        impl HasOpCode for GetPermissions {
+            const OPCODE: u8 = 3;
+        }
+        #[doc = "Manage the permissions of the global objects for this client\n\nUpdate the permissions of the global objects using the provided array with permissions\n\nGlobals can use the default permissions or can have specific permissions assigned to them.\n\nn_permissions - number of permissions\npermissions - array of permissions\n\nThis requires W and X permissions on the client."]
+        #[derive(Debug, Clone)]
+        pub struct UpdatePermissions(pub pod::permissions::Permissions);
+        impl pod::serialize::PodSerialize for UpdatePermissions {
+            fn serialize<O: std::io::Write + std::io::Seek>(
+                &self,
+                serializer: pod::serialize::PodSerializer<O>,
+            ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
+                self.0.serialize(serializer)
+            }
+        }
+        impl HasOpCode for UpdatePermissions {
+            const OPCODE: u8 = 4;
+        }
     }
     pub mod events {
         use super::*;
+        #[doc = "Notify client info\n\ninfo - info about the client"]
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
         pub struct Info {
             pub id: u32,
@@ -232,15 +258,21 @@ pub mod pw_client {
         impl HasOpCode for Info {
             const OPCODE: u8 = 0;
         }
+        #[doc = "Notify a client permission\n\nEvent emitted as a result of the get_permissions method.\n\ndefault_permissions - the default permissions\nindex - the index of the first permission entry\nn_permissions - the number of permissions\npermissions - the permissions"]
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct Permissions {}
+        pub struct Permissions {
+            pub index: u32,
+            pub permissions: pod::permissions::Permissions,
+        }
         impl HasOpCode for Permissions {
             const OPCODE: u8 = 1;
         }
     }
     #[derive(Debug, Clone, pod_derive :: EventDeserialize)]
     pub enum Event {
+        #[doc = "Notify client info\n\ninfo - info about the client"]
         Info(events::Info),
+        #[doc = "Notify a client permission\n\nEvent emitted as a result of the get_permissions method.\n\ndefault_permissions - the default permissions\nindex - the index of the first permission entry\nn_permissions - the number of permissions\npermissions - the permissions"]
         Permissions(events::Permissions),
     }
 }
@@ -480,16 +512,6 @@ pub mod pw_client_node {
 
 pub mod pw_registry {
     use super::*;
-    bitflags::bitflags! {
-        #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
-        pub struct Permission: u32 {
-            const R = 0o400;
-            const W = 0o200;
-            const X = 0o100;
-            const M = 0o010;
-        }
-    }
-
     pub mod methods {
         use super::*;
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -515,7 +537,7 @@ pub mod pw_registry {
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
         pub struct Global {
             pub id: u32,
-            pub permissions: Permission,
+            pub permissions: pod::permissions::PermissionFlags,
             pub obj_type: String,
             pub version: u32,
             pub properties: pod::dictionary::Dictionary,

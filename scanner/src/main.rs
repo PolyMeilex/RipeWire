@@ -119,33 +119,56 @@ fn gen(src: &str) -> String {
                 let name = Ident::new(&name, Span::call_site());
                 let opcode = Literal::u8_unsuffixed(opcode as u8);
 
-                let fields = method.fields.iter().map(|field| {
-                    let name = Ident::new(&field.name, Span::call_site());
-
-                    let ty = if let Some(ty) = pw_ty_to_rust_ty_quote(&field.ty) {
-                        ty
-                    } else {
-                        let ty = field.ty.to_upper_camel_case();
-                        let ty = Ident::new(&ty, Span::call_site());
-                        quote!(#ty)
-                    };
+                if method.ty == "permission_list" {
+                    let doc = to_doc_attr(&method.description.txt);
 
                     quote! {
-                        pub #name: #ty
+                        #doc
+                        #[derive(Debug, Clone)]
+                        pub struct #name(pub pod::permissions::Permissions);
+
+                        impl pod::serialize::PodSerialize for #name {
+                            fn serialize<O: std::io::Write + std::io::Seek>(
+                                &self,
+                                serializer: pod::serialize::PodSerializer<O>,
+                            ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
+                                self.0.serialize(serializer)
+                            }
+                        }
+
+                        impl HasOpCode for #name {
+                            const OPCODE: u8 = #opcode;
+                        }
                     }
-                });
+                } else {
+                    let fields = method.fields.iter().map(|field| {
+                        let name = Ident::new(&field.name, Span::call_site());
 
-                let doc = to_doc_attr(&method.description.txt);
+                        let ty = if let Some(ty) = pw_ty_to_rust_ty_quote(&field.ty) {
+                            ty
+                        } else {
+                            let ty = field.ty.to_upper_camel_case();
+                            let ty = Ident::new(&ty, Span::call_site());
+                            quote!(#ty)
+                        };
 
-                quote! {
-                    #doc
-                    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-                    pub struct #name {
-                        #(#fields),*
-                    }
+                        quote! {
+                            pub #name: #ty
+                        }
+                    });
 
-                    impl HasOpCode for #name {
-                        const OPCODE: u8 = #opcode;
+                    let doc = to_doc_attr(&method.description.txt);
+
+                    quote! {
+                        #doc
+                        #[derive(Debug, Clone, pod_derive::PodSerialize)]
+                        pub struct #name {
+                            #(#fields),*
+                        }
+
+                        impl HasOpCode for #name {
+                            const OPCODE: u8 = #opcode;
+                        }
                     }
                 }
             });
@@ -241,6 +264,9 @@ fn pw_ty_to_rust_ty_quote(ty: &str) -> Option<TokenStream> {
         "ulong" => quote!(u64),
         "string" => quote!(String),
         "dict" => quote!(pod::dictionary::Dictionary),
+        "struct" => quote!(pod::pod_struct::Struct),
+        "permission_list" => quote!(pod::permissions::Permissions),
+        "permission_flags" => quote!(pod::permissions::PermissionFlags),
         "value" => quote!(pod::Value),
         "id" => quote!(pod::utils::Id),
         "fd" => quote!(pod::utils::Fd),
@@ -257,6 +283,9 @@ fn pw_ty_to_rust_ty(ty: &str) -> Option<&str> {
         "ulong" => "u64",
         "string" => "String",
         "dict" => "pod::dictionary::Dictionary",
+        "struct" => "pod::pod_struct::Struct",
+        "permission_list" => "pod::permissions::Permissions",
+        "permission_flags" => "pod::permissions::PermissionFlags",
         "value" => "pod::Value",
         "id" => "pod::utils::Id",
         "fd" => "pod::utils::Fd",
