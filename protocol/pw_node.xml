@@ -1,12 +1,111 @@
 <interface name="pw_node">
     <method name="add_listener" unused="true" />
 
+    <method name="subscribe_params" type="struct">
+        <description>
+          Subscribe to parameter changes
+
+          Automatically emit param events for the given ids when they are changed.
+
+          ids - an array of param ids 
+          n_ids - the number of ids in `ids`
+
+          This requires X permissions on the device.
+        </description>
+
+        <field type="array(id)" name="ids" />
+    </method>
+
+    <method name="enum_params" type="struct">
+        <description>
+          Enumerate device parameters
+
+          Start enumeration of device parameters. For each param, a param event will be emitted.
+
+          seq - a sequence number to place in the reply 
+          id - the parameter id to enum or PW_ID_ANY for all 
+          start - the start index or 0 for the first param 
+          num - the maximum number of params to retrieve 
+          filter - a param filter or NULL
+
+          This requires X permissions on the device.
+        </description>
+
+        <field type="int" name="seq" />
+        <field type="id" name="id" />
+        <field type="uint" name="index" />
+        <field type="uint" name="num" />
+        <field type="value" name="filter" />
+    </method>
+
+    <method name="set_param" type="struct">
+        <description>
+          Set a parameter on the device
+
+          id - the parameter id to set 
+          flags - extra parameter flags 
+          param - the parameter to set
+
+          This requires W and X permissions on the device.
+        </description>
+
+        <field type="id" name="id" />
+        <field type="uint" name="flags" />
+        <field type="value" name="param" />
+    </method>
+
+    <method name="send_command" type="struct">
+        <description>
+          Send a command to the node
+
+          command - the command to send
+
+          This requires X and W permissions on the node.
+        </description>
+
+        <field type="value" name="command" />
+    </method>
+
+
     <!-- Events -->
 
     <event name="info" type="struct">
+        <description>
+          Notify node info
+
+          info - info about the node
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="uint" name="max_input_ports" />
+        <field type="uint" name="max_output_ports" />
+        <field type="ulong" name="change_mask" />
+        <field type="uint" name="n_input_ports" />
+        <field type="uint" name="n_output_ports" />
+        <field type="id" name="state" />
+        <field type="string" name="error" />
+        <field type="dict" name="props" />
+        <field type="struct" name="params" />
     </event>
 
     <event name="param" type="struct">
+        <description>
+          Notify a node param
+
+          Event emitted as a result of the enum_params method.
+
+          seq - the sequence number of the request 
+          id - the param id 
+          index - the param index 
+          next - the param index of the next param 
+          param - the parameter
+        </description>
+
+        <field type="int" name="seq" />
+        <field type="id" name="id" />
+        <field type="uint" name="index" />
+        <field type="uint" name="next" />
+        <field type="value" name="params" />
     </event>
 
 </interface>

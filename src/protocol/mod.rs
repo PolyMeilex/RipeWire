@@ -142,15 +142,10 @@ pub mod pw_node {
 
     pub mod methods {}
 
-    pub use event::Event;
+    pub use generated::pw_node::Event;
     pub mod event {
         use super::*;
-
-        #[derive(Debug, Clone, pod_derive::EventDeserialize)]
-        pub enum Event {
-            Info(Value),
-            Param(Value),
-        }
+        pub use generated::pw_node::methods::*;
     }
 }
 

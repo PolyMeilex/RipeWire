@@ -361,23 +361,82 @@ pub mod pw_node {
         impl HasOpCode for AddListener {
             const OPCODE: u8 = 0;
         }
+        #[doc = "Subscribe to parameter changes\n\nAutomatically emit param events for the given ids when they are changed.\n\nids - an array of param ids\nn_ids - the number of ids in `ids`\n\nThis requires X permissions on the device."]
+        #[derive(Debug, Clone, pod_derive :: PodSerialize)]
+        pub struct SubscribeParams {
+            pub ids: pod::array::Array<pod::utils::Id>,
+        }
+        impl HasOpCode for SubscribeParams {
+            const OPCODE: u8 = 1;
+        }
+        #[doc = "Enumerate device parameters\n\nStart enumeration of device parameters. For each param, a param event will be emitted.\n\nseq - a sequence number to place in the reply\nid - the parameter id to enum or PW_ID_ANY for all\nstart - the start index or 0 for the first param\nnum - the maximum number of params to retrieve\nfilter - a param filter or NULL\n\nThis requires X permissions on the device."]
+        #[derive(Debug, Clone, pod_derive :: PodSerialize)]
+        pub struct EnumParams {
+            pub seq: i32,
+            pub id: pod::utils::Id,
+            pub index: u32,
+            pub num: u32,
+            pub filter: pod::Value,
+        }
+        impl HasOpCode for EnumParams {
+            const OPCODE: u8 = 2;
+        }
+        #[doc = "Set a parameter on the device\n\nid - the parameter id to set\nflags - extra parameter flags\nparam - the parameter to set\n\nThis requires W and X permissions on the device."]
+        #[derive(Debug, Clone, pod_derive :: PodSerialize)]
+        pub struct SetParam {
+            pub id: pod::utils::Id,
+            pub flags: u32,
+            pub param: pod::Value,
+        }
+        impl HasOpCode for SetParam {
+            const OPCODE: u8 = 3;
+        }
+        #[doc = "Send a command to the node\n\ncommand - the command to send\n\nThis requires X and W permissions on the node."]
+        #[derive(Debug, Clone, pod_derive :: PodSerialize)]
+        pub struct SendCommand {
+            pub command: pod::Value,
+        }
+        impl HasOpCode for SendCommand {
+            const OPCODE: u8 = 4;
+        }
     }
     pub mod events {
         use super::*;
+        #[doc = "Notify node info\n\ninfo - info about the node"]
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct Info {}
+        pub struct Info {
+            pub id: u32,
+            pub max_input_ports: u32,
+            pub max_output_ports: u32,
+            pub change_mask: u64,
+            pub n_input_ports: u32,
+            pub n_output_ports: u32,
+            pub state: pod::utils::Id,
+            pub error: String,
+            pub props: pod::dictionary::Dictionary,
+            pub params: pod::pod_struct::Struct,
+        }
         impl HasOpCode for Info {
             const OPCODE: u8 = 0;
         }
+        #[doc = "Notify a node param\n\nEvent emitted as a result of the enum_params method.\n\nseq - the sequence number of the request\nid - the param id\nindex - the param index\nnext - the param index of the next param\nparam - the parameter"]
         #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
-        pub struct Param {}
+        pub struct Param {
+            pub seq: i32,
+            pub id: pod::utils::Id,
+            pub index: u32,
+            pub next: u32,
+            pub params: pod::Value,
+        }
         impl HasOpCode for Param {
             const OPCODE: u8 = 1;
         }
     }
     #[derive(Debug, Clone, pod_derive :: EventDeserialize)]
     pub enum Event {
+        #[doc = "Notify node info\n\ninfo - info about the node"]
         Info(events::Info),
+        #[doc = "Notify a node param\n\nEvent emitted as a result of the enum_params method.\n\nseq - the sequence number of the request\nid - the param id\nindex - the param index\nnext - the param index of the next param\nparam - the parameter"]
         Param(events::Param),
     }
 }
