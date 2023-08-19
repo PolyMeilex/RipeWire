@@ -10,7 +10,7 @@
           ids - an array of param ids 
           n_ids - the number of ids in `ids`
 
-          This requires X permissions on the device.
+          This requires X permissions on the node.
         </description>
 
         <field type="array(id)" name="ids" />
@@ -18,9 +18,9 @@
 
     <method name="enum_params" type="struct">
         <description>
-          Enumerate device parameters
+          Enumerate node parameters
 
-          Start enumeration of device parameters. For each param, a param event will be emitted.
+          Start enumeration of node parameters. For each param, a param event will be emitted.
 
           seq - a sequence number to place in the reply 
           id - the parameter id to enum or PW_ID_ANY for all 
@@ -28,7 +28,7 @@
           num - the maximum number of params to retrieve 
           filter - a param filter or NULL
 
-          This requires X permissions on the device.
+          This requires X permissions on the node.
         </description>
 
         <field type="int" name="seq" />
@@ -40,13 +40,13 @@
 
     <method name="set_param" type="struct">
         <description>
-          Set a parameter on the device
+          Set a parameter on the node
 
           id - the parameter id to set 
           flags - extra parameter flags 
           param - the parameter to set
 
-          This requires W and X permissions on the device.
+          This requires W and X permissions on the node.
         </description>
 
         <field type="id" name="id" />
