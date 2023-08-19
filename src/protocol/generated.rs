@@ -288,7 +288,9 @@ pub mod pw_device {
         }
         #[doc = "Subscribe to parameter changes\n\nAutomatically emit param events for the given ids when they are changed.\n\nids - an array of param ids\nn_ids - the number of ids in `ids`\n\nThis requires X permissions on the device."]
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
-        pub struct SubscribeParams {}
+        pub struct SubscribeParams {
+            pub ids: pod::array::Array<pod::utils::Id>,
+        }
         impl HasOpCode for SubscribeParams {
             const OPCODE: u8 = 1;
         }

@@ -547,7 +547,7 @@ impl<'de> PodDeserializer<'de> {
         Ok((res, success))
     }
 
-    fn deserialize_array_vec<T>(
+    pub(crate) fn deserialize_array_vec<T>(
         self,
     ) -> Result<(Vec<T>, DeserializeSuccess<'de>), DeserializeError<&'de [u8]>>
     where

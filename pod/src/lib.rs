@@ -4,6 +4,7 @@
 //! The `libspa` crate provides a high-level API to interact with
 //! [libspa](https://gitlab.freedesktop.org/pipewire/pipewire/-/tree/master/doc/spa).
 
+pub mod array;
 pub mod dictionary;
 pub mod permissions;
 pub mod pod;

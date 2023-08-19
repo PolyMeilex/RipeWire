@@ -270,7 +270,20 @@ fn pw_ty_to_rust_ty_quote(ty: &str) -> Option<TokenStream> {
         "value" => quote!(pod::Value),
         "id" => quote!(pod::utils::Id),
         "fd" => quote!(pod::utils::Fd),
-        _ => return None,
+        ty => {
+            if ty.starts_with("array(") && ty.ends_with(")") {
+                let ty = ty
+                    .strip_prefix("array(")
+                    .unwrap()
+                    .strip_suffix(")")
+                    .unwrap();
+
+                let ty = pw_ty_to_rust_ty_quote(ty).unwrap();
+                quote!(pod::array::Array<#ty>)
+            } else {
+                return None;
+            }
+        }
     })
 }
 
@@ -289,7 +302,9 @@ fn pw_ty_to_rust_ty(ty: &str) -> Option<&str> {
         "value" => "pod::Value",
         "id" => "pod::utils::Id",
         "fd" => "pod::utils::Fd",
-        _ => return None,
+        _ => {
+            return None;
+        }
     })
 }
 

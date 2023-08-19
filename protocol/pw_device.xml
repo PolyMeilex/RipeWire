@@ -12,6 +12,8 @@
 
           This requires X permissions on the device.
         </description>
+
+        <field type="array(id)" name="ids" />
     </method>
 
     <method name="enum_params" type="struct">
