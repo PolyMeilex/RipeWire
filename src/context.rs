@@ -81,11 +81,11 @@ impl Context {
         }
     }
 
-    pub fn add_mem(&mut self, add_mem: &pw_core::event::AddMem, fds: &[RawFd]) {
+    pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem, fds: &[RawFd]) {
         self.inner.lock().unwrap().mem.add_mem(add_mem, fds)
     }
 
-    pub fn remove_mem(&mut self, remove_mem: &pw_core::event::RemoveMem) {
+    pub fn remove_mem(&mut self, remove_mem: &pw_core::events::RemoveMem) {
         self.inner.lock().unwrap().mem.remove_mem(remove_mem)
     }
 }

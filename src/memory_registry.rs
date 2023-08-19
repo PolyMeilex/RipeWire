@@ -29,7 +29,7 @@ impl MemoryRegistry {
         }
     }
 
-    pub fn add_mem(&mut self, add_mem: &pw_core::event::AddMem, fds: &[RawFd]) {
+    pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem, fds: &[RawFd]) {
         let fd = fds[add_mem.fd.0 as usize];
 
         let mem_type = SpaDataType::from_raw(add_mem.ty.0).unwrap();
@@ -45,7 +45,7 @@ impl MemoryRegistry {
         );
     }
 
-    pub fn remove_mem(&mut self, remove_mem: &pw_core::event::RemoveMem) {
+    pub fn remove_mem(&mut self, remove_mem: &pw_core::events::RemoveMem) {
         self.map.remove(&remove_mem.id);
     }
 }

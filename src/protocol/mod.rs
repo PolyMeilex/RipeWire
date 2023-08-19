@@ -2,167 +2,36 @@
 mod generated;
 use generated::HasOpCode;
 
-use libspa_consts::SpaParamType;
 use pod::{
     serialize::{PodSerialize, PodSerializer},
     Value,
 };
 use std::io::Cursor;
 
-//
-// Core (object_id = 0)
-//
 pub mod pw_core {
-    use super::*;
-
     pub const OBJECT_ID: u32 = 0;
-
-    pub use generated::pw_core::{ChangeMask, MemblockFlags};
+    pub use super::generated::pw_core::*;
 
     impl MemblockFlags {
         pub const READWRITE: Self =
             Self::from_bits_retain(Self::READABLE.bits() | Self::WRITABLE.bits());
     }
-
-    pub mod methods {
-        use super::*;
-        pub use generated::pw_core::methods::{
-            CreateObject, Destroy, Error, GetRegistry, Hello, Pong, Sync,
-        };
-
-        impl Hello {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(0, self)
-            }
-        }
-
-        impl Sync {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(0, self)
-            }
-        }
-
-        impl Pong {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(0, self)
-            }
-        }
-
-        impl Error {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(0, self)
-            }
-        }
-
-        impl GetRegistry {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(0, self)
-            }
-        }
-
-        impl CreateObject {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(0, self)
-            }
-        }
-
-        impl Destroy {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(0, self)
-            }
-        }
-    }
-
-    pub use generated::pw_core::Event;
-    pub mod event {
-        use super::*;
-        pub use generated::pw_core::events::*;
-    }
 }
 
-//
-// Client (object_id = 1)
-//
 pub mod pw_client {
-    use super::*;
-
     pub const OBJECT_ID: u32 = 1;
-
-    pub mod methods {
-        use super::*;
-        pub use generated::pw_client::methods::{
-            Error, GetPermissions, UpdatePermissions, UpdateProperties,
-        };
-
-        impl Error {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(1, self)
-            }
-        }
-
-        impl UpdateProperties {
-            pub fn to_msg(&self) -> Vec<u8> {
-                super::create_msg(1, self)
-            }
-        }
-    }
-
-    // pub use event::Event;
-    pub use generated::pw_client::Event;
-    pub mod event {
-        use super::*;
-        pub use generated::pw_client::events::*;
-    }
+    pub use super::generated::pw_client::*;
 }
 
-pub mod pw_device {
-    use super::*;
-
-    pub mod methods {
-        use super::*;
-        pub use generated::pw_device::methods::SetParam;
-
-        pub fn set_param(object_id: u32, param: SpaParamType, value: &Value) -> Vec<u8> {
-            let value = Value::Struct(vec![
-                Value::Id(pod::utils::Id(param as u32)),
-                Value::Int(0),
-                value.clone(),
-            ]);
-
-            super::manual_create_msg(
-                object_id,
-                generated::pw_device::methods::SetParam::OPCODE,
-                &value,
-            )
-        }
-    }
-
-    pub use generated::pw_device::Event;
-    pub mod event {
-        use super::*;
-        pub use generated::pw_device::events::*;
-    }
-}
-
-pub mod pw_node {
-    use super::*;
-
-    pub mod methods {}
-
-    pub use generated::pw_node::Event;
-    pub mod event {
-        use super::*;
-        pub use generated::pw_node::methods::*;
-    }
-}
+pub use generated::pw_device;
+pub use generated::pw_node;
+pub use generated::pw_registry;
 
 pub mod pw_client_node {
     use super::*;
 
     pub mod methods {
-        use super::*;
-
-        pub use generated::pw_client_node::methods::*;
+        pub use super::generated::pw_client_node::methods::*;
     }
 
     pub use event::Event;
@@ -421,56 +290,6 @@ pub mod pw_client_node {
             SetActivation(Value),
             PortSetMixInfo(Value),
         }
-    }
-}
-
-//
-// Registry (object_id = dynamic)
-//
-pub mod pw_registry {
-    use super::*;
-
-    pub mod methods {
-        use super::*;
-
-        #[derive(Debug, Clone, pod_derive::PodSerialize)]
-        pub struct Bind {
-            pub id: u32,
-            pub obj_type: String,
-            pub version: u32,
-            pub new_id: u32,
-        }
-
-        impl HasOpCode for Bind {
-            const OPCODE: u8 = 1;
-        }
-
-        impl Bind {
-            pub fn to_msg(&self, object_id: u32) -> Vec<u8> {
-                super::create_msg(object_id, self)
-            }
-        }
-
-        #[derive(Debug, Clone, pod_derive::PodSerialize)]
-        pub struct Destroy {
-            pub id: u32,
-        }
-
-        impl HasOpCode for Destroy {
-            const OPCODE: u8 = 2;
-        }
-
-        impl Destroy {
-            pub fn to_msg(&self, object_id: u32) -> Vec<u8> {
-                super::create_msg(object_id, self)
-            }
-        }
-    }
-
-    pub use generated::pw_registry::Event;
-    pub mod event {
-        use super::*;
-        pub use generated::pw_registry::events::*;
     }
 }
 

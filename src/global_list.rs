@@ -2,7 +2,7 @@ use crate::protocol;
 
 #[derive(Debug, Default)]
 pub struct GlobalList {
-    pub globals: Vec<protocol::pw_registry::event::Global>,
+    pub globals: Vec<protocol::pw_registry::events::Global>,
 }
 
 impl GlobalList {
