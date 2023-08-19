@@ -1,6 +1,6 @@
 #[allow(unused)]
-mod generated;
-use generated::HasOpCode;
+mod raw;
+use raw::HasOpCode;
 
 use pod::{
     serialize::{PodSerialize, PodSerializer},
@@ -10,7 +10,7 @@ use std::io::Cursor;
 
 pub mod pw_core {
     pub const OBJECT_ID: u32 = 0;
-    pub use super::generated::pw_core::*;
+    pub use super::raw::pw_core::*;
 
     impl MemblockFlags {
         pub const READWRITE: Self =
@@ -20,18 +20,18 @@ pub mod pw_core {
 
 pub mod pw_client {
     pub const OBJECT_ID: u32 = 1;
-    pub use super::generated::pw_client::*;
+    pub use super::raw::pw_client::*;
 }
 
-pub use generated::pw_device;
-pub use generated::pw_node;
-pub use generated::pw_registry;
+pub use raw::pw_device;
+pub use raw::pw_node;
+pub use raw::pw_registry;
 
 pub mod pw_client_node {
     use super::*;
 
     pub mod methods {
-        pub use super::generated::pw_client_node::methods::*;
+        pub use super::raw::pw_client_node::methods::*;
     }
 
     pub use event::Event;
@@ -117,9 +117,7 @@ pub mod pw_client_node {
             const OPCODE: u8 = 3;
         }
 
-        use generated::pw_client_node::events::{
-            Command, PortSetIo, PortSetParam, SetIo, Transport,
-        };
+        use raw::pw_client_node::events::{Command, PortSetIo, PortSetParam, SetIo, Transport};
 
         #[derive(Debug, Clone)]
         pub struct PortBufferData {

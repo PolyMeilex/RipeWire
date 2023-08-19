@@ -24,7 +24,9 @@ bitflags::bitflags! {
 
 #[derive(Debug, Clone)]
 pub struct Permission {
+    /// The global id
     pub id: Option<u32>,
+    /// The permissions for the global id
     pub permissions: PermissionFlags,
 }
 
