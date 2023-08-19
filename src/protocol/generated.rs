@@ -352,6 +352,39 @@ pub mod pw_device {
     }
 }
 
+pub mod pw_factory {
+    use super::*;
+    pub mod methods {
+        use super::*;
+        #[derive(Debug, Clone, pod_derive :: PodSerialize)]
+        pub struct AddListener {}
+        impl HasOpCode for AddListener {
+            const OPCODE: u8 = 0;
+        }
+    }
+    pub mod events {
+        use super::*;
+        #[doc = "Notify factory info\n\ninfo - info about the factory"]
+        #[derive(Debug, Clone, pod_derive :: PodDeserialize)]
+        pub struct Info {
+            pub id: u32,
+            pub name: String,
+            pub obj_type: String,
+            pub version: u32,
+            pub change_mask: u64,
+            pub props: pod::dictionary::Dictionary,
+        }
+        impl HasOpCode for Info {
+            const OPCODE: u8 = 0;
+        }
+    }
+    #[derive(Debug, Clone, pod_derive :: EventDeserialize)]
+    pub enum Event {
+        #[doc = "Notify factory info\n\ninfo - info about the factory"]
+        Info(events::Info),
+    }
+}
+
 pub mod pw_node {
     use super::*;
     pub mod methods {
@@ -599,6 +632,11 @@ pub mod pw_registry {
     use super::*;
     pub mod methods {
         use super::*;
+        #[derive(Debug, Clone, pod_derive :: PodSerialize)]
+        pub struct AddListener {}
+        impl HasOpCode for AddListener {
+            const OPCODE: u8 = 0;
+        }
         #[doc = "Bind to a global object\n\nBind to the global object with \\a id and use the client proxy with new_id as the proxy. After this call, methods can be send to the remote global object and events can be received\n\nid - the global id to bind to\ntype - the interface type to bind to\nversion - the interface version to use"]
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
         pub struct Bind {
@@ -608,7 +646,7 @@ pub mod pw_registry {
             pub new_id: u32,
         }
         impl HasOpCode for Bind {
-            const OPCODE: u8 = 0;
+            const OPCODE: u8 = 1;
         }
         #[doc = "Attempt to destroy a global object\n\nTry to destroy the global object.\n\nid - the global id to destroy.\n\nThe client needs X permissions on the global."]
         #[derive(Debug, Clone, pod_derive :: PodSerialize)]
@@ -616,7 +654,7 @@ pub mod pw_registry {
             pub id: u32,
         }
         impl HasOpCode for Destroy {
-            const OPCODE: u8 = 1;
+            const OPCODE: u8 = 2;
         }
     }
     pub mod events {

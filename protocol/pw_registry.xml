@@ -1,4 +1,6 @@
 <interface name="pw_registry">
+    <method name="add_listener" unused="true" />
+
     <method name="bind" type="struct">
         <description>
           Bind to a global object

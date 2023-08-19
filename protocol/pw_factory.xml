@@ -1,0 +1,21 @@
+<interface name="pw_factory">
+    <method name="add_listener" unused="true" />
+
+    <!-- Events -->
+
+    <event name="info" type="struct">
+        <description>
+          Notify factory info
+
+          info - info about the factory
+        </description>
+
+        <field type="uint" name="id" />
+        <field type="string" name="name" />
+        <field type="string" name="obj_type" />
+        <field type="uint" name="version" />
+        <field type="ulong" name="change_mask" />
+        <field type="dict" name="props" />
+    </event>
+
+</interface>
