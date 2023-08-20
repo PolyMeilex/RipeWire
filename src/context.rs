@@ -89,6 +89,10 @@ impl<D> Context<D> {
             ObjectType::Core => {
                 let event = pw_core::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
 
+                if let pw_core::Event::RemoveId(ref event) = event {
+                    self.map.remove(event.id);
+                }
+
                 let core = PwCore::from_id(id);
                 self.dispatch_event_inner(state, core, event);
             }
