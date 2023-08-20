@@ -45,31 +45,32 @@ impl PwCore {
         self.object_id.clone()
     }
 
-    pub fn hello<D>(&self, context: &mut Context<D>, data: pw_core::methods::Hello) {
+    pub fn hello<D>(&self, context: &mut Context<D>) {
+        let data = pw_core::methods::Hello { version: 3 };
         context
             .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
     }
 
-    pub fn sync<D>(&self, context: &mut Context<D>, data: pw_core::methods::Sync) {
+    pub fn sync<D>(&self, context: &mut Context<D>, id: u32, seq: i32) {
+        let data = pw_core::methods::Sync { id, seq };
         context
             .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
     }
 
-    pub fn pong<D>(&self, context: &mut Context<D>, data: pw_core::methods::Pong) {
+    pub fn pong<D>(&self, context: &mut Context<D>, id: u32, seq: i32) {
+        let data = pw_core::methods::Pong { id, seq };
         context
             .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
     }
 
-    pub fn get_registry<D>(
-        &self,
-        context: &mut Context<D>,
-        mut data: pw_core::methods::GetRegistry,
-    ) -> PwRegistry {
-        let new_id = context.new_object(ObjectType::Registry);
-        data.new_id = new_id.object_id;
+    pub fn get_registry<D>(&self, context: &mut Context<D>) -> PwRegistry {
+        let data = pw_core::methods::GetRegistry {
+            version: 3,
+            new_id: context.new_object(ObjectType::Registry).protocol_id(),
+        };
 
         context
             .send_msg(&protocol::create_msg(0, &data), &[])
@@ -125,18 +126,16 @@ impl PwClient {
     pub fn update_properties<D>(
         &self,
         context: &mut Context<D>,
-        data: pw_client::methods::UpdateProperties,
+        properties: pod::dictionary::Dictionary,
     ) {
+        let data = pw_client::methods::UpdateProperties { properties };
         context
             .send_msg(&protocol::create_msg(1, &data), &[])
             .unwrap();
     }
 
-    pub fn get_permissions<D>(
-        self,
-        context: &mut Context<D>,
-        data: pw_client::methods::GetPermissions,
-    ) {
+    pub fn get_permissions<D>(self, context: &mut Context<D>, index: u32, num: u32) {
+        let data = pw_client::methods::GetPermissions { index, num };
         context
             .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
             .unwrap();

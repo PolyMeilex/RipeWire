@@ -6,14 +6,7 @@ use tokio::io::unix::AsyncFd;
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
 use ripewire::protocol::{pw_client, pw_core, pw_device, pw_registry};
-use ripewire::proxy::{ObjectId, Proxy, PwClient, PwCore, PwDevice, PwRegistry};
-
-fn properties() -> Dictionary {
-    Dictionary::from([
-        ("application.name", "ripewire"),
-        ("application.process.binary", "ripewire"),
-    ])
-}
+use ripewire::proxy::{PwClient, PwCore, PwDevice, PwRegistry};
 
 struct PipewireState {
     registry: PwRegistry,
@@ -42,13 +35,7 @@ impl PipewireState {
                 context.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
-                core.pong(
-                    context,
-                    pw_core::methods::Pong {
-                        id: ping.id as u32,
-                        seq: ping.seq,
-                    },
-                );
+                core.pong(context, ping.id as u32, ping.seq);
             }
             _ => {}
         }
@@ -100,7 +87,7 @@ impl PipewireState {
     }
 }
 
-struct State {
+struct TokioState {
     ctx: Context<PipewireState>,
     state: PipewireState,
 }
@@ -111,25 +98,19 @@ async fn main() {
     let core = ctx.core();
     let client = ctx.client();
 
-    ctx.core()
-        .hello(&mut ctx, pw_core::methods::Hello { version: 3 });
+    ctx.core().hello(&mut ctx);
 
     ctx.client().update_properties(
         &mut ctx,
-        pw_client::methods::UpdateProperties {
-            properties: properties(),
-        },
+        Dictionary::from([
+            ("application.name", "ripewire"),
+            ("application.process.binary", "ripewire"),
+        ]),
     );
 
-    let registry = ctx.core().get_registry(
-        &mut ctx,
-        pw_core::methods::GetRegistry {
-            version: 3,
-            new_id: 0,
-        },
-    );
+    let registry = ctx.core().get_registry(&mut ctx);
 
-    core.sync(&mut ctx, pw_core::methods::Sync { id: 0, seq: 0 });
+    core.sync(&mut ctx, 0, 0);
 
     ctx.set_object_callback(&core, PipewireState::core_event);
     ctx.set_object_callback(&client, PipewireState::client_event);
@@ -137,7 +118,7 @@ async fn main() {
 
     let fd = AsyncFd::new(ctx.as_raw_fd()).unwrap();
 
-    let mut state = State {
+    let mut state = TokioState {
         ctx,
         state: PipewireState {
             registry,

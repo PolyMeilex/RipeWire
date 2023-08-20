@@ -6,7 +6,7 @@ use pod::{dictionary::Dictionary, Value};
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
 use ripewire::protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_registry};
-use ripewire::proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwRegistry};
+use ripewire::proxy::{PwClient, PwClientNode, PwCore, PwDevice, PwRegistry};
 
 fn properties() -> Dictionary {
     let host = nix::unistd::gethostname().unwrap();
@@ -52,26 +52,13 @@ pub fn run_rust() {
     let core = ctx.core();
     let client = ctx.client();
 
-    ctx.core()
-        .hello(&mut ctx, pw_core::methods::Hello { version: 3 });
+    ctx.core().hello(&mut ctx);
 
-    ctx.client().update_properties(
-        &mut ctx,
-        pw_client::methods::UpdateProperties {
-            properties: properties(),
-        },
-    );
+    ctx.client().update_properties(&mut ctx, properties());
 
-    let registry = ctx.core().get_registry(
-        &mut ctx,
-        pw_core::methods::GetRegistry {
-            version: 3,
-            new_id: 2,
-        },
-    );
+    let registry = ctx.core().get_registry(&mut ctx);
 
-    ctx.core()
-        .sync(&mut ctx, pw_core::methods::Sync { id: 0, seq: 0 });
+    ctx.core().sync(&mut ctx, 0, 0);
 
     ctx.set_object_callback(&core, PipewireState::core_event);
     ctx.set_object_callback(&client, PipewireState::client_event);
@@ -139,13 +126,7 @@ impl PipewireState {
                 ctx.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
-                core.pong(
-                    ctx,
-                    pw_core::methods::Pong {
-                        id: ping.id as u32,
-                        seq: ping.seq,
-                    },
-                );
+                core.pong(ctx, ping.id as u32, ping.seq);
             }
             _ => {}
         }
@@ -208,10 +189,7 @@ impl PipewireState {
         if let Some(global) = client {
             let client: PwClient = self.registry.bind(ctx, global);
 
-            client.get_permissions(
-                ctx,
-                pw_client::methods::GetPermissions { index: 0, num: 50 },
-            );
+            client.get_permissions(ctx, 0, 50);
         }
 
         if let Some(global) = device {
