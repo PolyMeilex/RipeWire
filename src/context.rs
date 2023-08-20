@@ -114,8 +114,8 @@ impl<D> Context<D> {
         }));
     }
 
-    pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem, fds: &[RawFd]) {
-        self.mem.add_mem(add_mem, fds)
+    pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem) {
+        self.mem.add_mem(add_mem)
     }
 
     pub fn remove_mem(&mut self, remove_mem: &pw_core::events::RemoveMem) {

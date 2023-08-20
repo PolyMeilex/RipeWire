@@ -34,19 +34,41 @@ pub fn pod_serialize(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-#[proc_macro_derive(PodDeserialize)]
+#[proc_macro_derive(PodDeserialize, attributes(fd))]
 pub fn pod_deserialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
 
-    let out: Vec<_> = if let Data::Struct(s) = input.data {
-        s.fields
-            .into_iter()
-            .map(|field| field.ident.unwrap())
+    let (fds, out) = if let Data::Struct(ref s) = input.data {
+        let fds = s
+            .fields
+            .iter()
+            .filter(|field| {
+                for attr in field.attrs.iter() {
+                    if attr.path.segments[0].ident.to_string().as_str() == "fd" {
+                        return true;
+                    }
+                }
+
+                false
+            })
+            .map(|field| {
+                let field = field.ident.as_ref().unwrap();
+
+                quote! {
+                    let fd = fds[self.#field.id as usize];
+                    self.#field.fd = Some(fd);
+                }
+            });
+
+        let deserialize_fields = s.fields
+            .iter()
+            .map(|field| field.ident.as_ref().unwrap())
             .map(|field| quote!(
                 #field: struct_deserializer.deserialize_field()?.ok_or(pod::deserialize::DeserializeError::PropertyMissing)?
-            ))
-            .collect()
+            ));
+
+        (fds, deserialize_fields)
     } else {
         unimplemented!("Not a struct")
     };
@@ -79,6 +101,13 @@ pub fn pod_deserialize(input: TokenStream) -> TokenStream {
                 }
 
                 deserializer.deserialize_struct(TestVisitor)
+            }
+        }
+
+        // TODO: trait this up
+        impl #name {
+            pub(super) fn load_fds(&mut self, fds: &[std::os::fd::RawFd]) {
+                #(#fds)*
             }
         }
     };
@@ -143,28 +172,47 @@ pub fn event_deserialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
 
-    let out = if let Data::Enum(e) = input.data {
-        e.variants
-            .into_iter()
-            .map(|enu| enu.ident)
+    let (fds, out) = if let Data::Enum(ref e) = input.data {
+        let fds = e.variants.iter().map(|variant| {
+            let variant = &variant.ident;
+            quote! {
+                Self::#variant(event) => {
+                    event.load_fds(fds);
+                }
+            }
+        });
+
+        let deserialize = e.variants
+            .iter()
             .enumerate()
             .map(|(opcode, variant)| {
                 let opcode = opcode as u8;
+                let variant = &variant.ident;
                 quote!(#opcode => Self::#variant(pod::deserialize::PodDeserializer::deserialize_from(&value)?.1))
-            })
+            });
+
+        (fds, deserialize)
     } else {
         unimplemented!("Not a struct")
     };
 
     let expanded = quote! {
         impl #name {
-            pub fn from(opcode: u8, value: &[u8]) -> Result<Self, pod::deserialize::DeserializeError<&[u8]>> {
-                let this = match opcode {
+            pub fn from<'a>(opcode: u8, value: &'a [u8], fds: &[std::os::fd::RawFd]) -> Result<Self, pod::deserialize::DeserializeError<&'a [u8]>> {
+                let mut this = match opcode {
                     #(#out,)*
                     _ => return Err(pod::deserialize::DeserializeError::InvalidType),
                 };
 
+                this._load_fds(fds);
+
                 Ok(this)
+            }
+
+            fn _load_fds(&mut self, fds: &[std::os::fd::RawFd]) {
+                match self {
+                    #(#fds,)*
+                }
             }
         }
     };

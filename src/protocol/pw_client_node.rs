@@ -167,6 +167,8 @@ pub mod methods {
 }
 
 pub mod events {
+    use std::os::fd::RawFd;
+
     use super::*;
 
     /// The server will allocate the activation record and eventfd for the node and transfer this to the client with the Transport event.
@@ -179,8 +181,10 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct Transport {
         /// The eventfd to start processing
+        #[fd]
         pub readfd: pod::utils::Fd,
         /// The eventfd to signal when the driver completes and profiling is enabled.
+        #[fd]
         pub writefd: pod::utils::Fd,
         /// The index of the memfd of the activation record
         pub memid: u32,
@@ -413,6 +417,10 @@ pub mod events {
         pub buffers: Vec<PortBuffer>,
     }
 
+    impl PortUseBuffers {
+        pub(super) fn load_fds(&mut self, _fds: &[RawFd]) {}
+    }
+
     impl<'de> pod::deserialize::PodDeserialize<'de> for PortUseBuffers {
         fn deserialize(
             deserializer: pod::deserialize::PodDeserializer<'de>,
@@ -502,6 +510,7 @@ pub mod events {
         /// The node_id of the peer node
         pub node_id: u32,
         /// The eventfd of the peer node
+        #[fd]
         pub signalfd: pod::utils::Fd,
         /// The memid of the activation record of the peer from Core:AddMem
         pub memid: u32,

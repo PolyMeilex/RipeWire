@@ -1,3 +1,5 @@
+use std::os::fd::RawFd;
+
 use super::HasOpCode;
 
 pub const OBJECT_ID: u32 = 0;
@@ -249,6 +251,7 @@ pub mod events {
     pub struct AddMem {
         pub id: u32,
         pub ty: pod::utils::Id,
+        #[fd]
         pub fd: pod::utils::Fd,
         pub flags: MemblockFlags,
     }

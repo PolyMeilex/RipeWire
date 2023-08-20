@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    os::fd::{FromRawFd, OwnedFd, RawFd},
+    os::fd::{FromRawFd, OwnedFd},
 };
 
 use libspa_consts::SpaDataType;
@@ -29,8 +29,8 @@ impl MemoryRegistry {
         }
     }
 
-    pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem, fds: &[RawFd]) {
-        let fd = fds[add_mem.fd.0 as usize];
+    pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem) {
+        let fd = add_mem.fd.fd.unwrap();
 
         let mem_type = SpaDataType::from_raw(add_mem.ty.0).unwrap();
 

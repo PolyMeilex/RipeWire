@@ -1,5 +1,7 @@
 //! Miscellaneous and utility items.
 
+use std::os::fd::RawFd;
+
 use bitflags::bitflags;
 
 pub use spa_sys::Fraction;
@@ -13,8 +15,20 @@ pub struct Id(pub u32);
 
 /// A file descriptor in a pod
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-#[repr(transparent)]
-pub struct Fd(pub i64);
+pub struct Fd {
+    pub id: i64,
+    pub fd: Option<RawFd>,
+}
+
+impl Fd {
+    pub(crate) fn new(id: i64) -> Self {
+        Self { id, fd: None }
+    }
+
+    pub fn get(&self) -> RawFd {
+        self.id as RawFd
+    }
+}
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 /// the flags and choice of a choice pod.

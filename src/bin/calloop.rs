@@ -1,4 +1,4 @@
-use std::os::fd::{AsRawFd, RawFd};
+use std::os::fd::AsRawFd;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
 use pod::{dictionary::Dictionary, Value};
@@ -95,27 +95,30 @@ pub fn run_rust() {
 
                     match state.context.object_type(&id).unwrap() {
                         ripewire::object_map::ObjectType::Core => {
-                            let event = pw_core::Event::from(msg.header.opcode, &msg.body).unwrap();
-                            state.core_event(msg.header.object_id, event, &fds);
+                            let event =
+                                pw_core::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+                            state.core_event(msg.header.object_id, event);
                         }
                         ripewire::object_map::ObjectType::Client => {
                             let event =
-                                pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
+                                pw_client::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
                             state.client_event(msg.header.object_id, event);
                         }
                         ripewire::object_map::ObjectType::Registry => {
                             let event =
-                                pw_registry::Event::from(msg.header.opcode, &msg.body).unwrap();
+                                pw_registry::Event::from(msg.header.opcode, &msg.body, &fds)
+                                    .unwrap();
                             state.registry_event(msg.header.object_id, event);
                         }
                         ripewire::object_map::ObjectType::Device => {
                             let event =
-                                pw_device::Event::from(msg.header.opcode, &msg.body).unwrap();
+                                pw_device::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
                             state.device_event(msg.header.object_id, event);
                         }
                         ripewire::object_map::ObjectType::ClientNode => {
                             let client_node =
-                                pw_client_node::Event::from(msg.header.opcode, &msg.body).unwrap();
+                                pw_client_node::Event::from(msg.header.opcode, &msg.body, &fds)
+                                    .unwrap();
                             dbg!(client_node);
                         }
                         _ => {
@@ -148,7 +151,7 @@ struct State {
 }
 
 impl State {
-    pub fn core_event(&mut self, _object_id: u32, core_event: pw_core::Event, fds: &[RawFd]) {
+    pub fn core_event(&mut self, _object_id: u32, core_event: pw_core::Event) {
         dbg!(&core_event);
         match core_event {
             pw_core::Event::Done(done) => {
@@ -157,7 +160,7 @@ impl State {
                 }
             }
             pw_core::Event::AddMem(add_mem) => {
-                self.context.add_mem(&add_mem, fds);
+                self.context.add_mem(&add_mem);
             }
             pw_core::Event::RemoveMem(remove_mem) => {
                 self.context.remove_mem(&remove_mem);

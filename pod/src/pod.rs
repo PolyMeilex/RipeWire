@@ -259,14 +259,14 @@ impl CanonicalFixedSizedPod for Fd {
     const SIZE: u32 = 8;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
-        gen_simple(ne_i64(self.0), out)
+        gen_simple(ne_i64(self.id), out)
     }
 
     fn deserialize_body(input: &[u8]) -> IResult<&[u8], Self>
     where
         Self: Sized,
     {
-        map(i64(Endianness::Native), Fd)(input)
+        map(i64(Endianness::Native), Fd::new)(input)
     }
 }
 
