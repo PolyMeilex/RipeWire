@@ -94,53 +94,7 @@ pub fn run_rust() {
             |_, _, state| {
                 let (messages, fds) = state.ctx.rcv_msg().unwrap();
                 for msg in messages {
-                    let id = ObjectId::new(msg.header.object_id);
-
-                    match state.ctx.object_type(&id).unwrap() {
-                        ripewire::object_map::ObjectType::Core => {
-                            let event =
-                                pw_core::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
-
-                            let core = PwCore::from_id(id);
-                            state.ctx.dispatch_event(&mut state.state, core, event);
-                        }
-                        ripewire::object_map::ObjectType::Client => {
-                            let event =
-                                pw_client::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
-
-                            let client = PwClient::from_id(id);
-                            state.ctx.dispatch_event(&mut state.state, client, event);
-                        }
-                        ripewire::object_map::ObjectType::Registry => {
-                            let event =
-                                pw_registry::Event::from(msg.header.opcode, &msg.body, &fds)
-                                    .unwrap();
-
-                            let registry = PwRegistry::from_id(id);
-                            state.ctx.dispatch_event(&mut state.state, registry, event);
-                        }
-                        ripewire::object_map::ObjectType::Device => {
-                            let event =
-                                pw_device::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
-
-                            let device = PwDevice::from_id(id);
-                            state.ctx.dispatch_event(&mut state.state, device, event);
-                        }
-                        ripewire::object_map::ObjectType::ClientNode => {
-                            let event =
-                                pw_client_node::Event::from(msg.header.opcode, &msg.body, &fds)
-                                    .unwrap();
-                            let client_node = PwClientNode::from_id(id);
-                            state
-                                .ctx
-                                .dispatch_event(&mut state.state, client_node, event);
-                        }
-                        _ => {
-                            unimplemented!("{:?}", msg.header);
-                            // let value = PodDeserializer::deserialize_from(&msg.body).unwrap().1;
-                            // dbg!(msg.header);
-                        }
-                    }
+                    state.ctx.dispatch_event(&mut state.state, msg, &fds);
                 }
 
                 Ok(PostAction::Continue)

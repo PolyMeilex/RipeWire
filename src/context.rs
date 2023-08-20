@@ -9,8 +9,8 @@ use crate::{
     connection::{Connection, Message},
     memory_registry::MemoryRegistry,
     object_map::{Object, ObjectMap, ObjectType},
-    protocol::{pw_client, pw_core},
-    proxy::{ObjectId, Proxy, PwClient, PwCore},
+    protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_registry},
+    proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwRegistry},
 };
 
 struct ObjectData<D> {
@@ -82,7 +82,45 @@ impl<D> Context<D> {
         Some(obj.interface.clone())
     }
 
-    pub fn dispatch_event<P>(&mut self, state: &mut D, object: P, event: P::Event)
+    pub fn dispatch_event(&mut self, state: &mut D, msg: Message, fds: &[RawFd]) {
+        let id = ObjectId::new(msg.header.object_id);
+
+        match self.object_type(&id).unwrap() {
+            ObjectType::Core => {
+                let event = pw_core::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+
+                let core = PwCore::from_id(id);
+                self.dispatch_event_inner(state, core, event);
+            }
+            ObjectType::Client => {
+                let event = pw_client::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+
+                let client = PwClient::from_id(id);
+                self.dispatch_event_inner(state, client, event);
+            }
+            ObjectType::ClientNode => {
+                let event =
+                    pw_client_node::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+                let client_node = PwClientNode::from_id(id);
+                self.dispatch_event_inner(state, client_node, event);
+            }
+            ObjectType::Registry => {
+                let event = pw_registry::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+
+                let registry = PwRegistry::from_id(id);
+                self.dispatch_event_inner(state, registry, event);
+            }
+            ObjectType::Device => {
+                let event = pw_device::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+
+                let device = PwDevice::from_id(id);
+                self.dispatch_event_inner(state, device, event);
+            }
+            ty => unimplemented!("{ty:?}"),
+        }
+    }
+
+    fn dispatch_event_inner<P>(&mut self, state: &mut D, object: P, event: P::Event)
     where
         P: Proxy,
         P::Event: 'static,
