@@ -104,13 +104,13 @@ impl<D> Context<D> {
     where
         P: Proxy,
         P::Event: 'static,
-        F: FnMut(&mut Self, &mut D, P, P::Event) + 'static,
+        F: FnMut(&mut D, &mut Self, P, P::Event) + 'static,
     {
         let Some(obj) = self.map.find_mut(proxy.id().protocol_id()) else { return; };
 
         obj.data.cb = Some(Box::new(move |context, state, object_id, event| {
             let event: Box<P::Event> = event.downcast().unwrap();
-            cb(context, state, P::from_id(object_id), *event);
+            cb(state, context, P::from_id(object_id), *event);
         }));
     }
 

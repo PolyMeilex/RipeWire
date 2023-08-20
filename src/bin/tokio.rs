@@ -1,6 +1,6 @@
 use pod::dictionary::Dictionary;
 use std::io;
-use std::os::fd::{AsRawFd, RawFd};
+use std::os::fd::AsRawFd;
 use tokio::io::unix::AsyncFd;
 
 use ripewire::context::Context;
@@ -26,9 +26,12 @@ impl PipewireState {
         context: &mut Context<Self>,
         core: PwCore,
         core_event: pw_core::Event,
-        fds: &[RawFd],
     ) {
         dbg!(&core_event);
+
+        // TODO:
+        let fds = [];
+
         match core_event {
             pw_core::Event::Done(done) => {
                 if done.id == 0 && done.seq == 0 {
@@ -36,7 +39,7 @@ impl PipewireState {
                 }
             }
             pw_core::Event::AddMem(add_mem) => {
-                context.add_mem(&add_mem, fds);
+                context.add_mem(&add_mem, &fds);
             }
             pw_core::Event::RemoveMem(remove_mem) => {
                 context.remove_mem(&remove_mem);
@@ -94,64 +97,51 @@ impl PipewireState {
         let Some(global) = device else { return; };
         let device: PwDevice = self.registry.bind(context, global);
 
-        context.set_object_callback(&device, |ctx, state, device, event| {
-            state.device_event(ctx, device, event)
-        });
+        context.set_object_callback(&device, Self::device_event);
 
         device.set_mute(context, 4, 4, true);
     }
 }
 
 struct State {
-    context: Context<PipewireState>,
+    ctx: Context<PipewireState>,
     state: PipewireState,
 }
 
 #[tokio::main]
 async fn main() {
-    let mut context = Context::<PipewireState>::connect("/run/user/1000/pipewire-0").unwrap();
+    let mut ctx = Context::<PipewireState>::connect("/run/user/1000/pipewire-0").unwrap();
+    let core = ctx.core();
+    let client = ctx.client();
 
-    context.set_object_callback(&context.core(), |ctx, state, core, event| {
-        state.core_event(ctx, core, event, &[])
-    });
+    ctx.core()
+        .hello(&mut ctx, pw_core::methods::Hello { version: 3 });
 
-    context.set_object_callback(&context.client(), |ctx, state, client, event| {
-        state.client_event(ctx, client, event)
-    });
-
-    context
-        .core()
-        .hello(&mut context, pw_core::methods::Hello { version: 3 });
-
-    context.client().update_properties(
-        &mut context,
+    ctx.client().update_properties(
+        &mut ctx,
         pw_client::methods::UpdateProperties {
             properties: properties(),
         },
     );
 
-    let registry = context.core().get_registry(
-        &mut context,
+    let registry = ctx.core().get_registry(
+        &mut ctx,
         pw_core::methods::GetRegistry {
             version: 3,
             new_id: 0,
         },
     );
 
-    dbg!(&registry);
+    core.sync(&mut ctx, pw_core::methods::Sync { id: 0, seq: 0 });
 
-    context.set_object_callback(&registry, |ctx, state, registry, event| {
-        state.registry_event(ctx, registry, event)
-    });
+    ctx.set_object_callback(&core, PipewireState::core_event);
+    ctx.set_object_callback(&client, PipewireState::client_event);
+    ctx.set_object_callback(&registry, PipewireState::registry_event);
 
-    context
-        .core()
-        .sync(&mut context, pw_core::methods::Sync { id: 0, seq: 0 });
-
-    let fd = AsyncFd::new(context.as_raw_fd()).unwrap();
+    let fd = AsyncFd::new(ctx.as_raw_fd()).unwrap();
 
     let mut state = State {
-        context,
+        ctx,
         state: PipewireState {
             registry,
             globals: GlobalList::default(),
@@ -162,7 +152,7 @@ async fn main() {
         let fd = fd.readable().await.unwrap();
 
         if fd.ready().is_readable() {
-            let (messages, fds) = match state.context.rcv_msg() {
+            let (messages, fds) = match state.ctx.rcv_msg() {
                 Ok(res) => res,
                 Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
                     continue;
@@ -179,26 +169,26 @@ async fn main() {
             for msg in messages {
                 let id = ObjectId::new(msg.header.object_id);
 
-                match state.context.object_type(&id).unwrap() {
+                match state.ctx.object_type(&id).unwrap() {
                     ripewire::object_map::ObjectType::Core => {
                         let event = pw_core::Event::from(msg.header.opcode, &msg.body).unwrap();
                         let core = PwCore::from_id(id);
-                        state.context.call_cb(&mut state.state, core, event);
+                        state.ctx.call_cb(&mut state.state, core, event);
                     }
                     ripewire::object_map::ObjectType::Client => {
                         let event = pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
                         let client = PwClient::from_id(id);
-                        state.context.call_cb(&mut state.state, client, event);
+                        state.ctx.call_cb(&mut state.state, client, event);
                     }
                     ripewire::object_map::ObjectType::Registry => {
                         let event = pw_registry::Event::from(msg.header.opcode, &msg.body).unwrap();
                         let registry = PwRegistry::from_id(id);
-                        state.context.call_cb(&mut state.state, registry, event);
+                        state.ctx.call_cb(&mut state.state, registry, event);
                     }
                     ripewire::object_map::ObjectType::Device => {
                         let event = pw_device::Event::from(msg.header.opcode, &msg.body).unwrap();
                         let device = PwDevice::from_id(id);
-                        state.context.call_cb(&mut state.state, device, event);
+                        state.ctx.call_cb(&mut state.state, device, event);
                     }
                     ty => unimplemented!("{ty:?}"),
                 }
