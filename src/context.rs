@@ -71,7 +71,7 @@ impl Context {
         self.inner.lock().unwrap().conn.send_msg(bytes, fds)
     }
 
-    pub fn rcv_msg(&self) -> (Vec<Message>, Vec<RawFd>) {
+    pub fn rcv_msg(&self) -> io::Result<(Vec<Message>, Vec<RawFd>)> {
         self.inner.lock().unwrap().conn.rcv_msg()
     }
 

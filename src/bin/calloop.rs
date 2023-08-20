@@ -1,23 +1,12 @@
 use std::os::fd::{AsRawFd, RawFd};
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
-use context::Context;
 use pod::{dictionary::Dictionary, Value};
 
-mod connection;
-
-mod global_list;
-use global_list::GlobalList;
-use protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_registry};
-use proxy::{PwClient, PwClientNode, PwDevice, PwRegistry};
-
-pub mod context;
-pub mod memory_registry;
-pub mod object_map;
-pub mod protocol;
-pub mod proxy;
-
-pub const MAX_FDS_OUT: usize = 28;
+use ripewire::context::Context;
+use ripewire::global_list::GlobalList;
+use ripewire::protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_registry};
+use ripewire::proxy::{PwClient, PwClientNode, PwDevice, PwRegistry};
 
 fn properties() -> Dictionary {
     let host = nix::unistd::gethostname().unwrap();
@@ -94,7 +83,7 @@ pub fn run_rust() {
         .insert_source(
             Generic::new(fd, Interest::READ, Mode::Level),
             |_, _, state| {
-                let (messages, fds) = state.context.rcv_msg();
+                let (messages, fds) = state.context.rcv_msg().unwrap();
                 for msg in messages {
                     let device = state.device.as_ref().map(|obj| obj.id().protocol_id());
                     let client_node = state.client_node.as_ref().map(|obj| obj.id().protocol_id());

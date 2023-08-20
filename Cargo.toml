@@ -8,14 +8,21 @@ members = ["pod", "pod-derive", "libspa-consts", "scanner"]
 
 [dependencies]
 calloop = "0.10.5"
-nix = "0.26.2"
+nix = "0.26"
 bitflags = "2.0.0"
 
 libspa-consts = { path = "./libspa-consts" }
 pod = { path = "./pod" }
 pod-derive = { path = "./pod-derive" }
 quick-xml = "0.28.0"
+tokio = { version = "1", features = [
+  "rt",
+  "rt-multi-thread",
+  "net",
+  "macros",
+  "sync",
+] }
 
-
-serde = {version = "1", features = ["derive"]}
+serde = { version = "1", features = ["derive"] }
 ron = "0.8.0"
+

@@ -101,7 +101,7 @@ impl Connection {
         }
     }
 
-    pub fn rcv_msg(&mut self) -> (Vec<Message>, Vec<RawFd>) {
+    pub fn rcv_msg(&mut self) -> io::Result<(Vec<Message>, Vec<RawFd>)> {
         let mut buffer = vec![0u8; 500000];
         let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_OUT]);
 
@@ -112,8 +112,7 @@ impl Connection {
             &mut iov,
             Some(&mut cmsg),
             MsgFlags::MSG_CMSG_CLOEXEC | socket::MsgFlags::MSG_NOSIGNAL,
-        )
-        .unwrap();
+        )?;
 
         let received_fds: Vec<RawFd> = msg
             .cmsgs()
@@ -136,7 +135,7 @@ impl Connection {
             messages.push(msg);
         }
 
-        (messages, received_fds)
+        Ok((messages, received_fds))
     }
 
     fn read_msg(buff: &[u8], hdr_size: usize) -> Option<(&[u8], Message)> {
