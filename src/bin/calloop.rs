@@ -6,7 +6,7 @@ use pod::{dictionary::Dictionary, Value};
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
 use ripewire::protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_registry};
-use ripewire::proxy::{ObjectId, PwClient, PwClientNode, PwDevice, PwRegistry};
+use ripewire::proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwRegistry};
 
 fn properties() -> Dictionary {
     let host = nix::unistd::gethostname().unwrap();
@@ -48,78 +48,92 @@ fn properties() -> Dictionary {
 }
 
 pub fn run_rust() {
-    let mut context = Context::connect("/run/user/1000/pipewire-0").unwrap();
+    let mut ctx = Context::<PipewireState>::connect("/run/user/1000/pipewire-0").unwrap();
+    let core = ctx.core();
+    let client = ctx.client();
 
-    context
-        .core()
-        .hello(&mut context, pw_core::methods::Hello { version: 3 });
+    ctx.core()
+        .hello(&mut ctx, pw_core::methods::Hello { version: 3 });
 
-    context.client().update_properties(
-        &mut context,
+    ctx.client().update_properties(
+        &mut ctx,
         pw_client::methods::UpdateProperties {
             properties: properties(),
         },
     );
 
-    let registry = context.core().get_registry(
-        &mut context,
+    let registry = ctx.core().get_registry(
+        &mut ctx,
         pw_core::methods::GetRegistry {
             version: 3,
             new_id: 2,
         },
     );
 
-    context
-        .core()
-        .sync(&mut context, pw_core::methods::Sync { id: 0, seq: 0 });
+    ctx.core()
+        .sync(&mut ctx, pw_core::methods::Sync { id: 0, seq: 0 });
 
-    let mut ev = EventLoop::<State>::try_new().unwrap();
+    ctx.set_object_callback(&core, PipewireState::core_event);
+    ctx.set_object_callback(&client, PipewireState::client_event);
+    ctx.set_object_callback(&registry, PipewireState::registry_event);
 
-    let fd = context.as_raw_fd();
-    let mut state = State {
-        context,
-        registry,
-        globals: GlobalList::default(),
+    let mut ev = EventLoop::<CalloopState>::try_new().unwrap();
 
-        device: None,
-        client_node: None,
+    let fd = ctx.as_raw_fd();
+    let mut state = CalloopState {
+        ctx,
+        state: PipewireState {
+            registry,
+            globals: GlobalList::default(),
+        },
     };
 
     ev.handle()
         .insert_source(
             Generic::new(fd, Interest::READ, Mode::Level),
             |_, _, state| {
-                let (messages, fds) = state.context.rcv_msg().unwrap();
+                let (messages, fds) = state.ctx.rcv_msg().unwrap();
                 for msg in messages {
                     let id = ObjectId::new(msg.header.object_id);
 
-                    match state.context.object_type(&id).unwrap() {
+                    match state.ctx.object_type(&id).unwrap() {
                         ripewire::object_map::ObjectType::Core => {
                             let event =
                                 pw_core::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
-                            state.core_event(msg.header.object_id, event);
+
+                            let core = PwCore::from_id(id);
+                            state.ctx.dispatch_event(&mut state.state, core, event);
                         }
                         ripewire::object_map::ObjectType::Client => {
                             let event =
                                 pw_client::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
-                            state.client_event(msg.header.object_id, event);
+
+                            let client = PwClient::from_id(id);
+                            state.ctx.dispatch_event(&mut state.state, client, event);
                         }
                         ripewire::object_map::ObjectType::Registry => {
                             let event =
                                 pw_registry::Event::from(msg.header.opcode, &msg.body, &fds)
                                     .unwrap();
-                            state.registry_event(msg.header.object_id, event);
+
+                            let registry = PwRegistry::from_id(id);
+                            state.ctx.dispatch_event(&mut state.state, registry, event);
                         }
                         ripewire::object_map::ObjectType::Device => {
                             let event =
                                 pw_device::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
-                            state.device_event(msg.header.object_id, event);
+
+                            let device = PwDevice::from_id(id);
+                            state.ctx.dispatch_event(&mut state.state, device, event);
                         }
                         ripewire::object_map::ObjectType::ClientNode => {
-                            let client_node =
+                            let event =
                                 pw_client_node::Event::from(msg.header.opcode, &msg.body, &fds)
                                     .unwrap();
-                            dbg!(client_node);
+                            let client_node = PwClientNode::from_id(id);
+                            state
+                                .ctx
+                                .dispatch_event(&mut state.state, client_node, event);
                         }
                         _ => {
                             unimplemented!("{:?}", msg.header);
@@ -140,34 +154,39 @@ pub fn run_rust() {
     .unwrap();
 }
 
-struct State {
-    context: Context,
-
-    registry: PwRegistry,
-    globals: GlobalList,
-
-    device: Option<PwDevice>,
-    client_node: Option<PwClientNode>,
+struct CalloopState {
+    ctx: Context<PipewireState>,
+    state: PipewireState,
 }
 
-impl State {
-    pub fn core_event(&mut self, _object_id: u32, core_event: pw_core::Event) {
+struct PipewireState {
+    registry: PwRegistry,
+    globals: GlobalList,
+}
+
+impl PipewireState {
+    pub fn core_event(
+        &mut self,
+        ctx: &mut Context<Self>,
+        core: PwCore,
+        core_event: pw_core::Event,
+    ) {
         dbg!(&core_event);
         match core_event {
             pw_core::Event::Done(done) => {
                 if done.id == 0 && done.seq == 0 {
-                    self.done();
+                    self.done(ctx);
                 }
             }
             pw_core::Event::AddMem(add_mem) => {
-                self.context.add_mem(&add_mem);
+                ctx.add_mem(&add_mem);
             }
             pw_core::Event::RemoveMem(remove_mem) => {
-                self.context.remove_mem(&remove_mem);
+                ctx.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
-                self.context.core().pong(
-                    &mut self.context,
+                core.pong(
+                    ctx,
                     pw_core::methods::Pong {
                         id: ping.id as u32,
                         seq: ping.seq,
@@ -178,20 +197,44 @@ impl State {
         }
     }
 
-    pub fn client_event(&mut self, _object_id: u32, client_event: pw_client::Event) {
+    pub fn client_event(
+        &mut self,
+        _ctx: &mut Context<Self>,
+        _client: PwClient,
+        client_event: pw_client::Event,
+    ) {
         dbg!(&client_event);
     }
 
-    pub fn registry_event(&mut self, _object_id: u32, registry_event: pw_registry::Event) {
+    pub fn client_node_event(
+        &mut self,
+        _ctx: &mut Context<Self>,
+        _client: PwClientNode,
+        client_node_event: pw_client_node::Event,
+    ) {
+        dbg!(&client_node_event);
+    }
+
+    pub fn registry_event(
+        &mut self,
+        _ctx: &mut Context<Self>,
+        _registry: PwRegistry,
+        registry_event: pw_registry::Event,
+    ) {
         dbg!(&registry_event);
         self.globals.handle_event(&registry_event);
     }
 
-    pub fn device_event(&mut self, _object_id: u32, device_event: pw_device::Event) {
+    pub fn device_event(
+        &mut self,
+        _ctx: &mut Context<Self>,
+        _device: PwDevice,
+        device_event: pw_device::Event,
+    ) {
         dbg!(&device_event);
     }
 
-    pub fn done(&mut self) {
+    pub fn done(&mut self, ctx: &mut Context<Self>) {
         let client = self
             .globals
             .globals
@@ -209,25 +252,24 @@ impl State {
         });
 
         if let Some(global) = client {
-            let client: PwClient = self.registry.bind(&mut self.context, global);
+            let client: PwClient = self.registry.bind(ctx, global);
 
             client.get_permissions(
-                &mut self.context,
+                ctx,
                 pw_client::methods::GetPermissions { index: 0, num: 50 },
             );
         }
 
         if let Some(global) = device {
-            let device: PwDevice = self.registry.bind(&mut self.context, global);
+            let device: PwDevice = self.registry.bind(ctx, global);
+            device.set_mute(ctx, 4, 4, false);
 
-            device.set_mute(&mut self.context, 4, 4, false);
-
-            self.device = Some(device);
+            ctx.set_object_callback(&device, Self::device_event);
         }
 
         {
-            let client_node: PwClientNode = self.context.core().create_object(
-                &mut self.context,
+            let client_node: PwClientNode = ctx.core().create_object(
+                ctx,
                 pw_core::methods::CreateObject {
                     factory_name: "client-node".into(),
                     obj_type: "PipeWire:Interface:ClientNode".into(),
@@ -244,8 +286,7 @@ impl State {
 
             let id = client_node.id().protocol_id();
 
-            self.client_node = Some(client_node);
-            // return;
+            ctx.set_object_callback(&client_node, Self::client_node_event);
 
             // Client node update
             {
@@ -285,7 +326,7 @@ impl State {
 
                 let msg = protocol::manual_create_msg(id, 2, &body);
 
-                self.context.send_msg(&msg, &[]).unwrap();
+                ctx.send_msg(&msg, &[]).unwrap();
             }
 
             {
@@ -356,14 +397,14 @@ impl State {
 
                 let msg = protocol::manual_create_msg(id, 3, &body);
 
-                self.context.send_msg(&msg, &[]).unwrap();
+                ctx.send_msg(&msg, &[]).unwrap();
             }
 
             {
                 let body = pw_client_node::methods::SetActive { active: true };
 
                 let msg = protocol::manual_create_msg(id, 4, &body);
-                self.context.send_msg(&msg, &[]).unwrap();
+                ctx.send_msg(&msg, &[]).unwrap();
             }
         }
     }

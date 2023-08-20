@@ -82,7 +82,7 @@ impl<D> Context<D> {
         Some(obj.interface.clone())
     }
 
-    pub fn call_cb<P>(&mut self, state: &mut D, object: P, event: P::Event)
+    pub fn dispatch_event<P>(&mut self, state: &mut D, object: P, event: P::Event)
     where
         P: Proxy,
         P::Event: 'static,

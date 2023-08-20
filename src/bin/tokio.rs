@@ -172,28 +172,28 @@ async fn main() {
                             pw_core::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
 
                         let core = PwCore::from_id(id);
-                        state.ctx.call_cb(&mut state.state, core, event);
+                        state.ctx.dispatch_event(&mut state.state, core, event);
                     }
                     ripewire::object_map::ObjectType::Client => {
                         let event =
                             pw_client::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
 
                         let client = PwClient::from_id(id);
-                        state.ctx.call_cb(&mut state.state, client, event);
+                        state.ctx.dispatch_event(&mut state.state, client, event);
                     }
                     ripewire::object_map::ObjectType::Registry => {
                         let event =
                             pw_registry::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
 
                         let registry = PwRegistry::from_id(id);
-                        state.ctx.call_cb(&mut state.state, registry, event);
+                        state.ctx.dispatch_event(&mut state.state, registry, event);
                     }
                     ripewire::object_map::ObjectType::Device => {
                         let event =
                             pw_device::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
 
                         let device = PwDevice::from_id(id);
-                        state.ctx.call_cb(&mut state.state, device, event);
+                        state.ctx.dispatch_event(&mut state.state, device, event);
                     }
                     ty => unimplemented!("{ty:?}"),
                 }
