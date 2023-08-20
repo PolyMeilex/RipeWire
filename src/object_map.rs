@@ -2,11 +2,60 @@
 
 use std::cmp::Ordering;
 
+#[derive(Debug, Clone)]
+pub enum ObjectType {
+    Client,
+    ClientEndpoint,
+    ClientNode,
+    ClientSession,
+    Core,
+    Device,
+    Endpoint,
+    EndpointLink,
+    EndpointStream,
+    Factory,
+    Link,
+    Metadata,
+    Module,
+    Node,
+    Port,
+    Profiler,
+    Registry,
+    Session,
+    Other(String),
+}
+
+impl ObjectType {
+    pub fn from_interface_name(name: &str) -> Self {
+        match name {
+            "PipeWire:Interface:Client" => Self::Client,
+            "PipeWire:Interface:ClientEndpoint" => Self::ClientEndpoint,
+            "PipeWire:Interface:ClientNode" => Self::ClientNode,
+            "PipeWire:Interface:ClientSession" => Self::ClientSession,
+            "PipeWire:Interface:Core" => Self::Core,
+            "PipeWire:Interface:Device" => Self::Device,
+            "PipeWire:Interface:Endpoint" => Self::Endpoint,
+            "PipeWire:Interface:EndpointLink" => Self::EndpointLink,
+            "PipeWire:Interface:EndpointStream" => Self::EndpointStream,
+            "PipeWire:Interface:Factory" => Self::Factory,
+            "PipeWire:Interface:Link" => Self::Link,
+            "PipeWire:Interface:Metadata" => Self::Metadata,
+            "PipeWire:Interface:Module" => Self::Module,
+            "PipeWire:Interface:Node" => Self::Node,
+            "PipeWire:Interface:Port" => Self::Port,
+            "PipeWire:Interface:Profiler" => Self::Profiler,
+            "PipeWire:Interface:Registry" => Self::Registry,
+            "PipeWire:Interface:Session" => Self::Session,
+            _ => Self::Other(name.to_string()),
+        }
+    }
+}
+
 /// The representation of a protocol object
 #[derive(Debug, Clone)]
 pub struct Object<Data> {
     /// Interface name of this object
-    pub interface: &'static str,
+    pub interface: ObjectType,
     /// Version of this object
     pub version: u32,
     /// ObjectData associated to this object (ex: its event queue client side)
@@ -17,12 +66,12 @@ pub struct Object<Data> {
 ///
 /// Keeps track of which object id is associated to which
 /// interface object, and which is currently unused.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ObjectMap<Data> {
     objects: Vec<Option<Object<Data>>>,
 }
 
-impl<Data: Clone> ObjectMap<Data> {
+impl<Data> ObjectMap<Data> {
     /// Create a new empty object map
     pub fn new() -> Self {
         Self {
@@ -31,21 +80,22 @@ impl<Data: Clone> ObjectMap<Data> {
     }
 
     /// Find an object in the store
-    pub fn find(&self, id: u32) -> Option<Object<Data>> {
-        if id == 0 {
-            None
-        } else {
-            self.objects.get((id - 1) as usize).and_then(Clone::clone)
-        }
+    pub fn find(&self, id: u32) -> Option<&Object<Data>> {
+        self.objects.get(id as usize).and_then(|obj| obj.as_ref())
+    }
+
+    /// Find an object in the store
+    pub fn find_mut(&mut self, id: u32) -> Option<&mut Object<Data>> {
+        self.objects
+            .get_mut(id as usize)
+            .and_then(|obj| obj.as_mut())
     }
 
     /// Remove an object from the store
     ///
     /// Does nothing if the object didn't previously exists
     pub fn remove(&mut self, id: u32) {
-        if id == 0 {
-            // nothing
-        } else if let Some(place) = self.objects.get_mut((id - 1) as usize) {
+        if let Some(place) = self.objects.get_mut(id as usize) {
             *place = None;
         }
     }
@@ -55,23 +105,17 @@ impl<Data: Clone> ObjectMap<Data> {
     /// Can fail if the requested id is not the next free id of this store.
     /// (In which case this is a protocol error)
     pub fn insert_at(&mut self, id: u32, object: Object<Data>) -> Result<(), ()> {
-        if id == 0 {
-            Err(())
-        } else {
-            insert_in_at(&mut self.objects, (id - 1) as usize, object)
-        }
+        insert_in_at(&mut self.objects, id as usize, object)
     }
 
     /// Allocate a new id for an object in the client namespace
     pub fn client_insert_new(&mut self, object: Object<Data>) -> u32 {
-        insert_in(&mut self.objects, object) + 1
+        dbg!(insert_in(&mut self.objects, object))
     }
 
     /// Mutably access an object of the map
     pub fn with<T, F: FnOnce(&mut Object<Data>) -> T>(&mut self, id: u32, f: F) -> Result<T, ()> {
-        if id == 0 {
-            Err(())
-        } else if let Some(&mut Some(ref mut obj)) = self.objects.get_mut((id - 1) as usize) {
+        if let Some(&mut Some(ref mut obj)) = self.objects.get_mut(id as usize) {
             Ok(f(obj))
         } else {
             Err(())
@@ -82,7 +126,7 @@ impl<Data: Clone> ObjectMap<Data> {
         self.objects
             .iter()
             .enumerate()
-            .flat_map(|(idx, obj)| obj.as_ref().map(|obj| (idx as u32 + 1, obj)))
+            .flat_map(|(idx, obj)| obj.as_ref().map(|obj| (idx as u32, obj)))
     }
 }
 

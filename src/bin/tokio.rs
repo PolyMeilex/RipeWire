@@ -5,8 +5,8 @@ use tokio::io::unix::AsyncFd;
 
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
-use ripewire::protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_registry};
-use ripewire::proxy::{PwClientNode, PwDevice, PwRegistry};
+use ripewire::protocol::{pw_client, pw_core, pw_device, pw_registry};
+use ripewire::proxy::{ObjectId, Proxy, PwClient, PwCore, PwDevice, PwRegistry};
 
 fn properties() -> Dictionary {
     Dictionary::from([
@@ -15,87 +15,147 @@ fn properties() -> Dictionary {
     ])
 }
 
-struct State {
-    context: Context,
-
+struct PipewireState {
     registry: PwRegistry,
     globals: GlobalList,
-
-    device: Option<PwDevice>,
-    client_node: Option<PwClientNode>,
 }
 
-impl State {
-    pub fn core_event(&mut self, _object_id: u32, core_event: pw_core::Event, fds: &[RawFd]) {
+impl PipewireState {
+    pub fn core_event(
+        &mut self,
+        context: &mut Context<Self>,
+        core: PwCore,
+        core_event: pw_core::Event,
+        fds: &[RawFd],
+    ) {
         dbg!(&core_event);
         match core_event {
             pw_core::Event::Done(done) => {
                 if done.id == 0 && done.seq == 0 {
-                    self.done();
+                    self.done(context);
                 }
             }
             pw_core::Event::AddMem(add_mem) => {
-                self.context.add_mem(&add_mem, fds);
+                context.add_mem(&add_mem, fds);
             }
             pw_core::Event::RemoveMem(remove_mem) => {
-                self.context.remove_mem(&remove_mem);
+                context.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
-                self.context.core().pong(pw_core::methods::Pong {
-                    id: ping.id as u32,
-                    seq: ping.seq,
-                });
+                core.pong(
+                    context,
+                    pw_core::methods::Pong {
+                        id: ping.id as u32,
+                        seq: ping.seq,
+                    },
+                );
             }
             _ => {}
         }
     }
 
-    pub fn client_event(&mut self, _object_id: u32, client_event: pw_client::Event) {
+    pub fn client_event(
+        &mut self,
+        _context: &mut Context<Self>,
+        _client: PwClient,
+        client_event: pw_client::Event,
+    ) {
         dbg!(&client_event);
     }
 
-    pub fn registry_event(&mut self, _object_id: u32, registry_event: pw_registry::Event) {
+    pub fn registry_event(
+        &mut self,
+        _context: &mut Context<Self>,
+        _registry: PwRegistry,
+        registry_event: pw_registry::Event,
+    ) {
         dbg!(&registry_event);
         self.globals.handle_event(&registry_event);
     }
 
-    pub fn device_event(&mut self, _object_id: u32, device_event: pw_device::Event) {
+    pub fn device_event(
+        &mut self,
+        _context: &mut Context<Self>,
+        _device: PwDevice,
+        device_event: pw_device::Event,
+    ) {
         dbg!(&device_event);
     }
 
-    pub fn done(&mut self) {}
+    pub fn done(&mut self, context: &mut Context<Self>) {
+        let device = self.globals.globals.iter().find(|global| {
+            global.obj_type == "PipeWire:Interface:Device"
+                && matches!(
+                    global.properties.0.get("device.name").map(|s| s.as_str()),
+                    Some("alsa_card.pci-0000_0b_00.6")
+                )
+        });
+
+        let Some(global) = device else { return; };
+        let device: PwDevice = self.registry.bind(context, global);
+
+        context.set_object_callback(&device, |ctx, state, device, event| {
+            state.device_event(ctx, device, event)
+        });
+
+        device.set_mute(context, 4, 4, true);
+    }
+}
+
+struct State {
+    context: Context<PipewireState>,
+    state: PipewireState,
 }
 
 #[tokio::main]
 async fn main() {
-    let context = Context::connect("/run/user/1000/pipewire-0").unwrap();
+    let mut context = Context::<PipewireState>::connect("/run/user/1000/pipewire-0").unwrap();
 
-    context.core().hello(pw_core::methods::Hello { version: 3 });
+    context.set_object_callback(&context.core(), |ctx, state, core, event| {
+        state.core_event(ctx, core, event, &[])
+    });
 
-    context
-        .client()
-        .update_properties(pw_client::methods::UpdateProperties {
-            properties: properties(),
-        });
-
-    let registry = context.core().get_registry(pw_core::methods::GetRegistry {
-        version: 3,
-        new_id: 2,
+    context.set_object_callback(&context.client(), |ctx, state, client, event| {
+        state.client_event(ctx, client, event)
     });
 
     context
         .core()
-        .sync(pw_core::methods::Sync { id: 0, seq: 0 });
+        .hello(&mut context, pw_core::methods::Hello { version: 3 });
+
+    context.client().update_properties(
+        &mut context,
+        pw_client::methods::UpdateProperties {
+            properties: properties(),
+        },
+    );
+
+    let registry = context.core().get_registry(
+        &mut context,
+        pw_core::methods::GetRegistry {
+            version: 3,
+            new_id: 0,
+        },
+    );
+
+    dbg!(&registry);
+
+    context.set_object_callback(&registry, |ctx, state, registry, event| {
+        state.registry_event(ctx, registry, event)
+    });
+
+    context
+        .core()
+        .sync(&mut context, pw_core::methods::Sync { id: 0, seq: 0 });
 
     let fd = AsyncFd::new(context.as_raw_fd()).unwrap();
 
     let mut state = State {
         context,
-        registry,
-        globals: GlobalList::default(),
-
-        device: None,
-        client_node: None,
+        state: PipewireState {
+            registry,
+            globals: GlobalList::default(),
+        },
     };
 
     loop {
@@ -112,36 +172,35 @@ async fn main() {
                 }
             };
 
+            if !fds.is_empty() {
+                todo!();
+            }
+
             for msg in messages {
-                let device = state.device.as_ref().map(|obj| obj.id().protocol_id());
-                let client_node = state.client_node.as_ref().map(|obj| obj.id().protocol_id());
-                match msg.header.object_id {
-                    id if id == state.context.core().id().protocol_id() => {
+                let id = ObjectId::new(msg.header.object_id);
+
+                match state.context.object_type(&id).unwrap() {
+                    ripewire::object_map::ObjectType::Core => {
                         let event = pw_core::Event::from(msg.header.opcode, &msg.body).unwrap();
-                        state.core_event(msg.header.object_id, event, &fds);
+                        let core = PwCore::from_id(id);
+                        state.context.call_cb(&mut state.state, core, event);
                     }
-                    id if id == state.context.client().id().protocol_id() || id == 3 => {
+                    ripewire::object_map::ObjectType::Client => {
                         let event = pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
-                        state.client_event(msg.header.object_id, event);
+                        let client = PwClient::from_id(id);
+                        state.context.call_cb(&mut state.state, client, event);
                     }
-                    id if id == state.registry.id().protocol_id() => {
+                    ripewire::object_map::ObjectType::Registry => {
                         let event = pw_registry::Event::from(msg.header.opcode, &msg.body).unwrap();
-                        state.registry_event(msg.header.object_id, event);
+                        let registry = PwRegistry::from_id(id);
+                        state.context.call_cb(&mut state.state, registry, event);
                     }
-                    id if device == Some(id) => {
+                    ripewire::object_map::ObjectType::Device => {
                         let event = pw_device::Event::from(msg.header.opcode, &msg.body).unwrap();
-                        state.device_event(msg.header.object_id, event);
+                        let device = PwDevice::from_id(id);
+                        state.context.call_cb(&mut state.state, device, event);
                     }
-                    id if client_node == Some(id) => {
-                        let client_node =
-                            pw_client_node::Event::from(msg.header.opcode, &msg.body).unwrap();
-                        dbg!(client_node);
-                    }
-                    _ => {
-                        unimplemented!("{:?}", msg.header);
-                        // let value = PodDeserializer::deserialize_from(&msg.body).unwrap().1;
-                        // dbg!(msg.header);
-                    }
+                    ty => unimplemented!("{ty:?}"),
                 }
             }
         }

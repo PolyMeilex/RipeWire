@@ -6,7 +6,7 @@ use pod::{dictionary::Dictionary, Value};
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
 use ripewire::protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_registry};
-use ripewire::proxy::{PwClient, PwClientNode, PwDevice, PwRegistry};
+use ripewire::proxy::{ObjectId, PwClient, PwClientNode, PwDevice, PwRegistry};
 
 fn properties() -> Dictionary {
     let host = nix::unistd::gethostname().unwrap();
@@ -48,24 +48,30 @@ fn properties() -> Dictionary {
 }
 
 pub fn run_rust() {
-    let context = Context::connect("/run/user/1000/pipewire-0").unwrap();
-
-    context.core().hello(pw_core::methods::Hello { version: 3 });
-
-    context
-        .client()
-        .update_properties(pw_client::methods::UpdateProperties {
-            properties: properties(),
-        });
-
-    let registry = context.core().get_registry(pw_core::methods::GetRegistry {
-        version: 3,
-        new_id: 2,
-    });
+    let mut context = Context::connect("/run/user/1000/pipewire-0").unwrap();
 
     context
         .core()
-        .sync(pw_core::methods::Sync { id: 0, seq: 0 });
+        .hello(&mut context, pw_core::methods::Hello { version: 3 });
+
+    context.client().update_properties(
+        &mut context,
+        pw_client::methods::UpdateProperties {
+            properties: properties(),
+        },
+    );
+
+    let registry = context.core().get_registry(
+        &mut context,
+        pw_core::methods::GetRegistry {
+            version: 3,
+            new_id: 2,
+        },
+    );
+
+    context
+        .core()
+        .sync(&mut context, pw_core::methods::Sync { id: 0, seq: 0 });
 
     let mut ev = EventLoop::<State>::try_new().unwrap();
 
@@ -85,29 +91,29 @@ pub fn run_rust() {
             |_, _, state| {
                 let (messages, fds) = state.context.rcv_msg().unwrap();
                 for msg in messages {
-                    let device = state.device.as_ref().map(|obj| obj.id().protocol_id());
-                    let client_node = state.client_node.as_ref().map(|obj| obj.id().protocol_id());
-                    match msg.header.object_id {
-                        id if id == state.context.core().id().protocol_id() => {
+                    let id = ObjectId::new(msg.header.object_id);
+
+                    match state.context.object_type(&id).unwrap() {
+                        ripewire::object_map::ObjectType::Core => {
                             let event = pw_core::Event::from(msg.header.opcode, &msg.body).unwrap();
                             state.core_event(msg.header.object_id, event, &fds);
                         }
-                        id if id == state.context.client().id().protocol_id() || id == 3 => {
+                        ripewire::object_map::ObjectType::Client => {
                             let event =
                                 pw_client::Event::from(msg.header.opcode, &msg.body).unwrap();
                             state.client_event(msg.header.object_id, event);
                         }
-                        id if id == state.registry.id().protocol_id() => {
+                        ripewire::object_map::ObjectType::Registry => {
                             let event =
                                 pw_registry::Event::from(msg.header.opcode, &msg.body).unwrap();
                             state.registry_event(msg.header.object_id, event);
                         }
-                        id if device == Some(id) => {
+                        ripewire::object_map::ObjectType::Device => {
                             let event =
                                 pw_device::Event::from(msg.header.opcode, &msg.body).unwrap();
                             state.device_event(msg.header.object_id, event);
                         }
-                        id if client_node == Some(id) => {
+                        ripewire::object_map::ObjectType::ClientNode => {
                             let client_node =
                                 pw_client_node::Event::from(msg.header.opcode, &msg.body).unwrap();
                             dbg!(client_node);
@@ -157,10 +163,13 @@ impl State {
                 self.context.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
-                self.context.core().pong(pw_core::methods::Pong {
-                    id: ping.id as u32,
-                    seq: ping.seq,
-                });
+                self.context.core().pong(
+                    &mut self.context,
+                    pw_core::methods::Pong {
+                        id: ping.id as u32,
+                        seq: ping.seq,
+                    },
+                );
             }
             _ => {}
         }
@@ -197,45 +206,38 @@ impl State {
         });
 
         if let Some(global) = client {
-            let client = self.registry.bind::<PwClient>(pw_registry::methods::Bind {
-                id: global.id,
-                obj_type: global.obj_type.clone(),
-                version: global.version,
-                new_id: 3,
-            });
+            let client: PwClient = self.registry.bind(&mut self.context, global);
 
-            client.get_permissions(pw_client::methods::GetPermissions { index: 0, num: 50 });
+            client.get_permissions(
+                &mut self.context,
+                pw_client::methods::GetPermissions { index: 0, num: 50 },
+            );
         }
 
         if let Some(global) = device {
-            let device = self.registry.bind::<PwDevice>(pw_registry::methods::Bind {
-                id: global.id,
-                obj_type: global.obj_type.clone(),
-                version: global.version,
-                new_id: 4,
-            });
+            let device: PwDevice = self.registry.bind(&mut self.context, global);
 
-            device.set_mute(4, 4, false);
+            device.set_mute(&mut self.context, 4, 4, false);
 
             self.device = Some(device);
         }
 
         {
-            let client_node =
-                self.context
-                    .core()
-                    .create_object::<PwClientNode>(pw_core::methods::CreateObject {
-                        factory_name: "client-node".into(),
-                        obj_type: "PipeWire:Interface:ClientNode".into(),
-                        version: 3,
-                        properties: Dictionary::from([
-                            ("application.name", "rustypipe"),
-                            ("media.type", "Midi"),
-                            ("format.dsp", "8 bit raw midi"),
-                            ("stream.is-live", "true"),
-                        ]),
-                        new_id: 4,
-                    });
+            let client_node: PwClientNode = self.context.core().create_object(
+                &mut self.context,
+                pw_core::methods::CreateObject {
+                    factory_name: "client-node".into(),
+                    obj_type: "PipeWire:Interface:ClientNode".into(),
+                    version: 3,
+                    properties: Dictionary::from([
+                        ("application.name", "rustypipe"),
+                        ("media.type", "Midi"),
+                        ("format.dsp", "8 bit raw midi"),
+                        ("stream.is-live", "true"),
+                    ]),
+                    new_id: 0,
+                },
+            );
 
             let id = client_node.id().protocol_id();
 
