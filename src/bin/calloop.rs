@@ -52,13 +52,13 @@ pub fn run_rust() {
     let core = ctx.core();
     let client = ctx.client();
 
-    ctx.core().hello(&mut ctx);
+    core.hello(&mut ctx);
 
-    ctx.client().update_properties(&mut ctx, properties());
+    client.update_properties(&mut ctx, properties());
 
-    let registry = ctx.core().get_registry(&mut ctx);
+    let registry = core.get_registry(&mut ctx);
 
-    ctx.core().sync(&mut ctx, 0, 0);
+    core.sync(&mut ctx, 0, 0);
 
     ctx.set_object_callback(&core, PipewireState::core_event);
     ctx.set_object_callback(&client, PipewireState::client_event);
@@ -126,7 +126,7 @@ impl PipewireState {
                 ctx.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
-                core.pong(ctx, ping.id as u32, ping.seq);
+                core.pong(ctx, ping.id, ping.seq);
             }
             _ => {}
         }
@@ -220,56 +220,53 @@ impl PipewireState {
 
             ctx.set_object_callback(&client_node, Self::client_node_event);
 
-            // Client node update
-            {
-                use Value::*;
-                let body = Struct(vec![
-                    Int(3),
-                    Int(0),
-                    Struct(vec![
-                        Int(-1),
-                        Int(-1),
-                        Long(7),
-                        Long(1),
-                        Int(7),
-                        String("object.register".into()),
-                        String("false".into()),
-                        String("media.type".into()),
-                        String("Midi".into()),
-                        String("media.category".into()),
-                        String("Filter".into()),
-                        String("media.role".into()),
-                        String("DSP".into()),
-                        String("media.name".into()),
-                        String("ripewire".into()),
-                        String("node.name".into()),
-                        String("ripewire".into()),
-                        String("node.want-driver".into()),
-                        String("true".into()),
-                        Int(3),
-                        Id(pod::utils::Id(1)),
-                        Int(0),
-                        Id(pod::utils::Id(2)),
-                        Int(4),
-                        Id(pod::utils::Id(16)),
-                        Int(0),
+            let msg = protocol::create_msg(
+                id,
+                &pw_client_node::methods::Update {
+                    change_mask: 3,
+                    n_params: 0,
+                    // TODO: Info struct typedef
+                    info: Value::Struct(vec![
+                        Value::Int(-1),
+                        Value::Int(-1),
+                        Value::Long(7),
+                        Value::Long(1),
+                        Value::Int(7),
+                        Value::String("object.register".into()),
+                        Value::String("false".into()),
+                        Value::String("media.type".into()),
+                        Value::String("Midi".into()),
+                        Value::String("media.category".into()),
+                        Value::String("Filter".into()),
+                        Value::String("media.role".into()),
+                        Value::String("DSP".into()),
+                        Value::String("media.name".into()),
+                        Value::String("ripewire".into()),
+                        Value::String("node.name".into()),
+                        Value::String("ripewire".into()),
+                        Value::String("node.want-driver".into()),
+                        Value::String("true".into()),
+                        Value::Int(3),
+                        Value::Id(pod::utils::Id(1)),
+                        Value::Int(0),
+                        Value::Id(pod::utils::Id(2)),
+                        Value::Int(4),
+                        Value::Id(pod::utils::Id(16)),
+                        Value::Int(0),
                     ]),
-                ]);
+                },
+            );
 
-                let msg = protocol::manual_create_msg(id, 2, &body);
+            ctx.send_msg(&msg, &[]).unwrap();
 
-                ctx.send_msg(&msg, &[]).unwrap();
-            }
-
-            {
-                use Value::*;
-
-                let body = protocol::pw_client_node::methods::PortUpdate {
+            let msg = protocol::create_msg(
+                id,
+                &protocol::pw_client_node::methods::PortUpdate {
                     direction: 0,
                     port_id: 0,
                     change_mask: 3,
                     params: vec![
-                        Object(pod::Object {
+                        Value::Object(pod::Object {
                             type_: libspa_consts::SpaType::ObjectFormat as u32,
                             id: libspa_consts::SpaParamType::EnumFormat as u32,
                             properties: vec![
@@ -277,29 +274,29 @@ impl PipewireState {
                                     key: libspa_consts::spa_format::SPA_FORMAT_mediaType as u32,
                                     flags: pod::PropertyFlags::empty(),
                                     // application
-                                    value: Id(pod::utils::Id(6)),
+                                    value: Value::Id(pod::utils::Id(6)),
                                 },
                                 pod::Property {
                                     key: libspa_consts::spa_format::SPA_FORMAT_mediaSubtype as u32,
                                     flags: pod::PropertyFlags::empty(),
                                     // control
-                                    value: Id(pod::utils::Id(393217)),
+                                    value: Value::Id(pod::utils::Id(393217)),
                                 },
                             ],
                         }),
-                        Object(pod::Object {
+                        Value::Object(pod::Object {
                             type_: libspa_consts::SpaType::ObjectParamIo as u32,
                             id: libspa_consts::SpaParamType::IO as u32,
                             properties: vec![
                                 pod::Property {
                                     key: 1,
                                     flags: pod::PropertyFlags::empty(),
-                                    value: Id(pod::utils::Id(1)),
+                                    value: Value::Id(pod::utils::Id(1)),
                                 },
                                 pod::Property {
                                     key: 2,
                                     flags: pod::PropertyFlags::empty(),
-                                    value: Int(8),
+                                    value: Value::Int(8),
                                 },
                             ],
                         }),
@@ -325,19 +322,14 @@ impl PipewireState {
                             (pod::utils::Id(15), 4),
                         ],
                     }),
-                };
+                },
+            );
 
-                let msg = protocol::manual_create_msg(id, 3, &body);
+            ctx.send_msg(&msg, &[]).unwrap();
 
-                ctx.send_msg(&msg, &[]).unwrap();
-            }
-
-            {
-                let body = pw_client_node::methods::SetActive { active: true };
-
-                let msg = protocol::manual_create_msg(id, 4, &body);
-                ctx.send_msg(&msg, &[]).unwrap();
-            }
+            let msg =
+                protocol::create_msg(id, &pw_client_node::methods::SetActive { active: true });
+            ctx.send_msg(&msg, &[]).unwrap();
         }
     }
 }
