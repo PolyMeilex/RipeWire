@@ -116,6 +116,16 @@ pub enum SpaParamType {
     ProcessLatency = 16,
 }
 #[repr(u32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum SpaParamAvailability {
+    #[doc = "< unknown availability"]
+    Unknown = 0,
+    #[doc = "< not available"]
+    No = 1,
+    #[doc = "< available"]
+    Yes = 2,
+}
+#[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamIO"]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum SpaParamIo {

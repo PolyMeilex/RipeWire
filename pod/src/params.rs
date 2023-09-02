@@ -1,4 +1,4 @@
-use spa_sys::SpaDirection;
+use spa_sys::{SpaDirection, SpaParamAvailability};
 
 use crate::{pod, utils::Id, Object, Property, PropertyFlags, Value};
 
@@ -167,11 +167,11 @@ impl RouteParamBuilder {
         self
     }
 
-    pub fn available(mut self, available: Id) -> Self {
+    pub fn available(mut self, available: SpaParamAvailability) -> Self {
         self.properties.push(Property {
             key: spa_sys::SpaParamRoute::Available as u32,
             flags: PropertyFlags::empty(),
-            value: Value::Id(available),
+            value: Value::Id(Id(available as u32)),
         });
         self
     }

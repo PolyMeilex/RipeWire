@@ -34,6 +34,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "spa_rectangle",
             "spa_fraction",
             "spa_direction",
+            "spa_param_availability",
         ];
 
         if rename.contains(&original_item_name) {
@@ -84,6 +85,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "enum spa_media_subtype" => "SPA_MEDIA_SUBTYPE_",
             "enum spa_format" => "SPA_FORMAT_",
             "enum spa_direction" => "SPA_DIRECTION_",
+            "enum spa_param_availability" => "SPA_PARAM_AVAILABILITY_",
             _ => return None,
         };
 
@@ -129,6 +131,7 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_media_type",
         "spa_media_subtype",
         "spa_direction",
+        "spa_param_availability",
     ] {
         builder = builder.allowlist_type(name).rustified_enum(name);
     }
