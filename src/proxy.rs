@@ -226,33 +226,15 @@ impl PwDevice {
         self.object_id.clone()
     }
 
-    pub fn set_param<D>(&self, context: &mut Context<D>, param: SpaParamType, value: Value) {
+    pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
         let msg = pw_device::methods::SetParam {
-            id: pod::utils::Id(param as u32),
+            id: pod::utils::Id(value.id),
             flags: 0,
-            param: value,
+            param: Value::Object(value),
         };
 
         let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
-    }
-
-    pub fn set_mute<D>(&self, context: &mut Context<D>, index: i32, device: i32, mute: bool) {
-        let value = pod::params::RouteParamBuilder::route()
-            .index(index)
-            .device(device)
-            .props(Object {
-                type_: SpaType::ObjectProps,
-                id: SpaParamType::Route as u32,
-                properties: vec![Property {
-                    key: SpaProp::Mute as u32,
-                    flags: PropertyFlags::empty(),
-                    value: Value::Bool(mute),
-                }],
-            })
-            .build();
-
-        self.set_param(context, SpaParamType::Route, Value::Object(value));
     }
 }
 

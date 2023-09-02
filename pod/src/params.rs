@@ -1,49 +1,51 @@
-use spa_sys::{SpaDirection, SpaParamAvailability};
+use spa_sys::{
+    SpaDirection, SpaFormat, SpaIoType, SpaMediaSubtype, SpaMediaType, SpaParamAvailability,
+    SpaParamIo, SpaParamRoute, SpaParamType, SpaType,
+};
 
 use crate::{pod, utils::Id, Object, Property, PropertyFlags, Value};
 
 #[derive(Debug)]
 pub struct FormatParamBuilder {
-    id: spa_sys::SpaParamType,
+    id: SpaParamType,
     properties: Vec<Property>,
 }
 
 impl FormatParamBuilder {
     pub fn format() -> Self {
         Self {
-            id: spa_sys::SpaParamType::Format,
+            id: SpaParamType::Format,
             properties: vec![],
         }
     }
 
     pub fn enum_format() -> Self {
         Self {
-            id: spa_sys::SpaParamType::EnumFormat,
+            id: SpaParamType::EnumFormat,
             properties: vec![],
         }
     }
 
-    pub fn media_type(mut self, id: spa_sys::SpaMediaType) -> Self {
+    fn push(mut self, key: SpaFormat, value: Value) -> Self {
         self.properties.push(Property {
-            key: spa_sys::SpaFormat::MediaType as u32,
+            key: key as u32,
             flags: PropertyFlags::empty(),
-            value: Value::Id(Id(id as u32)),
+            value,
         });
         self
     }
 
-    pub fn media_subtype(mut self, id: spa_sys::SpaMediaSubtype) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaFormat::MediaSubtype as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Id(Id(id as u32)),
-        });
-        self
+    pub fn media_type(self, id: SpaMediaType) -> Self {
+        self.push(SpaFormat::MediaType, Value::Id(Id(id as u32)))
+    }
+
+    pub fn media_subtype(self, id: SpaMediaSubtype) -> Self {
+        self.push(SpaFormat::MediaSubtype, Value::Id(Id(id as u32)))
     }
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaType::ObjectFormat,
+            type_: SpaType::ObjectFormat,
             id: self.id as u32,
             properties: self.properties,
         }
@@ -52,39 +54,38 @@ impl FormatParamBuilder {
 
 #[derive(Debug)]
 pub struct IoParamBuilder {
-    id: spa_sys::SpaParamType,
+    id: SpaParamType,
     properties: Vec<Property>,
 }
 
 impl IoParamBuilder {
     pub fn io() -> Self {
         Self {
-            id: spa_sys::SpaParamType::Io,
+            id: SpaParamType::Io,
             properties: vec![],
         }
     }
 
-    pub fn id(mut self, id: spa_sys::SpaIoType) -> Self {
+    fn push(mut self, key: SpaParamIo, value: Value) -> Self {
         self.properties.push(Property {
-            key: spa_sys::SpaParamIo::Id as u32,
+            key: key as u32,
             flags: PropertyFlags::empty(),
-            value: Value::Id(Id(id as u32)),
+            value,
         });
         self
     }
 
-    pub fn size(mut self, size: u32) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamIo::Size as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Int(size as i32),
-        });
-        self
+    pub fn id(self, id: SpaIoType) -> Self {
+        self.push(SpaParamIo::Id, Value::Id(Id(id as u32)))
+    }
+
+    pub fn size(self, size: u32) -> Self {
+        self.push(SpaParamIo::Size, Value::Int(size as i32))
     }
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaType::ObjectParamIo,
+            type_: SpaType::ObjectParamIo,
             id: self.id as u32,
             properties: self.properties,
         }
@@ -93,7 +94,7 @@ impl IoParamBuilder {
 
 #[derive(Debug)]
 pub struct RouteParamBuilder {
-    id: spa_sys::SpaParamType,
+    id: SpaParamType,
     properties: Vec<Property>,
 }
 
@@ -101,138 +102,86 @@ pub struct RouteParamBuilder {
 impl RouteParamBuilder {
     pub fn enum_route() -> Self {
         Self {
-            id: spa_sys::SpaParamType::EnumRoute,
+            id: SpaParamType::EnumRoute,
             properties: vec![],
         }
     }
 
     pub fn route() -> Self {
         Self {
-            id: spa_sys::SpaParamType::Route,
+            id: SpaParamType::Route,
             properties: vec![],
         }
     }
 
-    pub fn index(mut self, index: i32) -> Self {
+    fn push(mut self, key: SpaParamRoute, value: Value) -> Self {
         self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Index as u32,
+            key: key as u32,
             flags: PropertyFlags::empty(),
-            value: Value::Int(index),
+            value,
         });
         self
     }
 
-    pub fn direction(mut self, direction: SpaDirection) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Direction as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Id(Id(direction as u32)),
-        });
-        self
+    pub fn index(self, index: i32) -> Self {
+        self.push(SpaParamRoute::Index, Value::Int(index))
     }
 
-    pub fn device(mut self, device: i32) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Device as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Int(device),
-        });
-        self
+    pub fn direction(self, direction: SpaDirection) -> Self {
+        self.push(SpaParamRoute::Direction, Value::Id(Id(direction as u32)))
     }
 
-    pub fn name(mut self, name: impl Into<String>) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Name as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::String(name.into()),
-        });
-        self
+    pub fn device(self, device: i32) -> Self {
+        self.push(SpaParamRoute::Device, Value::Int(device))
     }
 
-    pub fn description(mut self, description: impl Into<String>) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Description as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::String(description.into()),
-        });
-        self
+    pub fn name(self, name: impl Into<String>) -> Self {
+        self.push(SpaParamRoute::Name, Value::String(name.into()))
     }
 
-    pub fn priority(mut self, priority: i32) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Priority as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Int(priority),
-        });
-        self
+    pub fn description(self, description: impl Into<String>) -> Self {
+        self.push(
+            SpaParamRoute::Description,
+            Value::String(description.into()),
+        )
     }
 
-    pub fn available(mut self, available: SpaParamAvailability) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Available as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Id(Id(available as u32)),
-        });
-        self
+    pub fn priority(self, priority: i32) -> Self {
+        self.push(SpaParamRoute::Priority, Value::Int(priority))
     }
 
-    pub fn info(mut self, info: Vec<Value>) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Info as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Struct(info),
-        });
-        self
+    pub fn available(self, available: SpaParamAvailability) -> Self {
+        self.push(SpaParamRoute::Available, Value::Id(Id(available as u32)))
     }
 
-    pub fn profiles(mut self, profiles: i32) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Profiles as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Int(profiles),
-        });
-        self
+    pub fn info(self, info: Vec<Value>) -> Self {
+        self.push(SpaParamRoute::Info, Value::Struct(info))
     }
 
-    pub fn props(mut self, props: pod::Object) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Props as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Object(props),
-        });
-        self
+    pub fn profiles(self, profiles: i32) -> Self {
+        self.push(SpaParamRoute::Profiles, Value::Int(profiles))
     }
 
-    pub fn devices(mut self, devices: i32) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Devices as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Int(devices),
-        });
-        self
+    pub fn props(self, mut props: pod::Object) -> Self {
+        props.id = self.id as u32;
+        self.push(SpaParamRoute::Props, Value::Object(props))
     }
 
-    pub fn profile(mut self, profile: i32) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Profile as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Int(profile),
-        });
-        self
+    pub fn devices(self, devices: i32) -> Self {
+        self.push(SpaParamRoute::Devices, Value::Int(devices))
     }
 
-    pub fn save(mut self, save: bool) -> Self {
-        self.properties.push(Property {
-            key: spa_sys::SpaParamRoute::Save as u32,
-            flags: PropertyFlags::empty(),
-            value: Value::Bool(save),
-        });
-        self
+    pub fn profile(self, profile: i32) -> Self {
+        self.push(SpaParamRoute::Profile, Value::Int(profile))
+    }
+
+    pub fn save(self, save: bool) -> Self {
+        self.push(SpaParamRoute::Save, Value::Bool(save))
     }
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaType::ObjectParamRoute,
+            type_: SpaType::ObjectParamRoute,
             id: self.id as u32,
             properties: self.properties,
         }

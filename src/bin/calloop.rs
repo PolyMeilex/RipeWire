@@ -1,7 +1,7 @@
 use std::os::fd::AsRawFd;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
-use libspa_consts::SpaDirection;
+use libspa_consts::{SpaDirection, SpaParamType};
 use pod::{dictionary::Dictionary, Value};
 
 use ripewire::context::Context;
@@ -195,7 +195,20 @@ impl PipewireState {
 
         if let Some(global) = device {
             let device: PwDevice = self.registry.bind(ctx, global);
-            device.set_mute(ctx, 4, 4, false);
+
+            device.set_param(
+                ctx,
+                pod::params::RouteParamBuilder::route()
+                    .index(4)
+                    .device(4)
+                    .props(
+                        pod::props::PropsBuilder::new()
+                            .mute(false)
+                            .volume(0.1)
+                            .build(),
+                    )
+                    .build(),
+            );
 
             ctx.set_object_callback(&device, Self::device_event);
         }

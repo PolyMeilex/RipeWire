@@ -1,3 +1,4 @@
+use libspa_consts::SpaParamType;
 use pod::dictionary::Dictionary;
 use std::io;
 use std::os::fd::AsRawFd;
@@ -85,7 +86,19 @@ impl PipewireState {
 
         context.set_object_callback(&device, Self::device_event);
 
-        device.set_mute(context, 4, 4, true);
+        device.set_param(
+            context,
+            pod::params::RouteParamBuilder::route()
+                .index(4)
+                .device(4)
+                .props(
+                    pod::props::PropsBuilder::new()
+                        .mute(false)
+                        .volume(0.1)
+                        .build(),
+                )
+                .build(),
+        );
     }
 }
 

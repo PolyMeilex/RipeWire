@@ -10,6 +10,7 @@ pub mod params;
 pub mod permissions;
 pub mod pod;
 pub mod pod_struct;
+pub mod props;
 pub mod utils;
 
 pub use pod::*;
