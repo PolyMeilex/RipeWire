@@ -4,7 +4,7 @@
 use std::path::PathBuf;
 
 use bindgen::callbacks::EnumVariantCustomBehavior;
-use convert_case::Casing;
+use convert_case::{Case, Casing};
 
 fn main() {
     let libs = system_deps::Config::new()
@@ -19,18 +19,23 @@ struct ParseCallbacks;
 
 impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
     fn item_name(&self, original_item_name: &str) -> Option<String> {
-        match original_item_name {
-            "spa_choice_type" => Some("SpaChoiceType".to_string()),
-            "spa_prop" => Some("SpaProp".to_string()),
-            "spa_data_type" => Some("SpaDataType".to_string()),
-            "spa_param_route" => Some("SpaParamRoute".to_string()),
-            "spa_param_type" => Some("SpaParamType".to_string()),
-            "spa_io_type" => Some("SpaIoType".to_string()),
-            "spa_param_io" => Some("SpaParamIo".to_string()),
-            "spa_media_type" => Some("SpaMediaType".to_string()),
-            "spa_media_subtype" => Some("SpaMediaSubtype".to_string()),
-            "spa_format" => Some("SpaFormat".to_string()),
-            _ => None,
+        let rename = [
+            "spa_choice_type",
+            "spa_prop",
+            "spa_data_type",
+            "spa_param_route",
+            "spa_param_type",
+            "spa_io_type",
+            "spa_param_io",
+            "spa_media_type",
+            "spa_media_subtype",
+            "spa_format",
+        ];
+
+        if rename.contains(&original_item_name) {
+            Some(original_item_name.to_case(Case::UpperCamel))
+        } else {
+            None
         }
     }
 
@@ -40,14 +45,11 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
         original_variant_name: &str,
         _variant_value: bindgen::callbacks::EnumVariantValue,
     ) -> Option<EnumVariantCustomBehavior> {
-        if original_variant_name == "_SPA_DATA_LAST" {
+        if original_variant_name == "_SPA_DATA_LAST"
+            || (original_variant_name.starts_with("SPA_PROP_")
+                && original_variant_name.contains("_START"))
+        {
             Some(EnumVariantCustomBehavior::Hide)
-        } else if original_variant_name.starts_with("SPA_PROP_") {
-            if original_variant_name.contains("_START") {
-                Some(EnumVariantCustomBehavior::Hide)
-            } else {
-                None
-            }
         } else {
             None
         }
@@ -59,25 +61,25 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
         original_variant_name: &str,
         _variant_value: bindgen::callbacks::EnumVariantValue,
     ) -> Option<String> {
-        let Some(enum_name) = enum_name else {
-            return None;
+        let prefix = match enum_name? {
+            "enum spa_choice_type" => "SPA_CHOICE_",
+            "enum spa_prop" => "SPA_PROP_",
+            "enum spa_data_type" => "SPA_DATA_",
+            "enum spa_param_route" => "SPA_PARAM_ROUTE_",
+            "enum spa_param_type" => "SPA_PARAM_",
+            "enum spa_param_io" => "SPA_PARAM_IO_",
+            "enum spa_io_type" => "SPA_IO_",
+            "enum spa_media_type" => "SPA_MEDIA_TYPE_",
+            "enum spa_media_subtype" => "SPA_MEDIA_SUBTYPE_",
+            "enum spa_format" => "SPA_FORMAT_",
+            _ => return None,
         };
 
-        let variant = match enum_name {
-            "enum spa_choice_type" => original_variant_name.strip_prefix("SPA_CHOICE_"),
-            "enum spa_prop" => original_variant_name.strip_prefix("SPA_PROP_"),
-            "enum spa_data_type" => original_variant_name.strip_prefix("SPA_DATA_"),
-            "enum spa_param_route" => original_variant_name.strip_prefix("SPA_PARAM_ROUTE_"),
-            "enum spa_param_type" => original_variant_name.strip_prefix("SPA_PARAM_"),
-            "enum spa_param_io" => original_variant_name.strip_prefix("SPA_PARAM_IO_"),
-            "enum spa_io_type" => original_variant_name.strip_prefix("SPA_IO_"),
-            "enum spa_media_type" => original_variant_name.strip_prefix("SPA_MEDIA_TYPE_"),
-            "enum spa_media_subtype" => original_variant_name.strip_prefix("SPA_MEDIA_SUBTYPE_"),
-            "enum spa_format" => original_variant_name.strip_prefix("SPA_FORMAT_"),
-            _ => None,
-        };
-
-        variant.map(|v| v.to_case(convert_case::Case::UpperCamel))
+        Some(
+            original_variant_name
+                .strip_prefix(prefix)?
+                .to_case(Case::UpperCamel),
+        )
     }
 }
 
