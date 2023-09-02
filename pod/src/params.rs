@@ -1,4 +1,4 @@
-use crate::{utils::Id, Object, Property, PropertyFlags, Value};
+use crate::{pod, utils::Id, Object, Property, PropertyFlags, Value};
 
 #[derive(Debug)]
 pub struct FormatParamBuilder {
@@ -83,6 +83,63 @@ impl IoParamBuilder {
     pub fn build(self) -> Object {
         Object {
             type_: spa_sys::SpaObjectType::ParamIo,
+            id: self.id as u32,
+            properties: self.properties,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct RouteParamBuilder {
+    id: spa_sys::SpaParamType,
+    properties: Vec<Property>,
+}
+
+impl RouteParamBuilder {
+    pub fn enum_route() -> Self {
+        Self {
+            id: spa_sys::SpaParamType::EnumRoute,
+            properties: vec![],
+        }
+    }
+
+    pub fn route() -> Self {
+        Self {
+            id: spa_sys::SpaParamType::Route,
+            properties: vec![],
+        }
+    }
+
+    pub fn index(mut self, index: i32) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Index as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Int(index),
+        });
+        self
+    }
+
+    pub fn device(mut self, device: i32) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Device as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Int(device),
+        });
+        self
+    }
+
+    pub fn props(mut self, props: pod::Object) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Props as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Object(props),
+        });
+        self
+    }
+
+    pub fn build(self) -> Object {
+        Object {
+            type_: spa_sys::SpaObjectType::ParamRoute,
             id: self.id as u32,
             properties: self.properties,
         }
