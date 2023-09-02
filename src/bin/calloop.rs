@@ -220,42 +220,32 @@ impl PipewireState {
 
             ctx.set_object_callback(&client_node, Self::client_node_event);
 
-            let msg = protocol::create_msg(
-                id,
-                &pw_client_node::methods::Update {
-                    change_mask: 3,
-                    n_params: 0,
-                    // TODO: Info struct typedef
-                    info: Value::Struct(vec![
-                        Value::Int(-1),
-                        Value::Int(-1),
-                        Value::Long(7),
-                        Value::Long(1),
-                        Value::Int(7),
-                        Value::String("object.register".into()),
-                        Value::String("false".into()),
-                        Value::String("media.type".into()),
-                        Value::String("Midi".into()),
-                        Value::String("media.category".into()),
-                        Value::String("Filter".into()),
-                        Value::String("media.role".into()),
-                        Value::String("DSP".into()),
-                        Value::String("media.name".into()),
-                        Value::String("ripewire".into()),
-                        Value::String("node.name".into()),
-                        Value::String("ripewire".into()),
-                        Value::String("node.want-driver".into()),
-                        Value::String("true".into()),
-                        Value::Int(3),
-                        Value::Id(pod::utils::Id(1)),
-                        Value::Int(0),
-                        Value::Id(pod::utils::Id(2)),
-                        Value::Int(4),
-                        Value::Id(pod::utils::Id(16)),
-                        Value::Int(0),
+            let msg = pw_client_node::methods::Update {
+                change_mask: 3,
+                n_params: 0,
+                info: pw_client_node::methods::NodeInfo {
+                    max_input_ports: 0,
+                    max_output_ports: 0,
+                    change_mask: 7,
+                    flags: 1,
+                    props: Dictionary::from([
+                        ("object.register", "false"),
+                        ("media.type", "Midi"),
+                        ("media.category", "Filter"),
+                        ("media.role", "DSP"),
+                        ("media.name", "ripewire"),
+                        ("node.name", "ripewire"),
+                        ("node.want-driver", "true"),
                     ]),
+                    params: vec![
+                        (pod::utils::Id(1), 0),
+                        (pod::utils::Id(2), 4),
+                        (pod::utils::Id(16), 0),
+                    ],
                 },
-            );
+            };
+
+            let msg = protocol::create_msg(id, &msg);
 
             ctx.send_msg(&msg, &[]).unwrap();
 

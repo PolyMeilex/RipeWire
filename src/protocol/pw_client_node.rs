@@ -23,6 +23,60 @@ pub mod methods {
         const OPCODE: u8 = 1;
     }
 
+    #[derive(Debug, Clone)]
+    pub struct NodeInfo {
+        pub max_input_ports: u32,
+        pub max_output_ports: u32,
+        // TODO:
+        // SPA_NODE_CHANGE_MASK_FLAGS		(1u<<0)
+        // SPA_NODE_CHANGE_MASK_PROPS		(1u<<1)
+        // SPA_NODE_CHANGE_MASK_PARAMS		(1u<<2)
+        pub change_mask: u64,
+        // TODO:
+        // SPA_NODE_FLAG_RT			(1u<<0)	/**< node can do real-time processing */
+        // SPA_NODE_FLAG_IN_DYNAMIC_PORTS		(1u<<1)	/**< input ports can be added/removed */
+        // SPA_NODE_FLAG_OUT_DYNAMIC_PORTS		(1u<<2)	/**< output ports can be added/removed */
+        // SPA_NODE_FLAG_IN_PORT_CONFIG		(1u<<3)	/**< input ports can be reconfigured with
+        //                       *  PortConfig parameter */
+        // SPA_NODE_FLAG_OUT_PORT_CONFIG		(1u<<4)	/**< output ports can be reconfigured with
+        //                       *  PortConfig parameter */
+        // SPA_NODE_FLAG_NEED_CONFIGURE		(1u<<5)	/**< node needs configuration before it can
+        //                       *  be started. */
+        // SPA_NODE_FLAG_ASYNC			(1u<<6)	/**< the process function might not
+        //                       *  immediately produce or consume data
+        //                       *  but might offload the work to a worker
+        //                       *  thread. */
+        pub flags: u64,
+        pub props: pod::dictionary::Dictionary,
+        pub params: Vec<(pod::utils::Id, u32)>,
+    }
+
+    impl pod::serialize::PodSerialize for NodeInfo {
+        fn serialize<O: std::io::Write + std::io::Seek>(
+            &self,
+            mut serializer: pod::serialize::PodSerializer<O>,
+            flatten: bool,
+        ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
+            let mut s = serializer.serialize_struct(flatten)?;
+
+            s.serialize_field(&self.max_input_ports)?;
+            s.serialize_field(&self.max_output_ports)?;
+            s.serialize_field(&self.change_mask)?;
+            s.serialize_field(&self.flags)?;
+
+            s.serialize_flattened(&self.props)?;
+
+            s.serialize_field(&(self.params.len() as i32))?;
+
+            for (id, flags) in self.params.iter() {
+                s.serialize_field(id)?;
+                s.serialize_field(flags)?;
+            }
+
+            s.end()
+        }
+    }
+
     /// Update the params and info of the node.
     #[derive(Debug, Clone, pod_derive::PodSerialize)]
     pub struct Update {
@@ -31,8 +85,7 @@ pub mod methods {
         /// Number of update params, valid when change_mask has (1<<0)
         pub n_params: u32,
         // An updated param
-        // TODO: pub params: todo!(),
-        pub info: pod::Value,
+        pub info: NodeInfo,
     }
 
     impl HasOpCode for Update {
