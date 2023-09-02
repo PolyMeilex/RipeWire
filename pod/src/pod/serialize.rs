@@ -230,7 +230,7 @@ impl<P: FixedSizedPod> PodSerialize for [P] {
     }
 }
 
-impl<T> PodSerialize for (u32, *const T) {
+impl<T> PodSerialize for (spa_sys::SpaType, *const T) {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
@@ -419,7 +419,7 @@ impl<O: Write + Seek> PodSerializer<O> {
     /// Begin serializing an `Object` pod.
     pub fn serialize_object(
         mut self,
-        object_type: u32,
+        object_type: spa_sys::SpaType,
         object_id: u32,
     ) -> Result<ObjectPodSerializer<O>, GenError> {
         let header_position = self
@@ -431,7 +431,7 @@ impl<O: Write + Seek> PodSerializer<O> {
 
         // Write a size of 0 for now, this will be updated when calling `ObjectPodSerializer.end()`.
         self.gen(Self::header(0, spa_sys::SpaType::Object))?;
-        self.gen(pair(ne_u32(object_type), ne_u32(object_id)))?;
+        self.gen(pair(ne_u32(object_type as u32), ne_u32(object_id)))?;
 
         Ok(ObjectPodSerializer {
             serializer: Some(self),
@@ -499,14 +499,14 @@ impl<O: Write + Seek> PodSerializer<O> {
     /// Serialize a pointer pod.
     pub fn serialize_pointer<T>(
         mut self,
-        type_: u32,
+        type_: spa_sys::SpaType,
         ptr: *const T,
     ) -> Result<SerializeSuccess<O>, GenError> {
         let ptr_size = std::mem::size_of::<usize>();
         let len = 8 + ptr_size;
 
         let mut written = self.gen(Self::header(len, spa_sys::SpaType::Pointer))?;
-        written += self.gen(pair(ne_u32(type_), ne_u32(0)))?;
+        written += self.gen(pair(ne_u32(type_ as u32), ne_u32(0)))?;
 
         written += match ptr_size {
             4 => self.gen(ne_u32(ptr as u32))?,

@@ -239,7 +239,7 @@ impl PwDevice {
 
     pub fn set_mute<D>(&self, context: &mut Context<D>, index: i32, device: i32, mute: bool) {
         let value = Value::Object(Object {
-            type_: SpaType::ObjectParamRoute as u32,
+            type_: SpaType::ObjectParamRoute,
             id: SpaParamType::Route as u32,
             properties: vec![
                 Property {
@@ -256,7 +256,7 @@ impl PwDevice {
                     key: SpaParamRoute::Props as u32,
                     flags: PropertyFlags::empty(),
                     value: Value::Object(Object {
-                        type_: SpaType::ObjectProps as u32,
+                        type_: SpaType::ObjectProps,
                         id: SpaParamType::Route as u32,
                         properties: vec![Property {
                             key: SpaProp::Mute as u32,

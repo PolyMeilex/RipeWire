@@ -479,6 +479,10 @@ impl<'de> PodDeserializer<'de> {
         let (object_type, object_id) =
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
 
+        let Some(object_type) = spa_sys::SpaType::from_raw(object_type) else {
+            return Err(DeserializeError::InvalidType);
+        };
+
         Ok(ObjectPodDeserializer {
             deserializer: Some(self),
             remaining: len - 8,
@@ -635,7 +639,7 @@ impl<'de> PodDeserializer<'de> {
         let num_values = (len - 16) / child_size;
 
         fn create_choice<'de, E>(
-            choice_type: u32,
+            choice_type: spa_sys::SpaChoiceType,
             values: Vec<E>,
             flags: u32,
         ) -> Result<Choice<E>, DeserializeError<&'de [u8]>>
@@ -643,10 +647,6 @@ impl<'de> PodDeserializer<'de> {
             E: CanonicalFixedSizedPod + FixedSizedPod + Copy,
         {
             let flags = ChoiceFlags::from_bits(flags).expect("invalid choice flags");
-
-            let Some(choice_type) = spa_sys::SpaChoiceType::from_raw(choice_type) else {
-                return Err(DeserializeError::InvalidChoiceType);
-            };
 
             use spa_sys::SpaChoiceType;
             match choice_type {
@@ -719,6 +719,10 @@ impl<'de> PodDeserializer<'de> {
             return Err(DeserializeError::InvalidType);
         };
 
+        let Some(choice_type) = spa_sys::SpaChoiceType::from_raw(choice_type) else {
+            return Err(DeserializeError::InvalidChoiceType);
+        };
+
         match child_type {
             spa_sys::SpaType::Int => {
                 let (values, success) = self.deserialize_choice_values::<i32>(num_values)?;
@@ -778,6 +782,10 @@ impl<'de> PodDeserializer<'de> {
         let (type_, _padding) =
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
         let ptr_size = len - 8;
+
+        let Some(type_) = spa_sys::SpaType::from_raw(type_) else {
+            return Err(DeserializeError::InvalidType);
+        };
 
         let res = match ptr_size {
             8 => {
@@ -1044,7 +1052,7 @@ pub struct ObjectPodDeserializer<'de> {
     /// Remaining object pod body length in bytes
     remaining: u32,
     /// type of the object
-    object_type: u32,
+    object_type: spa_sys::SpaType,
     /// id of the object
     object_id: u32,
 }
@@ -1309,7 +1317,7 @@ pub trait Visitor<'de>: Sized {
     /// The input contains a pointer.
     fn visit_pointer(
         &self,
-        _type: u32,
+        _type: spa_sys::SpaType,
         _pointer: *const c_void,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Err(DeserializeError::UnsupportedType)
@@ -1628,7 +1636,7 @@ impl<'de> Visitor<'de> for ValueVisitor {
 
     fn visit_pointer(
         &self,
-        type_: u32,
+        type_: spa_sys::SpaType,
         pointer: *const c_void,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(Value::Pointer(type_, pointer))
@@ -1908,12 +1916,12 @@ impl<T> Default for PointerVisitor<T> {
 }
 
 impl<'de, T> Visitor<'de> for PointerVisitor<T> {
-    type Value = (u32, *const T);
+    type Value = (spa_sys::SpaType, *const T);
     type ArrayElem = Infallible;
 
     fn visit_pointer(
         &self,
-        type_: u32,
+        type_: spa_sys::SpaType,
         pointer: *const c_void,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok((type_, pointer as *const T))

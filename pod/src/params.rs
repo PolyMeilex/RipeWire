@@ -41,7 +41,7 @@ impl FormatParamBuilder {
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaType::ObjectFormat as u32,
+            type_: spa_sys::SpaType::ObjectFormat,
             id: self.id as u32,
             properties: self.properties,
         }
@@ -82,7 +82,7 @@ impl IoParamBuilder {
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaType::ObjectParamIo as u32,
+            type_: spa_sys::SpaType::ObjectParamIo,
             id: self.id as u32,
             properties: self.properties,
         }

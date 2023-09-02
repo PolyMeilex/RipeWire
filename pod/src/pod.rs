@@ -580,7 +580,7 @@ impl<'de> PodDeserialize<'de> for Choice<Fd> {
     }
 }
 
-impl<'de, T> PodDeserialize<'de> for (u32, *const T) {
+impl<'de, T> PodDeserialize<'de> for (spa_sys::SpaType, *const T) {
     fn deserialize(
         deserializer: PodDeserializer<'de>,
     ) -> Result<
@@ -644,7 +644,7 @@ pub enum Value {
     /// a choice.
     Choice(ChoiceValue),
     /// a pointer.
-    Pointer(u32, *const c_void),
+    Pointer(spa_sys::SpaType, *const c_void),
 }
 
 /// an array of same type objects.
@@ -697,7 +697,7 @@ pub enum ChoiceValue {
 #[derive(Clone, PartialEq)]
 pub struct Object {
     /// the object type.
-    pub type_: u32,
+    pub type_: spa_sys::SpaType,
     /// the object id.
     pub id: u32,
     /// the object properties.
@@ -706,26 +706,9 @@ pub struct Object {
 
 impl std::fmt::Debug for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut dbg = f.debug_struct("Object");
-
-        let last = spa_sys::SpaType::VendorPipeWire as u32;
-
-        let mut found = false;
-        for id in 0..last {
-            if id == self.type_ {
-                let enu = &id as *const _ as *const spa_sys::SpaType;
-                let enu = unsafe { *enu };
-                dbg.field("type_", &enu);
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            dbg.field("type_", &self.type_);
-        }
-
-        dbg.field("id", &self.id)
+        f.debug_struct("Object")
+            .field("type_", &self.type_)
+            .field("id", &self.id)
             .field("properties", &self.properties)
             .finish()
     }
