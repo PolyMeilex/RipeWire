@@ -697,7 +697,7 @@ pub enum ChoiceValue {
 #[derive(Clone, PartialEq)]
 pub struct Object {
     /// the object type.
-    pub type_: spa_sys::SpaObjectType,
+    pub type_: spa_sys::SpaType,
     /// the object id.
     pub id: u32,
     /// the object properties.

@@ -43,7 +43,7 @@ impl FormatParamBuilder {
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaObjectType::Format,
+            type_: spa_sys::SpaType::ObjectFormat,
             id: self.id as u32,
             properties: self.properties,
         }
@@ -84,7 +84,7 @@ impl IoParamBuilder {
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaObjectType::ParamIo,
+            type_: spa_sys::SpaType::ObjectParamIo,
             id: self.id as u32,
             properties: self.properties,
         }
@@ -232,7 +232,7 @@ impl RouteParamBuilder {
 
     pub fn build(self) -> Object {
         Object {
-            type_: spa_sys::SpaObjectType::ParamRoute,
+            type_: spa_sys::SpaType::ObjectParamRoute,
             id: self.id as u32,
             properties: self.properties,
         }

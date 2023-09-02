@@ -1,4 +1,4 @@
-use libspa_consts::{SpaObjectType, SpaParamType, SpaProp};
+use libspa_consts::{SpaParamType, SpaProp, SpaType};
 use pod::{Object, Property, PropertyFlags, Value};
 
 use crate::{
@@ -242,7 +242,7 @@ impl PwDevice {
             .index(index)
             .device(device)
             .props(Object {
-                type_: SpaObjectType::Props,
+                type_: SpaType::ObjectProps,
                 id: SpaParamType::Route as u32,
                 properties: vec![Property {
                     key: SpaProp::Mute as u32,

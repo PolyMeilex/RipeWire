@@ -56,8 +56,7 @@ pub fn pod_deserialize(input: TokenStream) -> TokenStream {
                 let field = field.ident.as_ref().unwrap();
 
                 quote! {
-                    let fd = fds[self.#field.id as usize];
-                    self.#field.fd = Some(fd);
+                    self.#field.fd = fds.get(self.#field.id as usize).copied();
                 }
             });
 

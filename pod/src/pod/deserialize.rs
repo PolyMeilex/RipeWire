@@ -479,7 +479,7 @@ impl<'de> PodDeserializer<'de> {
         let (object_type, object_id) =
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
 
-        let Some(object_type) = spa_sys::SpaObjectType::from_raw(object_type) else {
+        let Some(object_type) = spa_sys::SpaType::from_raw(object_type) else {
             return Err(DeserializeError::InvalidType);
         };
 
@@ -1052,7 +1052,7 @@ pub struct ObjectPodDeserializer<'de> {
     /// Remaining object pod body length in bytes
     remaining: u32,
     /// type of the object
-    object_type: spa_sys::SpaObjectType,
+    object_type: spa_sys::SpaType,
     /// id of the object
     object_id: u32,
 }

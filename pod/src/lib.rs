@@ -25,15 +25,15 @@ impl<'de> deserialize::PodDeserialize<'de> for spa_sys::SpaDirection {
     where
         Self: Sized,
     {
-        let (value, res) = deserializer.deserialize_id(deserialize::ValueVisitor)?;
+        let (value, res) = deserializer.deserialize_int(deserialize::ValueVisitor)?;
 
-        let Value::Id(id) = value else {
+        let Value::Int(id) = value else {
             return Err(deserialize::DeserializeError::UnsupportedType);
         };
 
-        let value = if id.0 == Self::Output as u32 {
+        let value = if id == Self::Output as i32 {
             Self::Output
-        } else if id.0 == Self::Input as u32 {
+        } else if id == Self::Input as i32 {
             Self::Input
         } else {
             return Err(deserialize::DeserializeError::InvalidType);

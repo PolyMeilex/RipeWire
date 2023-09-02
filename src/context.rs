@@ -87,7 +87,7 @@ impl<D> Context<D> {
 
         match self.object_type(&id).unwrap() {
             ObjectType::Core => {
-                let event = pw_core::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+                let event = pw_core::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
 
                 if let pw_core::Event::RemoveId(ref event) = event {
                     self.map.remove(event.id);
@@ -97,25 +97,24 @@ impl<D> Context<D> {
                 self.dispatch_event_inner(state, core, event);
             }
             ObjectType::Client => {
-                let event = pw_client::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+                let event = pw_client::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
 
                 let client = PwClient::from_id(id);
                 self.dispatch_event_inner(state, client, event);
             }
             ObjectType::ClientNode => {
-                let event =
-                    pw_client_node::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+                let event = pw_client_node::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
                 let client_node = PwClientNode::from_id(id);
                 self.dispatch_event_inner(state, client_node, event);
             }
             ObjectType::Registry => {
-                let event = pw_registry::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+                let event = pw_registry::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
 
                 let registry = PwRegistry::from_id(id);
                 self.dispatch_event_inner(state, registry, event);
             }
             ObjectType::Device => {
-                let event = pw_device::Event::from(msg.header.opcode, &msg.body, &fds).unwrap();
+                let event = pw_device::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
 
                 let device = PwDevice::from_id(id);
                 self.dispatch_event_inner(state, device, event);

@@ -89,30 +89,6 @@ impl SpaPointerType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, num_derive::FromPrimitive)]
-#[repr(u32)]
-pub enum SpaObjectType {
-    PropInfo = SpaType::ObjectPropInfo as u32,
-    Props,
-    Format,
-    ParamBuffers,
-    ParamMeta,
-    ParamIo,
-    ParamProfile,
-    ParamPortConfig,
-    ParamRoute,
-    Profiler,
-    ParamLatency,
-    ParamProcessLatency,
-    ParamParamTag,
-}
-
-impl SpaObjectType {
-    pub fn from_raw(v: u32) -> Option<Self> {
-        num_traits::FromPrimitive::from_u32(v)
-    }
-}
-
 impl SpaDataType {
     pub fn from_raw(v: u32) -> Option<Self> {
         num_traits::FromPrimitive::from_u32(v)

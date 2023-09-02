@@ -419,7 +419,7 @@ impl<O: Write + Seek> PodSerializer<O> {
     /// Begin serializing an `Object` pod.
     pub fn serialize_object(
         mut self,
-        object_type: spa_sys::SpaObjectType,
+        object_type: spa_sys::SpaType,
         object_id: u32,
     ) -> Result<ObjectPodSerializer<O>, GenError> {
         let header_position = self
