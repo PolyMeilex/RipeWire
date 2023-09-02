@@ -110,7 +110,7 @@ impl<Data> ObjectMap<Data> {
 
     /// Allocate a new id for an object in the client namespace
     pub fn client_insert_new(&mut self, object: Object<Data>) -> u32 {
-        dbg!(insert_in(&mut self.objects, object))
+        insert_in(&mut self.objects, object)
     }
 
     /// Mutably access an object of the map
