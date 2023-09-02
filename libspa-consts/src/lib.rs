@@ -10,21 +10,7 @@ mod bindings {
 
 pub use bindings::*;
 
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct Rectangle {
-    pub width: u32,
-    pub height: u32,
-}
-
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct Fraction {
-    pub num: u32,
-    pub denom: u32,
-}
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, num_derive::FromPrimitive)]
 #[repr(u32)]
 pub enum SpaType {
     /* Basic types 0x00000 */
@@ -82,33 +68,21 @@ pub enum SpaType {
     VendorOther = 0x7f000000,
 }
 
+impl SpaType {
+    pub fn from_raw(v: u32) -> Option<Self> {
+        num_traits::FromPrimitive::from_u32(v)
+    }
+}
+
 impl SpaDataType {
     pub fn from_raw(v: u32) -> Option<Self> {
-        let v = match v {
-            0 => Self::Invalid,
-            1 => Self::MemPtr,
-            2 => Self::MemFd,
-            3 => Self::DmaBuf,
-            4 => Self::MemId,
-            _ => return None,
-        };
-
-        Some(v)
+        num_traits::FromPrimitive::from_u32(v)
     }
 }
 
 impl SpaChoiceType {
     pub fn from_raw(v: u32) -> Option<Self> {
-        let v = match v {
-            0 => Self::None,
-            1 => Self::Range,
-            2 => Self::Step,
-            3 => Self::Enum,
-            4 => Self::Flags,
-            _ => return None,
-        };
-
-        Some(v)
+        num_traits::FromPrimitive::from_u32(v)
     }
 }
 
@@ -129,5 +103,24 @@ bitflags! {
         const DONT_NOTIFY = 1 << 5;
 
         const READWRITE = Self::READABLE.bits() | Self::WRITABLE.bits();
+    }
+}
+
+bitflags! {
+    /// Property flags
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
+    pub struct SpaPropFlags: u32 {
+        // These flags are redefinitions from
+        // https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/spa/include/spa/pod/pod.h
+        /// Property is read-only.
+        const READONLY = 1;
+        /// Property is some sort of hardware parameter.
+        const HARDWARE = 2;
+        /// Property contains a dictionary struct.
+        const HINT_DICT = 4;
+        /// Property is mandatory.
+        const MANDATORY = 8;
+        /// Property choices need no fixation.
+        const DONT_FIXATE = 16;
     }
 }

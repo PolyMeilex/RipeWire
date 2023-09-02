@@ -292,8 +292,8 @@ impl<O: Write + Seek> PodSerializer<O> {
     /// # Parameters
     /// - size: The size of the pod body
     /// - type: The type of the pod, e.g. `spa_sys::SPA_TYPE_Int` for a `spa_pod_int`
-    fn header(size: usize, ty: u32) -> impl SerializeFn<O> {
-        pair(ne_u32(size as u32), ne_u32(ty))
+    fn header(size: usize, ty: spa_sys::SpaType) -> impl SerializeFn<O> {
+        pair(ne_u32(size as u32), ne_u32(ty as u32))
     }
 
     /// Helper serialization function for adding padding to a pod..
@@ -322,7 +322,7 @@ impl<O: Write + Seek> PodSerializer<O> {
     fn write_pod(
         mut self,
         size: usize,
-        type_: u32,
+        type_: spa_sys::SpaType,
         f: impl SerializeFn<O>,
     ) -> Result<SerializeSuccess<O>, GenError> {
         let padding = if size % 8 == 0 { 0 } else { 8 - (size % 8) };
@@ -361,12 +361,12 @@ impl<O: Write + Seek> PodSerializer<O> {
         let cstr = CString::new(string)
             .expect("Pod::String contains string with '\0' byte")
             .into_bytes_with_nul();
-        self.write_pod(cstr.len(), spa_sys::SPA_TYPE_String, slice(cstr))
+        self.write_pod(cstr.len(), spa_sys::SpaType::String, slice(cstr))
     }
 
     /// Serialize a `Bytes` pod.
     pub fn serialize_bytes(self, bytes: &[u8]) -> Result<SerializeSuccess<O>, GenError> {
-        self.write_pod(bytes.len(), spa_sys::SPA_TYPE_Bytes, slice(bytes))
+        self.write_pod(bytes.len(), spa_sys::SpaType::Bytes, slice(bytes))
     }
 
     /// Begin serializing an `Array` pod with exactly `length` elements.
@@ -377,7 +377,7 @@ impl<O: Write + Seek> PodSerializer<O> {
         self.gen(pair(
             Self::header(
                 (8 + length * P::CanonicalType::SIZE) as usize,
-                spa_sys::SPA_TYPE_Array,
+                spa_sys::SpaType::Array,
             ),
             Self::header(P::CanonicalType::SIZE as usize, P::CanonicalType::TYPE),
         ))?;
@@ -401,7 +401,7 @@ impl<O: Write + Seek> PodSerializer<O> {
                 .expect("Could not get current position in writer");
 
             // Write a size of 0 for now, this will be updated when calling `StructPodSerializer.end()`.
-            self.gen(Self::header(0, spa_sys::SPA_TYPE_Struct))?;
+            self.gen(Self::header(0, spa_sys::SpaType::Struct))?;
 
             header_position
         } else {
@@ -430,7 +430,7 @@ impl<O: Write + Seek> PodSerializer<O> {
             .expect("Could not get current position in writer");
 
         // Write a size of 0 for now, this will be updated when calling `ObjectPodSerializer.end()`.
-        self.gen(Self::header(0, spa_sys::SPA_TYPE_Object))?;
+        self.gen(Self::header(0, spa_sys::SpaType::Object))?;
         self.gen(pair(ne_u32(object_type), ne_u32(object_id)))?;
 
         Ok(ObjectPodSerializer {
@@ -476,9 +476,9 @@ impl<O: Write + Seek> PodSerializer<O> {
 
         let len: usize = 2 * 8 + values.len() * (T::SIZE as usize);
 
-        self.gen(Self::header(len, spa_sys::SPA_TYPE_Choice))?;
+        self.gen(Self::header(len, spa_sys::SpaType::Choice))?;
         self.gen(pair(ne_u32(choice_type as u32), ne_u32(flags.bits())))?;
-        self.gen(pair(ne_u32(T::SIZE), ne_u32(T::TYPE)))?;
+        self.gen(pair(ne_u32(T::SIZE), ne_u32(T::TYPE as u32)))?;
 
         for v in values {
             self.gen(|out| v.serialize_body(out))?;
@@ -505,7 +505,7 @@ impl<O: Write + Seek> PodSerializer<O> {
         let ptr_size = std::mem::size_of::<usize>();
         let len = 8 + ptr_size;
 
-        let mut written = self.gen(Self::header(len, spa_sys::SPA_TYPE_Pointer))?;
+        let mut written = self.gen(Self::header(len, spa_sys::SpaType::Pointer))?;
         written += self.gen(pair(ne_u32(type_), ne_u32(0)))?;
 
         written += match ptr_size {
@@ -654,7 +654,7 @@ impl<O: Write + Seek> StructPodSerializer<O> {
 
             serializer.gen(PodSerializer::header(
                 self.written,
-                spa_sys::SPA_TYPE_Struct,
+                spa_sys::SpaType::Struct,
             ))?;
 
             serializer
@@ -739,7 +739,7 @@ impl<O: Write + Seek> ObjectPodSerializer<O> {
         // size of properties + object type + object id
         let written = self.written + 8;
 
-        serializer.gen(PodSerializer::header(written, spa_sys::SPA_TYPE_Object))?;
+        serializer.gen(PodSerializer::header(written, spa_sys::SpaType::Object))?;
 
         serializer
             .out

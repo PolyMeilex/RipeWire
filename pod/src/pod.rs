@@ -34,7 +34,7 @@ use nom::{
 use deserialize::{BoolVisitor, NoneVisitor, PodDeserialize, PodDeserializer};
 use serialize::{PodSerialize, PodSerializer};
 
-use crate::utils::{Choice, Fd, Fraction, Id, Rectangle};
+use crate::utils::{Choice, Fd, Id, SpaFraction, SpaRectangle};
 
 use self::deserialize::{
     ChoiceDoubleVisitor, ChoiceFdVisitor, ChoiceFloatVisitor, ChoiceFractionVisitor,
@@ -56,7 +56,7 @@ use self::deserialize::{
 pub trait CanonicalFixedSizedPod: private::CanonicalFixedSizedPodSeal {
     /// The raw type this serializes into.
     #[doc(hidden)]
-    const TYPE: u32;
+    const TYPE: spa_sys::SpaType;
     /// The size of the pods body.
     #[doc(hidden)]
     const SIZE: u32;
@@ -78,8 +78,8 @@ mod private {
     impl CanonicalFixedSizedPodSeal for i64 {}
     impl CanonicalFixedSizedPodSeal for f32 {}
     impl CanonicalFixedSizedPodSeal for f64 {}
-    impl CanonicalFixedSizedPodSeal for super::Rectangle {}
-    impl CanonicalFixedSizedPodSeal for super::Fraction {}
+    impl CanonicalFixedSizedPodSeal for super::SpaRectangle {}
+    impl CanonicalFixedSizedPodSeal for super::SpaFraction {}
     impl CanonicalFixedSizedPodSeal for super::Id {}
     impl CanonicalFixedSizedPodSeal for super::Fd {}
 }
@@ -98,7 +98,7 @@ impl<T: CanonicalFixedSizedPod + Copy> FixedSizedPod for T {
 
 /// Serialize into a `None` type pod.
 impl CanonicalFixedSizedPod for () {
-    const TYPE: u32 = spa_sys::SPA_TYPE_None;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::None;
     const SIZE: u32 = 0;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -115,7 +115,7 @@ impl CanonicalFixedSizedPod for () {
 
 /// Serialize into a `Bool` type pod.
 impl CanonicalFixedSizedPod for bool {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Bool;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Bool;
     const SIZE: u32 = 4;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -132,7 +132,7 @@ impl CanonicalFixedSizedPod for bool {
 
 /// Serialize into a `Int` type pod.
 impl CanonicalFixedSizedPod for i32 {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Int;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Int;
     const SIZE: u32 = 4;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -149,7 +149,7 @@ impl CanonicalFixedSizedPod for i32 {
 
 /// Serialize into a `Long` type pod.
 impl CanonicalFixedSizedPod for i64 {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Long;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Long;
     const SIZE: u32 = 8;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -166,7 +166,7 @@ impl CanonicalFixedSizedPod for i64 {
 
 /// Serialize into a `Float` type pod.
 impl CanonicalFixedSizedPod for f32 {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Float;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Float;
     const SIZE: u32 = 4;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -183,7 +183,7 @@ impl CanonicalFixedSizedPod for f32 {
 
 /// Serialize into a `Double` type pod.
 impl CanonicalFixedSizedPod for f64 {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Double;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Double;
     const SIZE: u32 = 8;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -199,8 +199,8 @@ impl CanonicalFixedSizedPod for f64 {
 }
 
 /// Serialize into a `Rectangle` type pod.
-impl CanonicalFixedSizedPod for Rectangle {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Rectangle;
+impl CanonicalFixedSizedPod for SpaRectangle {
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Rectangle;
     const SIZE: u32 = 8;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -213,14 +213,14 @@ impl CanonicalFixedSizedPod for Rectangle {
     {
         map(
             nom::sequence::pair(u32(Endianness::Native), u32(Endianness::Native)),
-            |(width, height)| Rectangle { width, height },
+            |(width, height)| Self { width, height },
         )(input)
     }
 }
 
 /// Serialize into a `Fraction` type pod.
-impl CanonicalFixedSizedPod for Fraction {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Fraction;
+impl CanonicalFixedSizedPod for SpaFraction {
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Fraction;
     const SIZE: u32 = 8;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -233,13 +233,13 @@ impl CanonicalFixedSizedPod for Fraction {
     {
         map(
             nom::sequence::pair(u32(Endianness::Native), u32(Endianness::Native)),
-            |(num, denom)| Fraction { num, denom },
+            |(num, denom)| Self { num, denom },
         )(input)
     }
 }
 
 impl CanonicalFixedSizedPod for Id {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Id;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Id;
     const SIZE: u32 = 4;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -255,7 +255,7 @@ impl CanonicalFixedSizedPod for Id {
 }
 
 impl CanonicalFixedSizedPod for Fd {
-    const TYPE: u32 = spa_sys::SPA_TYPE_Fd;
+    const TYPE: spa_sys::SpaType = spa_sys::SpaType::Fd;
     const SIZE: u32 = 8;
 
     fn serialize_body<O: Write>(&self, out: O) -> Result<O, GenError> {
@@ -412,7 +412,7 @@ impl<'de> PodDeserialize<'de> for f64 {
     }
 }
 
-impl<'de> PodDeserialize<'de> for Rectangle {
+impl<'de> PodDeserialize<'de> for SpaRectangle {
     fn deserialize(
         deserializer: PodDeserializer<'de>,
     ) -> Result<
@@ -426,7 +426,7 @@ impl<'de> PodDeserialize<'de> for Rectangle {
     }
 }
 
-impl<'de> PodDeserialize<'de> for Fraction {
+impl<'de> PodDeserialize<'de> for SpaFraction {
     fn deserialize(
         deserializer: PodDeserializer<'de>,
     ) -> Result<
@@ -538,7 +538,7 @@ impl<'de> PodDeserialize<'de> for Choice<Id> {
     }
 }
 
-impl<'de> PodDeserialize<'de> for Choice<Rectangle> {
+impl<'de> PodDeserialize<'de> for Choice<SpaRectangle> {
     fn deserialize(
         deserializer: PodDeserializer<'de>,
     ) -> Result<
@@ -552,7 +552,7 @@ impl<'de> PodDeserialize<'de> for Choice<Rectangle> {
     }
 }
 
-impl<'de> PodDeserialize<'de> for Choice<Fraction> {
+impl<'de> PodDeserialize<'de> for Choice<SpaFraction> {
     fn deserialize(
         deserializer: PodDeserializer<'de>,
     ) -> Result<
@@ -630,9 +630,9 @@ pub enum Value {
     /// a byte array.
     Bytes(Vec<u8>),
     /// a rectangle with width and height.
-    Rectangle(Rectangle),
+    Rectangle(SpaRectangle),
     /// a fraction with numerator and denominator.
-    Fraction(Fraction),
+    Fraction(SpaFraction),
     /// a file descriptor.
     Fd(Fd),
     /// an array of same type objects.
@@ -665,9 +665,9 @@ pub enum ValueArray {
     /// an array of 64 bits floating.
     Double(Vec<f64>),
     /// an array of Rectangle.
-    Rectangle(Vec<Rectangle>),
+    Rectangle(Vec<SpaRectangle>),
     /// an array of Fraction.
-    Fraction(Vec<Fraction>),
+    Fraction(Vec<SpaFraction>),
     /// an array of Fd.
     Fd(Vec<Fd>),
 }
@@ -686,9 +686,9 @@ pub enum ChoiceValue {
     /// Choice on id values.
     Id(Choice<Id>),
     /// Choice on rectangle values.
-    Rectangle(Choice<Rectangle>),
+    Rectangle(Choice<SpaRectangle>),
     /// Choice on fraction values.
-    Fraction(Choice<Fraction>),
+    Fraction(Choice<SpaFraction>),
     /// Choice on fd values.
     Fd(Choice<Fd>),
 }
@@ -749,16 +749,16 @@ bitflags! {
         // These flags are redefinitions from
         // https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/spa/include/spa/pod/pod.h
         /// Property is read-only.
-        const READONLY = spa_sys::SPA_POD_PROP_FLAG_READONLY;
+        const READONLY = spa_sys::SpaPropFlags::READONLY.bits();
         /// Property is some sort of hardware parameter.
-        const HARDWARE = spa_sys::SPA_POD_PROP_FLAG_HARDWARE;
+        const HARDWARE = spa_sys::SpaPropFlags::HARDWARE.bits();
         /// Property contains a dictionary struct.
-        const HINT_DICT = spa_sys::SPA_POD_PROP_FLAG_HINT_DICT;
+        const HINT_DICT = spa_sys::SpaPropFlags::HINT_DICT.bits();
         /// Property is mandatory.
-        const MANDATORY = spa_sys::SPA_POD_PROP_FLAG_MANDATORY;
+        const MANDATORY = spa_sys::SpaPropFlags::MANDATORY.bits();
         /// Property choices need no fixation.
         #[cfg(feature = "v0_3_33")]
-        const DONT_FIXATE = spa_sys::SPA_POD_PROP_FLAG_DONT_FIXATE;
+        const DONT_FIXATE = spa_sys::SpaPropFlags::DONT_FIXATE.bits();
     }
 }
 

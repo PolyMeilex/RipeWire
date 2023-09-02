@@ -20,6 +20,7 @@ struct ParseCallbacks;
 impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
     fn item_name(&self, original_item_name: &str) -> Option<String> {
         let rename = [
+            "spa_pod",
             "spa_choice_type",
             "spa_prop",
             "spa_data_type",
@@ -30,12 +31,21 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "spa_media_type",
             "spa_media_subtype",
             "spa_format",
+            "spa_rectangle",
+            "spa_fraction",
         ];
 
         if rename.contains(&original_item_name) {
             Some(original_item_name.to_case(Case::UpperCamel))
         } else {
             None
+        }
+    }
+
+    fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
+        match info.name {
+            "SpaChoiceType" | "SpaDataType" => vec!["num_derive::FromPrimitive".into()],
+            _ => vec![],
         }
     }
 
@@ -99,10 +109,8 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         .ignore_functions()
         .ignore_methods()
         .allowlist_type("spa_pod")
-        .allowlist_var("SPA_POD_PROP_FLAG.*")
-        .allowlist_var("SPA_TYPE_.*")
-        .blocklist_item("SPA_TYPE_INFO_.*")
-        .blocklist_item("SPA_TYPE_INTERFACE_.*")
+        .allowlist_type("spa_rectangle")
+        .allowlist_type("spa_fraction")
         .prepend_enum_name(false)
         .layout_tests(false)
         .derive_eq(true);

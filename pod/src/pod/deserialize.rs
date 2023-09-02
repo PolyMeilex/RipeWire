@@ -24,7 +24,7 @@ use super::{
 };
 use crate::{
     pod::Property,
-    utils::{Choice, ChoiceEnum, ChoiceFlags, Fd, Fraction, Id, Rectangle},
+    utils::{Choice, ChoiceEnum, ChoiceFlags, Fd, Id, SpaFraction, SpaRectangle},
 };
 
 /// Implementors of this trait can be deserialized from the raw SPA Pod format using a [`PodDeserializer`]-
@@ -250,7 +250,7 @@ impl<'de> PodDeserializer<'de> {
     /// - The pod pointed to must be kept valid for the entire lifetime of the deserialized object if
     //    it has been created using zero-copy deserialization.
     pub unsafe fn deserialize_ptr<P: PodDeserialize<'de>>(
-        ptr: ptr::NonNull<spa_sys::spa_pod>,
+        ptr: ptr::NonNull<spa_sys::SpaPod>,
     ) -> Result<P, DeserializeError<&'de [u8]>> {
         let len = ptr.as_ref().size;
         let pod = ptr.as_ptr() as *const _ as *const u8;
@@ -286,8 +286,10 @@ impl<'de> PodDeserializer<'de> {
     }
 
     /// Parse the size from the header and ensure it has the correct type.
-    pub(super) fn header<'b>(type_: u32) -> impl FnMut(&'b [u8]) -> IResult<&'b [u8], u32> {
-        terminated(u32(Endianness::Native), tag(type_.to_ne_bytes()))
+    pub(super) fn header<'b>(
+        type_: spa_sys::SpaType,
+    ) -> impl FnMut(&'b [u8]) -> IResult<&'b [u8], u32> {
+        terminated(u32(Endianness::Native), tag((type_ as u32).to_ne_bytes()))
     }
 
     /// Parse and return the type from the header
@@ -395,7 +397,7 @@ impl<'de> PodDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let len = self.parse(Self::header(spa_sys::SPA_TYPE_String))?;
+        let len = self.parse(Self::header(spa_sys::SpaType::String))?;
         let padding = Self::calc_padding_needed(len);
         let res = self.parse(terminated(
             map_res(terminated(take(len - 1), tag([b'\0'])), std::str::from_utf8),
@@ -412,7 +414,7 @@ impl<'de> PodDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let len = self.parse(Self::header(spa_sys::SPA_TYPE_Bytes))?;
+        let len = self.parse(Self::header(spa_sys::SpaType::Bytes))?;
         let padding = Self::calc_padding_needed(len);
         let res = self.parse(terminated(take(len), take(padding)))?;
         Ok((visitor.visit_bytes(res)?, DeserializeSuccess(self)))
@@ -429,7 +431,7 @@ impl<'de> PodDeserializer<'de> {
     where
         E: FixedSizedPod,
     {
-        let len = self.parse(Self::header(spa_sys::SPA_TYPE_Array))?;
+        let len = self.parse(Self::header(spa_sys::SpaType::Array))?;
         self.parse(verify(Self::header(E::CanonicalType::TYPE), |len| {
             *len == E::CanonicalType::SIZE
         }))?;
@@ -458,7 +460,7 @@ impl<'de> PodDeserializer<'de> {
     fn new_struct_deserializer(
         mut self,
     ) -> Result<StructPodDeserializer<'de>, DeserializeError<&'de [u8]>> {
-        let len = self.parse(Self::header(spa_sys::SPA_TYPE_Struct))?;
+        let len = self.parse(Self::header(spa_sys::SpaType::Struct))?;
 
         Ok(StructPodDeserializer {
             deserializer: Some(self),
@@ -473,7 +475,7 @@ impl<'de> PodDeserializer<'de> {
     fn new_object_deserializer(
         mut self,
     ) -> Result<ObjectPodDeserializer<'de>, DeserializeError<&'de [u8]>> {
-        let len = self.parse(Self::header(spa_sys::SPA_TYPE_Object))?;
+        let len = self.parse(Self::header(spa_sys::SpaType::Object))?;
         let (object_type, object_id) =
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
 
@@ -625,7 +627,7 @@ impl<'de> PodDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let len = self.parse(Self::header(spa_sys::SPA_TYPE_Choice))?;
+        let len = self.parse(Self::header(spa_sys::SpaType::Choice))?;
         let (choice_type, flags) =
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
         let (child_size, child_type) =
@@ -713,43 +715,49 @@ impl<'de> PodDeserializer<'de> {
             }
         }
 
+        let Some(child_type) = spa_sys::SpaType::from_raw(child_type) else {
+            return Err(DeserializeError::InvalidType);
+        };
+
         match child_type {
-            spa_sys::SPA_TYPE_Int => {
+            spa_sys::SpaType::Int => {
                 let (values, success) = self.deserialize_choice_values::<i32>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_i32(choice)?, success))
             }
-            spa_sys::SPA_TYPE_Long => {
+            spa_sys::SpaType::Long => {
                 let (values, success) = self.deserialize_choice_values::<i64>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_i64(choice)?, success))
             }
-            spa_sys::SPA_TYPE_Float => {
+            spa_sys::SpaType::Float => {
                 let (values, success) = self.deserialize_choice_values::<f32>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_f32(choice)?, success))
             }
-            spa_sys::SPA_TYPE_Double => {
+            spa_sys::SpaType::Double => {
                 let (values, success) = self.deserialize_choice_values::<f64>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_f64(choice)?, success))
             }
-            spa_sys::SPA_TYPE_Id => {
+            spa_sys::SpaType::Id => {
                 let (values, success) = self.deserialize_choice_values::<Id>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_id(choice)?, success))
             }
-            spa_sys::SPA_TYPE_Rectangle => {
-                let (values, success) = self.deserialize_choice_values::<Rectangle>(num_values)?;
+            spa_sys::SpaType::Rectangle => {
+                let (values, success) =
+                    self.deserialize_choice_values::<SpaRectangle>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_rectangle(choice)?, success))
             }
-            spa_sys::SPA_TYPE_Fraction => {
-                let (values, success) = self.deserialize_choice_values::<Fraction>(num_values)?;
+            spa_sys::SpaType::Fraction => {
+                let (values, success) =
+                    self.deserialize_choice_values::<SpaFraction>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_fraction(choice)?, success))
             }
-            spa_sys::SPA_TYPE_Fd => {
+            spa_sys::SpaType::Fd => {
                 let (values, success) = self.deserialize_choice_values::<Fd>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_fd(choice)?, success))
@@ -766,7 +774,7 @@ impl<'de> PodDeserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        let len = self.parse(Self::header(spa_sys::SPA_TYPE_Pointer))?;
+        let len = self.parse(Self::header(spa_sys::SpaType::Pointer))?;
         let (type_, _padding) =
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
         let ptr_size = len - 8;
@@ -792,24 +800,28 @@ impl<'de> PodDeserializer<'de> {
     ) -> Result<(Value, DeserializeSuccess<'de>), DeserializeError<&'de [u8]>> {
         let type_ = self.peek(Self::type_())?;
 
+        let Some(type_) = spa_sys::SpaType::from_raw(type_) else {
+            return Err(DeserializeError::InvalidType);
+        };
+
         match type_ {
-            spa_sys::SPA_TYPE_None => self.deserialize_none(ValueVisitor),
-            spa_sys::SPA_TYPE_Bool => self.deserialize_bool(ValueVisitor),
-            spa_sys::SPA_TYPE_Id => self.deserialize_id(ValueVisitor),
-            spa_sys::SPA_TYPE_Int => self.deserialize_int(ValueVisitor),
-            spa_sys::SPA_TYPE_Long => self.deserialize_long(ValueVisitor),
-            spa_sys::SPA_TYPE_Float => self.deserialize_float(ValueVisitor),
-            spa_sys::SPA_TYPE_Double => self.deserialize_double(ValueVisitor),
-            spa_sys::SPA_TYPE_String => self.deserialize_str(ValueVisitor),
-            spa_sys::SPA_TYPE_Bytes => self.deserialize_bytes(ValueVisitor),
-            spa_sys::SPA_TYPE_Rectangle => self.deserialize_rectangle(ValueVisitor),
-            spa_sys::SPA_TYPE_Fraction => self.deserialize_fraction(ValueVisitor),
-            spa_sys::SPA_TYPE_Fd => self.deserialize_fd(ValueVisitor),
-            spa_sys::SPA_TYPE_Struct => self.deserialize_struct(ValueVisitor),
-            spa_sys::SPA_TYPE_Array => self.deserialize_array_any(),
-            spa_sys::SPA_TYPE_Object => self.deserialize_object(ValueVisitor),
-            spa_sys::SPA_TYPE_Choice => self.deserialize_choice(ValueVisitor),
-            spa_sys::SPA_TYPE_Pointer => self.deserialize_pointer(ValueVisitor),
+            spa_sys::SpaType::None => self.deserialize_none(ValueVisitor),
+            spa_sys::SpaType::Bool => self.deserialize_bool(ValueVisitor),
+            spa_sys::SpaType::Id => self.deserialize_id(ValueVisitor),
+            spa_sys::SpaType::Int => self.deserialize_int(ValueVisitor),
+            spa_sys::SpaType::Long => self.deserialize_long(ValueVisitor),
+            spa_sys::SpaType::Float => self.deserialize_float(ValueVisitor),
+            spa_sys::SpaType::Double => self.deserialize_double(ValueVisitor),
+            spa_sys::SpaType::String => self.deserialize_str(ValueVisitor),
+            spa_sys::SpaType::Bytes => self.deserialize_bytes(ValueVisitor),
+            spa_sys::SpaType::Rectangle => self.deserialize_rectangle(ValueVisitor),
+            spa_sys::SpaType::Fraction => self.deserialize_fraction(ValueVisitor),
+            spa_sys::SpaType::Fd => self.deserialize_fd(ValueVisitor),
+            spa_sys::SpaType::Struct => self.deserialize_struct(ValueVisitor),
+            spa_sys::SpaType::Array => self.deserialize_array_any(),
+            spa_sys::SpaType::Object => self.deserialize_object(ValueVisitor),
+            spa_sys::SpaType::Choice => self.deserialize_choice(ValueVisitor),
+            spa_sys::SpaType::Pointer => self.deserialize_pointer(ValueVisitor),
             _ => Err(DeserializeError::InvalidType),
         }
     }
@@ -819,53 +831,57 @@ impl<'de> PodDeserializer<'de> {
     ) -> Result<(Value, DeserializeSuccess<'de>), DeserializeError<&'de [u8]>> {
         let child_type = self.peek(preceded(Self::type_(), Self::type_()))?;
 
+        let Some(child_type) = spa_sys::SpaType::from_raw(child_type) else {
+            return Err(DeserializeError::InvalidType);
+        };
+
         let (array, success) = match child_type {
-            spa_sys::SPA_TYPE_None => {
+            spa_sys::SpaType::None => {
                 let (elements, success) = self.deserialize_array_vec::<()>()?;
                 let array = ValueArrayNoneVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Bool => {
+            spa_sys::SpaType::Bool => {
                 let (elements, success) = self.deserialize_array_vec::<bool>()?;
                 let array = ValueArrayBoolVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Id => {
+            spa_sys::SpaType::Id => {
                 let (elements, success) = self.deserialize_array_vec::<Id>()?;
                 let array = ValueArrayIdVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Int => {
+            spa_sys::SpaType::Int => {
                 let (elements, success) = self.deserialize_array_vec::<i32>()?;
                 let array = ValueArrayIntVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Long => {
+            spa_sys::SpaType::Long => {
                 let (elements, success) = self.deserialize_array_vec::<i64>()?;
                 let array = ValueArrayLongVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Float => {
+            spa_sys::SpaType::Float => {
                 let (elements, success) = self.deserialize_array_vec::<f32>()?;
                 let array = ValueArrayFloatVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Double => {
+            spa_sys::SpaType::Double => {
                 let (elements, success) = self.deserialize_array_vec::<f64>()?;
                 let array = ValueArrayDoubleVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Rectangle => {
-                let (elements, success) = self.deserialize_array_vec::<Rectangle>()?;
+            spa_sys::SpaType::Rectangle => {
+                let (elements, success) = self.deserialize_array_vec::<SpaRectangle>()?;
                 let array = ValueArrayRectangleVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Fraction => {
-                let (elements, success) = self.deserialize_array_vec::<Fraction>()?;
+            spa_sys::SpaType::Fraction => {
+                let (elements, success) = self.deserialize_array_vec::<SpaFraction>()?;
                 let array = ValueArrayFractionVisitor.visit_array(elements)?;
                 (array, success)
             }
-            spa_sys::SPA_TYPE_Fd => {
+            spa_sys::SpaType::Fd => {
                 let (elements, success) = self.deserialize_array_vec::<Fd>()?;
                 let array = ValueArrayFdVisitor.visit_array(elements)?;
                 (array, success)
@@ -1180,12 +1196,15 @@ pub trait Visitor<'de>: Sized {
     }
 
     /// The input contains a [`Rectangle`].
-    fn visit_rectangle(&self, _v: Rectangle) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+    fn visit_rectangle(
+        &self,
+        _v: SpaRectangle,
+    ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Err(DeserializeError::UnsupportedType)
     }
 
     /// The input contains a [`Fraction`].
-    fn visit_fraction(&self, _v: Fraction) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+    fn visit_fraction(&self, _v: SpaFraction) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Err(DeserializeError::UnsupportedType)
     }
 
@@ -1266,7 +1285,7 @@ pub trait Visitor<'de>: Sized {
     /// The input contains a [`Rectangle`] choice.
     fn visit_choice_rectangle(
         &self,
-        _choice: Choice<Rectangle>,
+        _choice: Choice<SpaRectangle>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Err(DeserializeError::UnsupportedType)
     }
@@ -1274,7 +1293,7 @@ pub trait Visitor<'de>: Sized {
     /// The input contains a [`Fraction`] choice.
     fn visit_choice_fraction(
         &self,
-        _choice: Choice<Fraction>,
+        _choice: Choice<SpaFraction>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Err(DeserializeError::UnsupportedType)
     }
@@ -1397,10 +1416,10 @@ impl<'de> Visitor<'de> for BytesVisitor {
 pub struct RectangleVisitor;
 
 impl<'de> Visitor<'de> for RectangleVisitor {
-    type Value = Rectangle;
+    type Value = SpaRectangle;
     type ArrayElem = Infallible;
 
-    fn visit_rectangle(&self, v: Rectangle) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+    fn visit_rectangle(&self, v: SpaRectangle) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(v)
     }
 }
@@ -1409,10 +1428,10 @@ impl<'de> Visitor<'de> for RectangleVisitor {
 pub struct FractionVisitor;
 
 impl<'de> Visitor<'de> for FractionVisitor {
-    type Value = Fraction;
+    type Value = SpaFraction;
     type ArrayElem = Infallible;
 
-    fn visit_fraction(&self, v: Fraction) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+    fn visit_fraction(&self, v: SpaFraction) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(v)
     }
 }
@@ -1502,11 +1521,11 @@ impl<'de> Visitor<'de> for ValueVisitor {
         Ok(Value::Bytes(v.to_vec()))
     }
 
-    fn visit_rectangle(&self, v: Rectangle) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+    fn visit_rectangle(&self, v: SpaRectangle) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(Value::Rectangle(v))
     }
 
-    fn visit_fraction(&self, v: Fraction) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+    fn visit_fraction(&self, v: SpaFraction) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(Value::Fraction(v))
     }
 
@@ -1588,14 +1607,14 @@ impl<'de> Visitor<'de> for ValueVisitor {
 
     fn visit_choice_rectangle(
         &self,
-        choice: Choice<Rectangle>,
+        choice: Choice<SpaRectangle>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(Value::Choice(ChoiceValue::Rectangle(choice)))
     }
 
     fn visit_choice_fraction(
         &self,
-        choice: Choice<Fraction>,
+        choice: Choice<SpaFraction>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(Value::Choice(ChoiceValue::Fraction(choice)))
     }
@@ -1718,7 +1737,7 @@ struct ValueArrayRectangleVisitor;
 
 impl<'de> Visitor<'de> for ValueArrayRectangleVisitor {
     type Value = ValueArray;
-    type ArrayElem = Rectangle;
+    type ArrayElem = SpaRectangle;
 
     fn visit_array(
         &self,
@@ -1732,7 +1751,7 @@ struct ValueArrayFractionVisitor;
 
 impl<'de> Visitor<'de> for ValueArrayFractionVisitor {
     type Value = ValueArray;
-    type ArrayElem = Fraction;
+    type ArrayElem = SpaFraction;
 
     fn visit_array(
         &self,
@@ -1835,12 +1854,12 @@ impl<'de> Visitor<'de> for ChoiceIdVisitor {
 pub struct ChoiceRectangleVisitor;
 
 impl<'de> Visitor<'de> for ChoiceRectangleVisitor {
-    type Value = Choice<Rectangle>;
+    type Value = Choice<SpaRectangle>;
     type ArrayElem = Infallible;
 
     fn visit_choice_rectangle(
         &self,
-        choice: Choice<Rectangle>,
+        choice: Choice<SpaRectangle>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(choice)
     }
@@ -1849,12 +1868,12 @@ impl<'de> Visitor<'de> for ChoiceRectangleVisitor {
 pub struct ChoiceFractionVisitor;
 
 impl<'de> Visitor<'de> for ChoiceFractionVisitor {
-    type Value = Choice<Fraction>;
+    type Value = Choice<SpaFraction>;
     type ArrayElem = Infallible;
 
     fn visit_choice_fraction(
         &self,
-        choice: Choice<Fraction>,
+        choice: Choice<SpaFraction>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(choice)
     }

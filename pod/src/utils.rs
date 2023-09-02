@@ -4,8 +4,8 @@ use std::os::fd::RawFd;
 
 use bitflags::bitflags;
 
-pub use spa_sys::Fraction;
-pub use spa_sys::Rectangle;
+pub use spa_sys::SpaFraction;
+pub use spa_sys::SpaRectangle;
 
 use crate::pod::CanonicalFixedSizedPod;
 
