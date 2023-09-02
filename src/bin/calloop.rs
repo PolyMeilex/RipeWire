@@ -256,40 +256,18 @@ impl PipewireState {
                     port_id: 0,
                     change_mask: 0b11,
                     params: vec![
-                        Value::Object(pod::Object {
-                            type_: libspa_consts::SpaType::ObjectFormat as u32,
-                            id: libspa_consts::SpaParamType::EnumFormat as u32,
-                            properties: vec![
-                                pod::Property {
-                                    key: libspa_consts::spa_format::SPA_FORMAT_mediaType as u32,
-                                    flags: pod::PropertyFlags::empty(),
-                                    // application
-                                    value: Value::Id(pod::utils::Id(6)),
-                                },
-                                pod::Property {
-                                    key: libspa_consts::spa_format::SPA_FORMAT_mediaSubtype as u32,
-                                    flags: pod::PropertyFlags::empty(),
-                                    // control
-                                    value: Value::Id(pod::utils::Id(393217)),
-                                },
-                            ],
-                        }),
-                        Value::Object(pod::Object {
-                            type_: libspa_consts::SpaType::ObjectParamIo as u32,
-                            id: libspa_consts::SpaParamType::IO as u32,
-                            properties: vec![
-                                pod::Property {
-                                    key: 1,
-                                    flags: pod::PropertyFlags::empty(),
-                                    value: Value::Id(pod::utils::Id(1)),
-                                },
-                                pod::Property {
-                                    key: 2,
-                                    flags: pod::PropertyFlags::empty(),
-                                    value: Value::Int(8),
-                                },
-                            ],
-                        }),
+                        Value::Object(
+                            pod::params::FormatParamBuilder::enum_format()
+                                .media_type(libspa_consts::SpaMediaType::Application)
+                                .media_subtype(libspa_consts::SpaMediaSubtype::Control)
+                                .build(),
+                        ),
+                        Value::Object(
+                            pod::params::IoParamBuilder::io()
+                                .id(libspa_consts::SpaIoType::Buffers)
+                                .size(8)
+                                .build(),
+                        ),
                     ],
                     info: Some(protocol::pw_client_node::methods::PortInfo {
                         change_mask: 0b1111,

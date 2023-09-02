@@ -32,7 +32,9 @@ impl<'de> PodDeserialize<'de> for Struct {
         let (value, succes) =
             deserializer.deserialize_struct(crate::pod::deserialize::ValueVisitor)?;
 
-        let Value::Struct(fields) = value else { unreachable!(); };
+        let Value::Struct(fields) = value else {
+            unreachable!();
+        };
 
         Ok((Self(fields), succes))
     }

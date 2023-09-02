@@ -78,7 +78,9 @@ impl PipewireState {
                 )
         });
 
-        let Some(global) = device else { return; };
+        let Some(global) = device else {
+            return;
+        };
         let device: PwDevice = self.registry.bind(context, global);
 
         context.set_object_callback(&device, Self::device_event);

@@ -130,7 +130,9 @@ impl<D> Context<D> {
         P::Event: 'static,
     {
         let mut cb = {
-            let Some(obj) = self.map.find_mut(object.id().protocol_id()) else { return; };
+            let Some(obj) = self.map.find_mut(object.id().protocol_id()) else {
+                return;
+            };
             obj.data.cb.take()
         };
 
@@ -138,7 +140,9 @@ impl<D> Context<D> {
             (cb)(self, state, object.id(), Box::new(event));
         }
 
-        let Some(obj) = self.map.find_mut(object.id().protocol_id()) else { return; };
+        let Some(obj) = self.map.find_mut(object.id().protocol_id()) else {
+            return;
+        };
         obj.data.cb = cb;
     }
 
@@ -148,7 +152,9 @@ impl<D> Context<D> {
         P::Event: 'static,
         F: FnMut(&mut D, &mut Self, P, P::Event) + 'static,
     {
-        let Some(obj) = self.map.find_mut(proxy.id().protocol_id()) else { return; };
+        let Some(obj) = self.map.find_mut(proxy.id().protocol_id()) else {
+            return;
+        };
 
         obj.data.cb = Some(Box::new(move |context, state, object_id, event| {
             let event: Box<P::Event> = event.downcast().unwrap();
