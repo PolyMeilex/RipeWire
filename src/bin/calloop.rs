@@ -224,8 +224,8 @@ impl PipewireState {
                 change_mask: 3,
                 n_params: 0,
                 info: pw_client_node::methods::NodeInfo {
-                    max_input_ports: 0,
-                    max_output_ports: 0,
+                    max_input_ports: u32::MAX,
+                    max_output_ports: u32::MAX,
                     change_mask: 7,
                     flags: 1,
                     props: Dictionary::from([
