@@ -1,3 +1,5 @@
+use spa_sys::SpaDirection;
+
 use crate::{pod, utils::Id, Object, Property, PropertyFlags, Value};
 
 #[derive(Debug)]
@@ -95,6 +97,7 @@ pub struct RouteParamBuilder {
     properties: Vec<Property>,
 }
 
+// https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/spa/include/spa/param/route-types.h#L25
 impl RouteParamBuilder {
     pub fn enum_route() -> Self {
         Self {
@@ -119,6 +122,15 @@ impl RouteParamBuilder {
         self
     }
 
+    pub fn direction(mut self, direction: SpaDirection) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Direction as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Id(Id(direction as u32)),
+        });
+        self
+    }
+
     pub fn device(mut self, device: i32) -> Self {
         self.properties.push(Property {
             key: spa_sys::SpaParamRoute::Device as u32,
@@ -128,11 +140,92 @@ impl RouteParamBuilder {
         self
     }
 
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Name as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::String(name.into()),
+        });
+        self
+    }
+
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Description as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::String(description.into()),
+        });
+        self
+    }
+
+    pub fn priority(mut self, priority: i32) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Priority as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Int(priority),
+        });
+        self
+    }
+
+    pub fn available(mut self, available: Id) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Available as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Id(available),
+        });
+        self
+    }
+
+    pub fn info(mut self, info: Vec<Value>) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Info as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Struct(info),
+        });
+        self
+    }
+
+    pub fn profiles(mut self, profiles: i32) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Profiles as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Int(profiles),
+        });
+        self
+    }
+
     pub fn props(mut self, props: pod::Object) -> Self {
         self.properties.push(Property {
             key: spa_sys::SpaParamRoute::Props as u32,
             flags: PropertyFlags::empty(),
             value: Value::Object(props),
+        });
+        self
+    }
+
+    pub fn devices(mut self, devices: i32) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Devices as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Int(devices),
+        });
+        self
+    }
+
+    pub fn profile(mut self, profile: i32) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Profile as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Int(profile),
+        });
+        self
+    }
+
+    pub fn save(mut self, save: bool) -> Self {
+        self.properties.push(Property {
+            key: spa_sys::SpaParamRoute::Save as u32,
+            flags: PropertyFlags::empty(),
+            value: Value::Bool(save),
         });
         self
     }

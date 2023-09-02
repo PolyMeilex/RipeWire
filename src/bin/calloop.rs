@@ -1,6 +1,7 @@
 use std::os::fd::AsRawFd;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
+use libspa_consts::SpaDirection;
 use pod::{dictionary::Dictionary, Value};
 
 use ripewire::context::Context;
@@ -252,7 +253,7 @@ impl PipewireState {
             let msg = protocol::create_msg(
                 id,
                 &protocol::pw_client_node::methods::PortUpdate {
-                    direction: 0,
+                    direction: SpaDirection::Input,
                     port_id: 0,
                     change_mask: 0b11,
                     params: vec![

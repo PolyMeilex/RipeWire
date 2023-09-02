@@ -1,4 +1,5 @@
 use super::*;
+use libspa_consts::SpaDirection;
 
 pub mod methods {
     use super::*;
@@ -142,7 +143,7 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct PortUpdate {
         /// The port direction
-        pub direction: u32,
+        pub direction: SpaDirection,
         /// The port id
         pub port_id: u32,
         /// A bitfield of changed items
@@ -160,7 +161,7 @@ pub mod methods {
             flatten: bool,
         ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
             let mut s = serializer.serialize_struct(flatten)?;
-            s.serialize_field(&self.direction)?;
+            s.serialize_field(&(self.direction as u32))?;
             s.serialize_field(&self.port_id)?;
             s.serialize_field(&self.change_mask)?;
 
@@ -309,7 +310,7 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct AddPort {
         /// The direction of the new port
-        pub direction: u32,
+        pub direction: SpaDirection,
         /// The port id of the new port
         pub port_id: u32,
         /// Optional extra properties for the port
@@ -324,7 +325,7 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct RemovePort {
         /// The direction of the port to remove
-        pub direction: u32,
+        pub direction: SpaDirection,
         /// The port id of the port to remove
         pub port_id: u32,
     }
@@ -337,7 +338,7 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct PortSetParam {
         /// The direction of the port
-        pub direction: u32,
+        pub direction: SpaDirection,
         /// The port id of the port
         pub port_id: u32,
         /// The param id to set.
@@ -460,7 +461,7 @@ pub mod events {
     #[derive(Debug, Clone)]
     pub struct PortUseBuffers {
         /// The direction of the port
-        pub direction: u32,
+        pub direction: SpaDirection,
         /// The port id of the port
         pub port_id: u32,
         /// The mixer id of the port
@@ -537,7 +538,7 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct PortSetIo {
         /// The direction of the port
-        pub direction: u32,
+        pub direction: SpaDirection,
         /// The port id of the port
         pub port_id: u32,
         /// The mix id of the port
@@ -582,7 +583,7 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct PortSetMixInfo {
         /// The direction of the port
-        pub direction: u32,
+        pub direction: SpaDirection,
         /// The port id of the port
         pub port_id: u32,
         /// The mix id of the port

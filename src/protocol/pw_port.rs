@@ -62,6 +62,7 @@ pub mod methods {
 
 pub mod events {
     use super::*;
+    use libspa_consts::SpaDirection;
 
     /// Notify port info
     ///
@@ -69,7 +70,7 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct Info {
         pub id: u32,
-        pub direction: u32,
+        pub direction: SpaDirection,
         pub change_mask: ChangeMask,
         pub props: pod::dictionary::Dictionary,
         pub params: pod::pod_struct::Struct,
