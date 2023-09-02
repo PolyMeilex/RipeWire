@@ -580,7 +580,7 @@ impl<'de> PodDeserialize<'de> for Choice<Fd> {
     }
 }
 
-impl<'de, T> PodDeserialize<'de> for (spa_sys::SpaPointerSubType, *const T) {
+impl<'de, T> PodDeserialize<'de> for (spa_sys::SpaPointerType, *const T) {
     fn deserialize(
         deserializer: PodDeserializer<'de>,
     ) -> Result<
@@ -644,7 +644,7 @@ pub enum Value {
     /// a choice.
     Choice(ChoiceValue),
     /// a pointer.
-    Pointer(spa_sys::SpaPointerSubType, *const c_void),
+    Pointer(spa_sys::SpaPointerType, *const c_void),
 }
 
 /// an array of same type objects.
@@ -697,7 +697,7 @@ pub enum ChoiceValue {
 #[derive(Clone, PartialEq)]
 pub struct Object {
     /// the object type.
-    pub type_: spa_sys::SpaType,
+    pub type_: spa_sys::SpaObjectType,
     /// the object id.
     pub id: u32,
     /// the object properties.

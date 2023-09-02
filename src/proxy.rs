@@ -1,4 +1,4 @@
-use libspa_consts::{SpaParamRoute, SpaParamType, SpaProp, SpaType};
+use libspa_consts::{SpaObjectType, SpaParamRoute, SpaParamType, SpaProp};
 use pod::{Object, Property, PropertyFlags, Value};
 
 use crate::{
@@ -239,7 +239,7 @@ impl PwDevice {
 
     pub fn set_mute<D>(&self, context: &mut Context<D>, index: i32, device: i32, mute: bool) {
         let value = Value::Object(Object {
-            type_: SpaType::ObjectParamRoute,
+            type_: SpaObjectType::ParamRoute,
             id: SpaParamType::Route as u32,
             properties: vec![
                 Property {
@@ -256,7 +256,7 @@ impl PwDevice {
                     key: SpaParamRoute::Props as u32,
                     flags: PropertyFlags::empty(),
                     value: Value::Object(Object {
-                        type_: SpaType::ObjectProps,
+                        type_: SpaObjectType::Props,
                         id: SpaParamType::Route as u32,
                         properties: vec![Property {
                             key: SpaProp::Mute as u32,

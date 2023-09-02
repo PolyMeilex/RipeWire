@@ -230,7 +230,7 @@ impl<P: FixedSizedPod> PodSerialize for [P] {
     }
 }
 
-impl<T> PodSerialize for (spa_sys::SpaPointerSubType, *const T) {
+impl<T> PodSerialize for (spa_sys::SpaPointerType, *const T) {
     fn serialize<O: Write + Seek>(
         &self,
         serializer: PodSerializer<O>,
@@ -419,7 +419,7 @@ impl<O: Write + Seek> PodSerializer<O> {
     /// Begin serializing an `Object` pod.
     pub fn serialize_object(
         mut self,
-        object_type: spa_sys::SpaType,
+        object_type: spa_sys::SpaObjectType,
         object_id: u32,
     ) -> Result<ObjectPodSerializer<O>, GenError> {
         let header_position = self
@@ -499,7 +499,7 @@ impl<O: Write + Seek> PodSerializer<O> {
     /// Serialize a pointer pod.
     pub fn serialize_pointer<T>(
         mut self,
-        type_: spa_sys::SpaPointerSubType,
+        type_: spa_sys::SpaPointerType,
         ptr: *const T,
     ) -> Result<SerializeSuccess<O>, GenError> {
         let ptr_size = std::mem::size_of::<usize>();

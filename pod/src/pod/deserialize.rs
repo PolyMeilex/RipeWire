@@ -479,7 +479,7 @@ impl<'de> PodDeserializer<'de> {
         let (object_type, object_id) =
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
 
-        let Some(object_type) = spa_sys::SpaType::from_raw(object_type) else {
+        let Some(object_type) = spa_sys::SpaObjectType::from_raw(object_type) else {
             return Err(DeserializeError::InvalidType);
         };
 
@@ -783,7 +783,7 @@ impl<'de> PodDeserializer<'de> {
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
         let ptr_size = len - 8;
 
-        let Some(type_) = spa_sys::SpaPointerSubType::from_raw(type_) else {
+        let Some(type_) = spa_sys::SpaPointerType::from_raw(type_) else {
             return Err(DeserializeError::InvalidType);
         };
 
@@ -1052,7 +1052,7 @@ pub struct ObjectPodDeserializer<'de> {
     /// Remaining object pod body length in bytes
     remaining: u32,
     /// type of the object
-    object_type: spa_sys::SpaType,
+    object_type: spa_sys::SpaObjectType,
     /// id of the object
     object_id: u32,
 }
@@ -1317,7 +1317,7 @@ pub trait Visitor<'de>: Sized {
     /// The input contains a pointer.
     fn visit_pointer(
         &self,
-        _type: spa_sys::SpaPointerSubType,
+        _type: spa_sys::SpaPointerType,
         _pointer: *const c_void,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Err(DeserializeError::UnsupportedType)
@@ -1636,7 +1636,7 @@ impl<'de> Visitor<'de> for ValueVisitor {
 
     fn visit_pointer(
         &self,
-        type_: spa_sys::SpaPointerSubType,
+        type_: spa_sys::SpaPointerType,
         pointer: *const c_void,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(Value::Pointer(type_, pointer))
@@ -1916,12 +1916,12 @@ impl<T> Default for PointerVisitor<T> {
 }
 
 impl<'de, T> Visitor<'de> for PointerVisitor<T> {
-    type Value = (spa_sys::SpaPointerSubType, *const T);
+    type Value = (spa_sys::SpaPointerType, *const T);
     type ArrayElem = Infallible;
 
     fn visit_pointer(
         &self,
-        type_: spa_sys::SpaPointerSubType,
+        type_: spa_sys::SpaPointerType,
         pointer: *const c_void,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok((type_, pointer as *const T))
