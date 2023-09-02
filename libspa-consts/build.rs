@@ -85,45 +85,40 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed=wrapper.h");
 
-    let builder = bindgen::Builder::default()
+    let mut builder = bindgen::Builder::default()
         .header("wrapper.h")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(ParseCallbacks))
         // Use `usize` for `size_t`. This behavior of bindgen changed because it is not
         // *technically* correct, but is the case in all architectures supported by Rust.
         .size_t_is_usize(true)
         .ignore_functions()
         .ignore_methods()
-        .allowlist_type("spa_choice_type")
-        .rustified_enum("spa_choice_type")
         .allowlist_type("spa_pod")
-        .allowlist_type("spa_format")
-        .rustified_enum("spa_format")
-        .allowlist_type("spa_prop")
-        .rustified_enum("spa_prop")
-        .allowlist_type("spa_data_type")
-        .rustified_enum("spa_data_type")
-        .allowlist_type("spa_param_route")
-        .rustified_enum("spa_param_route")
-        .allowlist_type("spa_param_type")
-        .rustified_enum("spa_param_type")
-        .allowlist_type("spa_param_io")
-        .rustified_enum("spa_param_io")
-        .allowlist_type("spa_io_type")
-        .rustified_enum("spa_io_type")
-        .allowlist_type("spa_media_type")
-        .rustified_enum("spa_media_type")
-        .allowlist_type("spa_media_subtype")
-        .rustified_enum("spa_media_subtype")
         .allowlist_var("SPA_POD_PROP_FLAG.*")
         .allowlist_var("SPA_TYPE_.*")
         .blocklist_item("SPA_TYPE_INFO_.*")
         .blocklist_item("SPA_TYPE_INTERFACE_.*")
-        .parse_callbacks(Box::new(ParseCallbacks))
         .prepend_enum_name(false)
         .layout_tests(false)
         .derive_eq(true);
+
+    for name in [
+        "spa_choice_type",
+        "spa_format",
+        "spa_prop",
+        "spa_data_type",
+        "spa_param_route",
+        "spa_param_type",
+        "spa_param_io",
+        "spa_io_type",
+        "spa_media_type",
+        "spa_media_subtype",
+    ] {
+        builder = builder.allowlist_type(name).rustified_enum(name);
+    }
 
     let builder = libs
         .iter()
