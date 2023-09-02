@@ -642,15 +642,20 @@ impl<'de> PodDeserializer<'de> {
         {
             let flags = ChoiceFlags::from_bits(flags).expect("invalid choice flags");
 
+            let Some(choice_type) = spa_sys::SpaChoiceType::from_raw(choice_type) else {
+                return Err(DeserializeError::InvalidChoiceType);
+            };
+
+            use spa_sys::SpaChoiceType;
             match choice_type {
-                spa_sys::SPA_CHOICE_None => {
+                SpaChoiceType::None => {
                     if values.is_empty() {
                         Err(DeserializeError::MissingChoiceValues)
                     } else {
                         Ok(Choice(ChoiceFlags::empty(), ChoiceEnum::None(values[0])))
                     }
                 }
-                spa_sys::SPA_CHOICE_Range => {
+                SpaChoiceType::Range => {
                     if values.len() < 3 {
                         Err(DeserializeError::MissingChoiceValues)
                     } else {
@@ -664,7 +669,7 @@ impl<'de> PodDeserializer<'de> {
                         ))
                     }
                 }
-                spa_sys::SPA_CHOICE_Step => {
+                SpaChoiceType::Step => {
                     if values.len() < 4 {
                         Err(DeserializeError::MissingChoiceValues)
                     } else {
@@ -679,7 +684,7 @@ impl<'de> PodDeserializer<'de> {
                         ))
                     }
                 }
-                spa_sys::SPA_CHOICE_Enum => {
+                SpaChoiceType::Enum => {
                     if values.is_empty() {
                         Err(DeserializeError::MissingChoiceValues)
                     } else {
@@ -692,7 +697,7 @@ impl<'de> PodDeserializer<'de> {
                         ))
                     }
                 }
-                spa_sys::SPA_CHOICE_Flags => {
+                SpaChoiceType::Flags => {
                     if values.is_empty() {
                         Err(DeserializeError::MissingChoiceValues)
                     } else {
@@ -705,7 +710,6 @@ impl<'de> PodDeserializer<'de> {
                         ))
                     }
                 }
-                _ => Err(DeserializeError::InvalidChoiceType),
             }
         }
 

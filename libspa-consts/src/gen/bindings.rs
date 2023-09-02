@@ -69,17 +69,20 @@ pub struct spa_pod {
     pub size: u32,
     pub type_: u32,
 }
-#[doc = "< no choice, first value is current"]
-pub const SPA_CHOICE_None: spa_choice_type = 0;
-#[doc = "< range: default, min, max"]
-pub const SPA_CHOICE_Range: spa_choice_type = 1;
-#[doc = "< range with step: default, min, max, step"]
-pub const SPA_CHOICE_Step: spa_choice_type = 2;
-#[doc = "< list: default, alternative,..."]
-pub const SPA_CHOICE_Enum: spa_choice_type = 3;
-#[doc = "< flags: default, possible flags,..."]
-pub const SPA_CHOICE_Flags: spa_choice_type = 4;
-pub type spa_choice_type = ::std::os::raw::c_uint;
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum SpaChoiceType {
+    #[doc = "< no choice, first value is current"]
+    None = 0,
+    #[doc = "< range: default, min, max"]
+    Range = 1,
+    #[doc = "< range with step: default, min, max, step"]
+    Step = 2,
+    #[doc = "< list: default, alternative,..."]
+    Enum = 3,
+    #[doc = "< flags: default, possible flags,..."]
+    Flags = 4,
+}
 #[repr(u32)]
 #[doc = " \\addtogroup spa_buffer\n \\{"]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]

@@ -97,6 +97,21 @@ impl SpaDataType {
     }
 }
 
+impl SpaChoiceType {
+    pub fn from_raw(v: u32) -> Option<Self> {
+        let v = match v {
+            0 => Self::None,
+            1 => Self::Range,
+            2 => Self::Step,
+            3 => Self::Enum,
+            4 => Self::Flags,
+            _ => return None,
+        };
+
+        Some(v)
+    }
+}
+
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct PwMemblockFlags: u32 {

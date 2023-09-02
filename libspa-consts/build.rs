@@ -20,6 +20,7 @@ struct ParseCallbacks;
 impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
     fn item_name(&self, original_item_name: &str) -> Option<String> {
         match original_item_name {
+            "spa_choice_type" => Some("SpaChoiceType".to_string()),
             "spa_prop" => Some("SpaProp".to_string()),
             "spa_data_type" => Some("SpaDataType".to_string()),
             "spa_param_route" => Some("SpaParamRoute".to_string()),
@@ -63,6 +64,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
         };
 
         let variant = match enum_name {
+            "enum spa_choice_type" => original_variant_name.strip_prefix("SPA_CHOICE_"),
             "enum spa_prop" => original_variant_name.strip_prefix("SPA_PROP_"),
             "enum spa_data_type" => original_variant_name.strip_prefix("SPA_DATA_"),
             "enum spa_param_route" => original_variant_name.strip_prefix("SPA_PARAM_ROUTE_"),
@@ -94,6 +96,7 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         .ignore_functions()
         .ignore_methods()
         .allowlist_type("spa_choice_type")
+        .rustified_enum("spa_choice_type")
         .allowlist_type("spa_pod")
         .allowlist_type("spa_format")
         .rustified_enum("spa_format")

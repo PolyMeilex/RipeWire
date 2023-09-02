@@ -447,36 +447,37 @@ impl<O: Write + Seek> PodSerializer<O> {
     ) -> Result<SerializeSuccess<O>, GenError> {
         let flags = choice.0;
 
+        use spa_sys::SpaChoiceType;
         let (choice_type, values) = match &choice.1 {
-            ChoiceEnum::None(value) => (spa_sys::SPA_CHOICE_None, vec![value]),
+            ChoiceEnum::None(value) => (SpaChoiceType::None, vec![value]),
             ChoiceEnum::Range { default, min, max } => {
-                (spa_sys::SPA_CHOICE_Range, vec![default, min, max])
+                (SpaChoiceType::Range, vec![default, min, max])
             }
             ChoiceEnum::Step {
                 default,
                 min,
                 max,
                 step,
-            } => (spa_sys::SPA_CHOICE_Step, vec![default, min, max, step]),
+            } => (SpaChoiceType::Step, vec![default, min, max, step]),
             ChoiceEnum::Enum {
                 default,
                 alternatives,
             } => {
                 let mut values = vec![default];
                 values.extend(alternatives);
-                (spa_sys::SPA_CHOICE_Enum, values)
+                (SpaChoiceType::Enum, values)
             }
             ChoiceEnum::Flags { default, flags } => {
                 let mut values = vec![default];
                 values.extend(flags);
-                (spa_sys::SPA_CHOICE_Flags, values)
+                (SpaChoiceType::Flags, values)
             }
         };
 
         let len: usize = 2 * 8 + values.len() * (T::SIZE as usize);
 
         self.gen(Self::header(len, spa_sys::SPA_TYPE_Choice))?;
-        self.gen(pair(ne_u32(choice_type), ne_u32(flags.bits())))?;
+        self.gen(pair(ne_u32(choice_type as u32), ne_u32(flags.bits())))?;
         self.gen(pair(ne_u32(T::SIZE), ne_u32(T::TYPE)))?;
 
         for v in values {
