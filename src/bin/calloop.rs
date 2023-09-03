@@ -252,9 +252,10 @@ impl PipewireState {
                         ("node.want-driver", "true"),
                     ]),
                     params: vec![
-                        (pod::utils::Id(1), 0),
-                        (pod::utils::Id(2), 4),
-                        (pod::utils::Id(16), 0),
+                        (pod::utils::Id(1), 0b000),
+                        (pod::utils::Id(2), 0b100),
+                        (pod::utils::Id(3), 0b010),
+                        (pod::utils::Id(4), 0b100),
                     ],
                 },
             };
@@ -266,7 +267,7 @@ impl PipewireState {
             let msg = protocol::create_msg(
                 id,
                 &protocol::pw_client_node::methods::PortUpdate {
-                    direction: SpaDirection::Input,
+                    direction: SpaDirection::Output,
                     port_id: 0,
                     change_mask: 0b11,
                     params: vec![
@@ -290,18 +291,18 @@ impl PipewireState {
                         rate_denom: 1,
                         items: pod::dictionary::Dictionary::from([
                             ("format.dsp", "8 bit raw midi"),
-                            ("port.name", "input"),
+                            ("port.name", "output"),
                             ("port.id", "0"),
-                            ("port.direction", "in"),
+                            ("port.direction", "out"),
                             ("port.alias", "rustypipe:input"),
                         ]),
                         params: vec![
-                            (pod::utils::Id(3), 3),
-                            (pod::utils::Id(6), 0),
-                            (pod::utils::Id(7), 3),
-                            (pod::utils::Id(4), 4),
-                            (pod::utils::Id(5), 0),
-                            (pod::utils::Id(15), 4),
+                            (pod::utils::Id(3), 0b011),
+                            (pod::utils::Id(6), 0b000),
+                            (pod::utils::Id(7), 0b011),
+                            (pod::utils::Id(4), 0b100),
+                            (pod::utils::Id(5), 0b000),
+                            (pod::utils::Id(15), 0b100),
                         ],
                     }),
                 },
