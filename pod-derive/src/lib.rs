@@ -200,7 +200,7 @@ pub fn event_deserialize(input: TokenStream) -> TokenStream {
             pub fn from<'a>(opcode: u8, value: &'a [u8], fds: &[std::os::fd::RawFd]) -> Result<Self, pod::deserialize::DeserializeError<&'a [u8]>> {
                 let mut this = match opcode {
                     #(#out,)*
-                    _ => return Err(pod::deserialize::DeserializeError::InvalidType),
+                    _ => return Err(pod::deserialize::DeserializeError::UnsupportedType),
                 };
 
                 this._load_fds(fds);

@@ -37,7 +37,7 @@ impl<'de> deserialize::PodDeserialize<'de> for spa_sys::SpaDirection {
         } else if id == Self::Input as i32 {
             Self::Input
         } else {
-            return Err(deserialize::DeserializeError::InvalidType);
+            return Err(deserialize::DeserializeError::UnsupportedType);
         };
 
         Ok((value, res))

@@ -480,7 +480,7 @@ impl<'de> PodDeserializer<'de> {
             self.parse(pair(u32(Endianness::Native), u32(Endianness::Native)))?;
 
         let Some(object_type) = spa_sys::SpaType::from_raw(object_type) else {
-            return Err(DeserializeError::InvalidType);
+            return Err(DeserializeError::InvalidType(object_type));
         };
 
         Ok(ObjectPodDeserializer {
@@ -716,7 +716,7 @@ impl<'de> PodDeserializer<'de> {
         }
 
         let Some(child_type) = spa_sys::SpaType::from_raw(child_type) else {
-            return Err(DeserializeError::InvalidType);
+            return Err(DeserializeError::InvalidType(child_type));
         };
 
         let Some(choice_type) = spa_sys::SpaChoiceType::from_raw(choice_type) else {
@@ -724,6 +724,11 @@ impl<'de> PodDeserializer<'de> {
         };
 
         match child_type {
+            spa_sys::SpaType::Bool => {
+                let (values, success) = self.deserialize_choice_values::<bool>(num_values)?;
+                let choice = create_choice(choice_type, values, flags)?;
+                Ok((visitor.visit_choice_bool(choice)?, success))
+            }
             spa_sys::SpaType::Int => {
                 let (values, success) = self.deserialize_choice_values::<i32>(num_values)?;
                 let choice = create_choice(choice_type, values, flags)?;
@@ -766,7 +771,7 @@ impl<'de> PodDeserializer<'de> {
                 let choice = create_choice(choice_type, values, flags)?;
                 Ok((visitor.visit_choice_fd(choice)?, success))
             }
-            _ => Err(DeserializeError::InvalidType),
+            ty => Err(DeserializeError::InvalidType(ty as u32)),
         }
     }
 
@@ -784,7 +789,7 @@ impl<'de> PodDeserializer<'de> {
         let ptr_size = len - 8;
 
         let Some(type_) = spa_sys::SpaPointerType::from_raw(type_) else {
-            return Err(DeserializeError::InvalidType);
+            return Err(DeserializeError::InvalidType(type_));
         };
 
         let res = match ptr_size {
@@ -809,7 +814,7 @@ impl<'de> PodDeserializer<'de> {
         let type_ = self.peek(Self::type_())?;
 
         let Some(type_) = spa_sys::SpaType::from_raw(type_) else {
-            return Err(DeserializeError::InvalidType);
+            return Err(DeserializeError::InvalidType(type_));
         };
 
         match type_ {
@@ -830,7 +835,7 @@ impl<'de> PodDeserializer<'de> {
             spa_sys::SpaType::Object => self.deserialize_object(ValueVisitor),
             spa_sys::SpaType::Choice => self.deserialize_choice(ValueVisitor),
             spa_sys::SpaType::Pointer => self.deserialize_pointer(ValueVisitor),
-            _ => Err(DeserializeError::InvalidType),
+            ty => Err(DeserializeError::InvalidType(ty as u32)),
         }
     }
 
@@ -840,7 +845,7 @@ impl<'de> PodDeserializer<'de> {
         let child_type = self.peek(preceded(Self::type_(), Self::type_()))?;
 
         let Some(child_type) = spa_sys::SpaType::from_raw(child_type) else {
-            return Err(DeserializeError::InvalidType);
+            return Err(DeserializeError::InvalidType(child_type));
         };
 
         let (array, success) = match child_type {
@@ -894,7 +899,7 @@ impl<'de> PodDeserializer<'de> {
                 let array = ValueArrayFdVisitor.visit_array(elements)?;
                 (array, success)
             }
-            _ => return Err(DeserializeError::InvalidType),
+            ty => return Err(DeserializeError::InvalidType(ty as u32)),
         };
 
         Ok((Value::ValueArray(array), success))
@@ -1137,7 +1142,7 @@ pub enum DeserializeError<I> {
     /// The visitor does not support the type
     UnsupportedType,
     /// The type is either invalid or not yet supported
-    InvalidType,
+    InvalidType(u32),
     /// The property is missing from the object
     PropertyMissing,
     /// The property does not have the expected key
@@ -1246,6 +1251,14 @@ pub trait Visitor<'de>: Sized {
     fn visit_object(
         &self,
         _object_deserializer: &mut ObjectPodDeserializer<'de>,
+    ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+        Err(DeserializeError::UnsupportedType)
+    }
+
+    /// The input contains an [`bool`] choice.
+    fn visit_choice_bool(
+        &self,
+        _choice: Choice<bool>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Err(DeserializeError::UnsupportedType)
     }
@@ -1578,6 +1591,13 @@ impl<'de> Visitor<'de> for ValueVisitor {
         Ok(Value::Object(object))
     }
 
+    fn visit_choice_bool(
+        &self,
+        choice: Choice<bool>,
+    ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+        Ok(Value::Choice(ChoiceValue::Bool(choice)))
+    }
+
     fn visit_choice_i32(
         &self,
         choice: Choice<i32>,
@@ -1780,6 +1800,21 @@ impl<'de> Visitor<'de> for ValueArrayFdVisitor {
         elements: Vec<Self::ArrayElem>,
     ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
         Ok(ValueArray::Fd(elements))
+    }
+}
+
+/// A visitor producing [`Choice`] for boolean choice values.
+pub struct ChoiceBoolVisitor;
+
+impl<'de> Visitor<'de> for ChoiceBoolVisitor {
+    type Value = Choice<bool>;
+    type ArrayElem = Infallible;
+
+    fn visit_choice_bool(
+        &self,
+        choice: Choice<bool>,
+    ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
+        Ok(choice)
     }
 }
 

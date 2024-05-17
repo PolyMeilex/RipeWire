@@ -676,6 +676,8 @@ pub enum ValueArray {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ChoiceValue {
     /// Choice on 32 bits integer values.
+    Bool(Choice<bool>),
+    /// Choice on 32 bits integer values.
     Int(Choice<i32>),
     /// Choice on 64 bits integer values.
     Long(Choice<i64>),

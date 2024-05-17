@@ -28,6 +28,7 @@ use cookie_factory::{
 
 use crate::{
     pod::ChoiceValue,
+    serialize,
     utils::{Choice, ChoiceEnum},
 };
 
@@ -196,6 +197,7 @@ impl PodSerialize for Value {
                 object_serializer.end()
             }
             Value::Choice(choice) => match choice {
+                ChoiceValue::Bool(choice) => serializer.serialize_choice(choice),
                 ChoiceValue::Int(choice) => serializer.serialize_choice(choice),
                 ChoiceValue::Long(choice) => serializer.serialize_choice(choice),
                 ChoiceValue::Float(choice) => serializer.serialize_choice(choice),
