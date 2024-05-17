@@ -2,10 +2,43 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, Data, DeriveInput};
 
-#[proc_macro_derive(PodSerialize)]
+fn op_code(attrs: &[syn::Attribute], name: &syn::Ident) -> proc_macro2::TokenStream {
+    let op_code = attrs.iter().find(|attr| {
+        let Some(ident) = attr.path.get_ident() else {
+            return false;
+        };
+        ident == "op_code"
+    });
+
+    if let Some(op_code) = op_code {
+        let syn::Meta::List(mut value) = op_code.parse_meta().unwrap() else {
+            todo!("not list")
+        };
+        let syn::NestedMeta::Lit(value) = value.nested.pop().unwrap().into_value() else {
+            todo!("not lit")
+        };
+        let syn::Lit::Int(value) = value else {
+            todo!("not int")
+        };
+
+        let out: u8 = value.base10_parse().unwrap();
+
+        quote! {
+            impl HasOpCode for #name {
+                const OPCODE: u8 = #out;
+            }
+        }
+    } else {
+        quote!()
+    }
+}
+
+#[proc_macro_derive(PodSerialize, attributes(op_code))]
 pub fn pod_serialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
+
+    let op_code = op_code(&input.attrs, &name);
 
     let out = if let Data::Struct(s) = input.data {
         s.fields
@@ -17,6 +50,7 @@ pub fn pod_serialize(input: TokenStream) -> TokenStream {
     };
 
     let expanded = quote! {
+        #op_code
         impl pod::serialize::PodSerialize for #name {
             fn serialize<O: std::io::Write + std::io::Seek>(
                 &self,
@@ -34,10 +68,12 @@ pub fn pod_serialize(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-#[proc_macro_derive(PodDeserialize, attributes(fd))]
+#[proc_macro_derive(PodDeserialize, attributes(op_code, fd))]
 pub fn pod_deserialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
+
+    let op_code = op_code(&input.attrs, &name);
 
     let (fds, out) = if let Data::Struct(ref s) = input.data {
         let fds = s
@@ -73,6 +109,7 @@ pub fn pod_deserialize(input: TokenStream) -> TokenStream {
     };
 
     let expanded = quote! {
+        #op_code
         impl<'de> pod::deserialize::PodDeserialize<'de> for #name {
             fn deserialize(
                 deserializer: pod::deserialize::PodDeserializer<'de>,
