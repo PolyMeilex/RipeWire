@@ -114,6 +114,8 @@ pub enum SpaParamType {
     Latency = 15,
     #[doc = "< processing latency, a SPA_TYPE_OBJECT_ParamProcessLatency"]
     ProcessLatency = 16,
+    #[doc = "< tag reporting, a SPA_TYPE_OBJECT_ParamTag. Since 0.3.79"]
+    Tag = 17,
 }
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -197,7 +199,7 @@ pub enum SpaProp {
     PatternType = 65541,
     DitherType = 65542,
     Truncate = 65543,
-    #[doc = "< a volume array, one volume per channel\n (Array of Float). 0.0 is silence, 1.0 is\n  without attenuation. This is the effective volume\n  that is applied. It can result in a hardware volume\n  and software volume (see softVolumes)"]
+    #[doc = "< a volume array, one (linear) volume per channel\n (Array of Float). 0.0 is silence, 1.0 is\n  without attenuation. This is the effective\n  volume that is applied. It can result\n  in a hardware volume and software volume\n  (see softVolumes)"]
     ChannelVolumes = 65544,
     #[doc = "< a volume base (Float)"]
     VolumeBase = 65545,
@@ -207,13 +209,13 @@ pub enum SpaProp {
     ChannelMap = 65547,
     #[doc = "< mute (Bool)"]
     MonitorMute = 65548,
-    #[doc = "< a volume array, one volume per\n  channel (Array of Float)"]
+    #[doc = "< a volume array, one (linear) volume per\n  channel (Array of Float)"]
     MonitorVolumes = 65549,
     #[doc = "< delay adjustment"]
     LatencyOffsetNsec = 65550,
     #[doc = "< mute (Bool) applied in software"]
     SoftMute = 65551,
-    #[doc = "< a volume array, one volume per channel\n (Array of Float). 0.0 is silence, 1.0 is without\n attenuation. This is the volume applied in software,\n there might be a part applied in hardware."]
+    #[doc = "< a volume array, one (linear) volume per channel\n (Array of Float). 0.0 is silence, 1.0 is without\n attenuation. This is the volume applied in\n software, there might be a part applied in\n hardware."]
     SoftVolumes = 65552,
     #[doc = "< enabled IEC958 (S/PDIF) codecs,\n  (Array (Id enum spa_audio_iec958_codec)"]
     Iec958Codecs = 65553,
