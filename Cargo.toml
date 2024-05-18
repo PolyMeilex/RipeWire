@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["pod", "pod-derive", "libspa-consts", "scanner"]
+members = ["pod", "pod-simple", "pod-derive", "libspa-consts", "scanner"]
 
 [dependencies]
 calloop = "0.10.5"
