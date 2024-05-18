@@ -1,37 +1,33 @@
-use std::mem::size_of;
+use std::mem;
 
 use super::pad_to_8;
 use bstr::BStr;
 use libspa_consts::{SpaChoiceType, SpaFraction, SpaRectangle, SpaType};
 
-unsafe fn read_raw<T: Copy>(bytes: &[u8]) -> T {
-    assert!(bytes.len() >= size_of::<T>());
-    let ptr = bytes as *const [u8] as *const T;
-    unsafe { *ptr }
+trait Primitive {
+    fn read_raw(bytes: &[u8]) -> Self;
 }
 
-macro_rules! impl_read_raw {
-    ($name: ident, $ty: ty) => {
-        #[allow(unused)]
-        fn $name(bytes: &[u8]) -> $ty {
-            unsafe { read_raw(bytes) }
-        }
+macro_rules! impl_typed_pods {
+    ( $($ty: ty),* $(,)? ) => {
+        $(
+            impl Primitive for $ty {
+                fn read_raw(bytes: &[u8]) -> Self {
+                    Self::from_ne_bytes(bytes[..mem::size_of::<Self>()].try_into().unwrap())
+                }
+            }
+        )*
     };
 }
+impl_typed_pods!(i32, u32, i64, u64, f32, f64);
 
-impl_read_raw!(read_i32, i32);
-impl_read_raw!(read_u32, u32);
+fn read_raw<T: Primitive + Copy>(bytes: &[u8]) -> T {
+    T::read_raw(bytes)
+}
 
-impl_read_raw!(read_i64, i64);
-impl_read_raw!(read_u64, u64);
-
-impl_read_raw!(read_f32, f32);
-impl_read_raw!(read_f64, f64);
-
-#[repr(C)]
-struct SpaPodHeader {
-    size: u32,
-    ty: SpaType,
+fn eat_raw<T: Primitive + Copy>(bytes: &[u8]) -> (T, &[u8]) {
+    let v = read_raw(bytes);
+    (v, &bytes[mem::size_of::<T>()..])
 }
 
 #[derive(Clone)]
@@ -43,11 +39,11 @@ pub struct PodDeserializer<'a> {
 
 impl<'a> PodDeserializer<'a> {
     pub fn new(buff: &'a [u8]) -> (Self, &'a [u8]) {
-        let size = read_u32(buff);
-        let ty = read_u32(&buff[4..]);
+        let (size, buff) = eat_raw(buff);
+        let (ty, buff) = eat_raw(buff);
         let ty = SpaType::from_raw(ty).unwrap();
 
-        Self::form_body(size, true, ty, &buff[size_of::<SpaPodHeader>()..])
+        Self::form_body(size, true, ty, buff)
     }
 
     fn form_body(size: u32, padding: bool, ty: SpaType, body: &'a [u8]) -> (Self, &'a [u8]) {
@@ -78,25 +74,25 @@ impl<'a> PodDeserializer<'a> {
     pub fn kind(&self) -> PodDeserializerKind<'a> {
         match self.ty {
             SpaType::None => PodDeserializerKind::None,
-            SpaType::Bool => PodDeserializerKind::Bool(read_i32(self.body) != 0),
-            SpaType::Id => PodDeserializerKind::Id(read_u32(self.body)),
-            SpaType::Int => PodDeserializerKind::Int(read_i32(self.body)),
-            SpaType::Long => PodDeserializerKind::Long(read_i64(self.body)),
-            SpaType::Float => PodDeserializerKind::Float(read_f32(self.body)),
-            SpaType::Double => PodDeserializerKind::Double(read_f64(self.body)),
+            SpaType::Bool => PodDeserializerKind::Bool(read_raw::<i32>(self.body) != 0),
+            SpaType::Id => PodDeserializerKind::Id(read_raw(self.body)),
+            SpaType::Int => PodDeserializerKind::Int(read_raw(self.body)),
+            SpaType::Long => PodDeserializerKind::Long(read_raw(self.body)),
+            SpaType::Float => PodDeserializerKind::Float(read_raw(self.body)),
+            SpaType::Double => PodDeserializerKind::Double(read_raw(self.body)),
             SpaType::String => PodDeserializerKind::String(self.as_string().unwrap()),
             SpaType::Bytes => PodDeserializerKind::Bytes(self.body),
             SpaType::Rectangle => {
                 let rect = SpaRectangle {
-                    width: read_u32(self.body),
-                    height: read_u32(&self.body[4..]),
+                    width: read_raw(self.body),
+                    height: read_raw(&self.body[4..]),
                 };
                 PodDeserializerKind::Rectangle(rect)
             }
             SpaType::Fraction => {
                 let rect = SpaFraction {
-                    num: read_u32(self.body),
-                    denom: read_u32(&self.body[4..]),
+                    num: read_raw(self.body),
+                    denom: read_raw(&self.body[4..]),
                 };
                 PodDeserializerKind::Fraction(rect)
             }
@@ -105,7 +101,7 @@ impl<'a> PodDeserializer<'a> {
             SpaType::Struct => PodDeserializerKind::Struct(self.as_struct().unwrap()),
             SpaType::Object => PodDeserializerKind::Object(self.as_object().unwrap()),
             // SpaType::Sequence => {},
-            SpaType::Fd => PodDeserializerKind::Fd(read_i64(self.body)),
+            SpaType::Fd => PodDeserializerKind::Fd(read_raw(self.body)),
             SpaType::Choice => PodDeserializerKind::Choice(self.as_choice().unwrap()),
             _ => PodDeserializerKind::Unknown(self.clone()),
         }
@@ -195,12 +191,9 @@ impl<'a> PodArrayDeserializer<'a> {
     fn new(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
         assert_eq!(ty, SpaType::Array);
 
-        let child_size = read_u32(body);
-        let body = &body[size_of::<u32>()..];
-
-        let child_ty = read_u32(body);
+        let (child_size, body) = eat_raw::<u32>(body);
+        let (child_ty, body) = eat_raw::<u32>(body);
         let child_ty = SpaType::from_raw(child_ty).unwrap();
-        let body = &body[size_of::<u32>()..];
 
         Self {
             size,
@@ -278,12 +271,10 @@ impl<'a> PodObjectDeserializer<'a> {
     fn new(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
         assert_eq!(ty, SpaType::Object);
 
-        let object_ty = read_u32(body);
-        let object_ty = SpaType::from_raw(object_ty).unwrap();
-        let body = &body[size_of::<u32>()..];
+        let (object_ty, body) = eat_raw::<u32>(body);
+        let (object_id, body) = eat_raw::<u32>(body);
 
-        let object_id = read_u32(body);
-        let body = &body[size_of::<u32>()..];
+        let object_ty = SpaType::from_raw(object_ty).unwrap();
 
         Self {
             size,
@@ -303,17 +294,15 @@ impl<'a> PodObjectDeserializer<'a> {
     }
 
     pub fn pop_property(&mut self) -> Option<PobObjectPropertyDeserializer<'a>> {
-        if self.body.is_empty() {
+        let remaining = self.body;
+
+        if remaining.is_empty() {
             return None;
         }
 
-        let key = read_u32(self.body);
-        self.body = &self.body[size_of::<u32>()..];
-
-        let flags = read_u32(self.body);
-        self.body = &self.body[size_of::<u32>()..];
-
-        let (pod, remaining) = PodDeserializer::new(self.body);
+        let (key, remaining) = eat_raw::<u32>(remaining);
+        let (flags, remaining) = eat_raw::<u32>(remaining);
+        let (pod, remaining) = PodDeserializer::new(remaining);
 
         self.body = remaining;
 
@@ -351,19 +340,13 @@ impl<'a> PodChoiceDeserializer<'a> {
     fn new(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
         assert_eq!(ty, SpaType::Choice);
 
-        let choice_ty = read_u32(body);
+        let (choice_ty, body) = eat_raw::<u32>(body);
+        let (flags, body) = eat_raw::<u32>(body);
+        let (child_size, body) = eat_raw::<u32>(body);
+        let (child_ty, body) = eat_raw::<u32>(body);
+
         let choice_ty = SpaChoiceType::from_raw(choice_ty).unwrap();
-        let body = &body[size_of::<u32>()..];
-
-        let flags = read_u32(body);
-        let body = &body[size_of::<u32>()..];
-
-        let child_size = read_u32(body);
-        let body = &body[size_of::<u32>()..];
-
-        let child_ty = read_u32(body);
         let child_ty = SpaType::from_raw(child_ty).unwrap();
-        let body = &body[size_of::<u32>()..];
 
         Self {
             size,
