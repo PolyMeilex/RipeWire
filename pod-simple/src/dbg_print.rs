@@ -7,9 +7,9 @@ pub fn dbg_print(bytes: &[u8]) {
     // print_item(0, pod);
 }
 
-// use libspa_consts::{SpaFormat, SpaType};
 // use crate::deserialize::PodDeserializerKind;
-
+// use libspa_consts::{SpaEnum, SpaFormat, SpaType};
+//
 // fn pad(nest: usize) {
 //     for _ in 0..nest {
 //         print!("  ");
@@ -73,7 +73,7 @@ pub fn dbg_print(bytes: &[u8]) {
 //             println!("{object_ty:?} {{");
 //             for property in pod {
 //                 pad(nest + 1);
-//                 if object_ty == SpaType::ObjectFormat {
+//                 if object_ty == SpaEnum::Value(SpaType::ObjectFormat) {
 //                     print!("{:?}:", SpaFormat::from_raw(property.key).unwrap());
 //                 } else {
 //                     print!("key: {:?}", property.key);

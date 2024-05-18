@@ -10,6 +10,53 @@ mod bindings {
 
 pub use bindings::*;
 
+/// Wrapper type for enums that handles unknown variants gracefully
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SpaEnum<T, RAW = u32> {
+    Value(T),
+    Unknown(RAW),
+}
+
+impl<T, RAW: std::fmt::Debug> SpaEnum<T, RAW> {
+    pub fn ok(self) -> Option<T> {
+        match self {
+            SpaEnum::Value(v) => Some(v),
+            SpaEnum::Unknown(_) => None,
+        }
+    }
+
+    #[track_caller]
+    pub fn unwrap(self) -> T {
+        match self {
+            SpaEnum::Value(v) => v,
+            SpaEnum::Unknown(v) => {
+                panic!("called `SpaEnum::unwrap()` on a `Unknown({:?})` value", v)
+            }
+        }
+    }
+}
+
+impl<T: num_traits::FromPrimitive> SpaEnum<T, u32> {
+    pub fn from_raw(raw: u32) -> Self {
+        T::from_u32(raw)
+            .map(Self::Value)
+            .unwrap_or(Self::Unknown(raw))
+    }
+}
+
+impl<T, RAW> SpaEnum<T, RAW>
+where
+    T: Into<RAW> + Clone,
+    RAW: Clone,
+{
+    pub fn as_raw(&self) -> RAW {
+        match self {
+            SpaEnum::Value(v) => v.clone().into(),
+            SpaEnum::Unknown(v) => v.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, num_derive::FromPrimitive)]
 #[repr(u32)]
 pub enum SpaType {

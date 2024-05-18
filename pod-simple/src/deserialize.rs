@@ -2,7 +2,7 @@ use std::{fmt, mem};
 
 use super::pad_to_8;
 use bstr::BStr;
-use libspa_consts::{SpaChoiceType, SpaFraction, SpaRectangle, SpaType};
+use libspa_consts::{SpaChoiceType, SpaEnum, SpaFraction, SpaRectangle, SpaType};
 
 trait Primitive {
     fn read_raw(bytes: &[u8]) -> Self;
@@ -33,7 +33,7 @@ fn eat_raw<T: Primitive + Copy>(bytes: &[u8]) -> (T, &[u8]) {
 #[derive(Clone)]
 pub struct PodDeserializer<'a> {
     size: u32,
-    ty: SpaType,
+    ty: SpaEnum<SpaType>,
     body: &'a [u8],
 }
 
@@ -41,7 +41,7 @@ impl<'a> PodDeserializer<'a> {
     pub fn new(buff: &'a [u8]) -> (Self, &'a [u8]) {
         let (size, buff) = eat_raw(buff);
         let (ty, buff) = eat_raw(buff);
-        let ty = SpaType::from_raw(ty).unwrap();
+        let ty = SpaEnum::from_raw(ty);
 
         let pod = Self::form_body(size, ty, buff);
         let padded_size = pod.size_with_padding() as usize;
@@ -49,7 +49,7 @@ impl<'a> PodDeserializer<'a> {
         (pod, &buff[padded_size..])
     }
 
-    fn form_body(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
+    fn form_body(size: u32, ty: SpaEnum<SpaType>, body: &'a [u8]) -> Self {
         Self {
             size,
             ty,
@@ -57,7 +57,7 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
-    pub fn ty(&self) -> SpaType {
+    pub fn ty(&self) -> SpaEnum<SpaType> {
         self.ty
     }
 
@@ -79,7 +79,12 @@ impl<'a> PodDeserializer<'a> {
 
     pub fn kind(&self) -> PodDeserializerKind<'a> {
         type Kind<'a> = PodDeserializerKind<'a>;
-        match self.ty {
+
+        let SpaEnum::Value(ty) = self.ty else {
+            return Kind::Unknown(self.clone());
+        };
+
+        match ty {
             SpaType::None => Kind::None,
             SpaType::Bool => Kind::Bool(read_raw::<i32>(self.body) != 0),
             SpaType::Id => Kind::Id(read_raw(self.body)),
@@ -109,7 +114,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_string(&self) -> Option<&'a BStr> {
-        if self.ty == SpaType::String {
+        if self.ty == SpaEnum::Value(SpaType::String) {
             let bytes = &self.body[..self.size as usize];
 
             let bytes = match bytes.iter().position(|b| *b == 0) {
@@ -151,7 +156,7 @@ pub enum PodDeserializerKind<'a> {
 #[derive(Clone)]
 pub struct PodArrayDeserializer<'a> {
     child_size: u32,
-    child_ty: SpaType,
+    child_ty: SpaEnum<SpaType>,
     body: &'a [u8],
 }
 
@@ -159,7 +164,7 @@ impl<'a> PodArrayDeserializer<'a> {
     fn new(body: &'a [u8]) -> Self {
         let (child_size, body) = eat_raw::<u32>(body);
         let (child_ty, body) = eat_raw::<u32>(body);
-        let child_ty = SpaType::from_raw(child_ty).unwrap();
+        let child_ty = SpaEnum::from_raw(child_ty);
 
         Self {
             child_size,
@@ -219,7 +224,7 @@ impl<'a> Iterator for PodStructDeserializer<'a> {
 
 #[derive(Clone)]
 pub struct PodObjectDeserializer<'a> {
-    object_ty: SpaType,
+    object_ty: SpaEnum<SpaType>,
     object_id: u32,
     body: &'a [u8],
 }
@@ -229,7 +234,7 @@ impl<'a> PodObjectDeserializer<'a> {
         let (object_ty, body) = eat_raw::<u32>(body);
         let (object_id, body) = eat_raw::<u32>(body);
 
-        let object_ty = SpaType::from_raw(object_ty).unwrap();
+        let object_ty = SpaEnum::from_raw(object_ty);
 
         Self {
             object_id,
@@ -238,7 +243,7 @@ impl<'a> PodObjectDeserializer<'a> {
         }
     }
 
-    pub fn object_ty(&self) -> SpaType {
+    pub fn object_ty(&self) -> SpaEnum<SpaType> {
         self.object_ty
     }
 
@@ -279,11 +284,11 @@ pub struct PobObjectPropertyDeserializer<'a> {
 
 #[derive(Clone)]
 pub struct PodChoiceDeserializer<'a> {
-    choice_ty: SpaChoiceType,
+    choice_ty: SpaEnum<SpaChoiceType>,
     flags: u32,
 
     child_size: u32,
-    child_ty: SpaType,
+    child_ty: SpaEnum<SpaType>,
     body: &'a [u8],
 }
 
@@ -294,8 +299,8 @@ impl<'a> PodChoiceDeserializer<'a> {
         let (child_size, body) = eat_raw::<u32>(body);
         let (child_ty, body) = eat_raw::<u32>(body);
 
-        let choice_ty = SpaChoiceType::from_raw(choice_ty).unwrap();
-        let child_ty = SpaType::from_raw(child_ty).unwrap();
+        let choice_ty = SpaEnum::from_raw(choice_ty);
+        let child_ty = SpaEnum::from_raw(child_ty);
 
         Self {
             choice_ty,
@@ -306,7 +311,7 @@ impl<'a> PodChoiceDeserializer<'a> {
         }
     }
 
-    pub fn choice_ty(&self) -> SpaChoiceType {
+    pub fn choice_ty(&self) -> SpaEnum<SpaChoiceType> {
         self.choice_ty
     }
 
