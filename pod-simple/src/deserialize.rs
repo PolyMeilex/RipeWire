@@ -43,20 +43,18 @@ impl<'a> PodDeserializer<'a> {
         let (ty, buff) = eat_raw(buff);
         let ty = SpaType::from_raw(ty).unwrap();
 
-        Self::form_body(size, true, ty, buff)
+        let pod = Self::form_body(size, ty, buff);
+        let padded_size = pod.size_with_padding() as usize;
+
+        (pod, &buff[padded_size..])
     }
 
-    fn form_body(size: u32, padding: bool, ty: SpaType, body: &'a [u8]) -> (Self, &'a [u8]) {
-        let padding = if padding { pad_to_8(size) } else { 0 };
-        let padded_size = (size + padding) as usize;
-
-        let pod = Self {
+    fn form_body(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
+        Self {
             size,
             ty,
             body: &body[..size as usize],
-        };
-
-        (pod, &body[padded_size..])
+        }
     }
 
     pub fn ty(&self) -> SpaType {
@@ -65,6 +63,14 @@ impl<'a> PodDeserializer<'a> {
 
     pub fn size(&self) -> u32 {
         self.size
+    }
+
+    fn padding(&self) -> u32 {
+        pad_to_8(self.size())
+    }
+
+    fn size_with_padding(&self) -> u32 {
+        self.size() + self.padding()
     }
 
     pub fn body(&self) -> &'a [u8] {
@@ -165,10 +171,8 @@ impl<'a> PodArrayDeserializer<'a> {
             return None;
         }
 
-        let (pod, remaining) =
-            PodDeserializer::form_body(self.child_size, false, self.child_ty, self.body);
-
-        self.body = remaining;
+        let pod = PodDeserializer::form_body(self.child_size, self.child_ty, self.body);
+        self.body = &self.body[pod.size() as usize..];
 
         Some(pod)
     }
@@ -310,10 +314,8 @@ impl<'a> PodChoiceDeserializer<'a> {
             return None;
         }
 
-        let (pod, remaining) =
-            PodDeserializer::form_body(self.child_size, false, self.child_ty, self.body);
-
-        self.body = remaining;
+        let pod = PodDeserializer::form_body(self.child_size, self.child_ty, self.body);
+        self.body = &self.body[pod.size() as usize..];
 
         Some(pod)
     }
