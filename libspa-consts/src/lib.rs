@@ -75,6 +75,12 @@ impl SpaType {
     }
 }
 
+impl SpaFormat {
+    pub fn from_raw(v: u32) -> Option<Self> {
+        num_traits::FromPrimitive::from_u32(v)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, num_derive::FromPrimitive)]
 #[repr(u32)]
 pub enum SpaPointerType {

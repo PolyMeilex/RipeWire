@@ -341,7 +341,7 @@ pub enum SpaMediaSubtype {
 }
 #[repr(u32)]
 #[doc = " properties for audio SPA_TYPE_OBJECT_Format"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
 pub enum SpaFormat {
     Start = 0,
     #[doc = "< media type (Id enum spa_media_type)"]
