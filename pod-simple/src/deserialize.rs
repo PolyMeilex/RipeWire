@@ -4,19 +4,29 @@ use super::pad_to_8;
 use bstr::BStr;
 use libspa_consts::{SpaChoiceType, SpaFraction, SpaRectangle, SpaType};
 
-macro_rules! arr4 {
-    ($b: expr, $off: expr) => {
-        [$b[0 + $off], $b[1 + $off], $b[2 + $off], $b[3 + $off]]
-    };
-    ($b: expr) => {
-        arr4!($b, 0)
+unsafe fn read_raw<T: Copy>(bytes: &[u8]) -> T {
+    assert!(bytes.len() >= size_of::<T>());
+    let ptr = bytes as *const [u8] as *const T;
+    unsafe { *ptr }
+}
+
+macro_rules! impl_read_raw {
+    ($name: ident, $ty: ty) => {
+        #[allow(unused)]
+        fn $name(bytes: &[u8]) -> $ty {
+            unsafe { read_raw(bytes) }
+        }
     };
 }
-macro_rules! arr8 {
-    ($b: expr) => {
-        [$b[0], $b[1], $b[2], $b[3], $b[4], $b[5], $b[6], $b[7]]
-    };
-}
+
+impl_read_raw!(read_i32, i32);
+impl_read_raw!(read_u32, u32);
+
+impl_read_raw!(read_i64, i64);
+impl_read_raw!(read_u64, u64);
+
+impl_read_raw!(read_f32, f32);
+impl_read_raw!(read_f64, f64);
 
 #[repr(C)]
 struct SpaPodHeader {
@@ -33,8 +43,8 @@ pub struct PodDeserializer<'a> {
 
 impl<'a> PodDeserializer<'a> {
     pub fn new(buff: &'a [u8]) -> (Self, &'a [u8]) {
-        let size = u32::from_ne_bytes(arr4!(buff));
-        let ty = u32::from_ne_bytes(arr4!(buff, 4));
+        let size = read_u32(buff);
+        let ty = read_u32(&buff[4..]);
         let ty = SpaType::from_raw(ty).unwrap();
 
         Self::form_body(size, true, ty, &buff[size_of::<SpaPodHeader>()..])
@@ -68,25 +78,25 @@ impl<'a> PodDeserializer<'a> {
     pub fn kind(&self) -> PodDeserializerKind<'a> {
         match self.ty {
             SpaType::None => PodDeserializerKind::None,
-            SpaType::Bool => PodDeserializerKind::Bool(i32::from_ne_bytes(arr4!(self.body)) != 0),
-            SpaType::Id => PodDeserializerKind::Id(u32::from_ne_bytes(arr4!(self.body))),
-            SpaType::Int => PodDeserializerKind::Int(i32::from_ne_bytes(arr4!(self.body))),
-            SpaType::Long => PodDeserializerKind::Long(i64::from_ne_bytes(arr8!(self.body))),
-            SpaType::Float => PodDeserializerKind::Float(f32::from_ne_bytes(arr4!(self.body))),
-            SpaType::Double => PodDeserializerKind::Double(f64::from_ne_bytes(arr8!(self.body))),
+            SpaType::Bool => PodDeserializerKind::Bool(read_i32(self.body) != 0),
+            SpaType::Id => PodDeserializerKind::Id(read_u32(self.body)),
+            SpaType::Int => PodDeserializerKind::Int(read_i32(self.body)),
+            SpaType::Long => PodDeserializerKind::Long(read_i64(self.body)),
+            SpaType::Float => PodDeserializerKind::Float(read_f32(self.body)),
+            SpaType::Double => PodDeserializerKind::Double(read_f64(self.body)),
             SpaType::String => PodDeserializerKind::String(self.as_string().unwrap()),
             SpaType::Bytes => PodDeserializerKind::Bytes(self.body),
             SpaType::Rectangle => {
                 let rect = SpaRectangle {
-                    width: u32::from_ne_bytes(arr4!(self.body)),
-                    height: u32::from_ne_bytes(arr4!(self.body, 4)),
+                    width: read_u32(self.body),
+                    height: read_u32(&self.body[4..]),
                 };
                 PodDeserializerKind::Rectangle(rect)
             }
             SpaType::Fraction => {
                 let rect = SpaFraction {
-                    num: u32::from_ne_bytes(arr4!(self.body)),
-                    denom: u32::from_ne_bytes(arr4!(self.body, 4)),
+                    num: read_u32(self.body),
+                    denom: read_u32(&self.body[4..]),
                 };
                 PodDeserializerKind::Fraction(rect)
             }
@@ -95,7 +105,7 @@ impl<'a> PodDeserializer<'a> {
             SpaType::Struct => PodDeserializerKind::Struct(self.as_struct().unwrap()),
             SpaType::Object => PodDeserializerKind::Object(self.as_object().unwrap()),
             // SpaType::Sequence => {},
-            SpaType::Fd => PodDeserializerKind::Fd(i64::from_ne_bytes(arr8!(self.body))),
+            SpaType::Fd => PodDeserializerKind::Fd(read_i64(self.body)),
             SpaType::Choice => PodDeserializerKind::Choice(self.as_choice().unwrap()),
             _ => PodDeserializerKind::Unknown(self.clone()),
         }
@@ -185,10 +195,10 @@ impl<'a> PodArrayDeserializer<'a> {
     fn new(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
         assert_eq!(ty, SpaType::Array);
 
-        let child_size = u32::from_ne_bytes(arr4!(body));
+        let child_size = read_u32(body);
         let body = &body[size_of::<u32>()..];
 
-        let child_ty = u32::from_ne_bytes(arr4!(body));
+        let child_ty = read_u32(body);
         let child_ty = SpaType::from_raw(child_ty).unwrap();
         let body = &body[size_of::<u32>()..];
 
@@ -268,11 +278,11 @@ impl<'a> PodObjectDeserializer<'a> {
     fn new(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
         assert_eq!(ty, SpaType::Object);
 
-        let object_ty = u32::from_ne_bytes(arr4!(body));
+        let object_ty = read_u32(body);
         let object_ty = SpaType::from_raw(object_ty).unwrap();
         let body = &body[size_of::<u32>()..];
 
-        let object_id = u32::from_ne_bytes(arr4!(body));
+        let object_id = read_u32(body);
         let body = &body[size_of::<u32>()..];
 
         Self {
@@ -297,10 +307,10 @@ impl<'a> PodObjectDeserializer<'a> {
             return None;
         }
 
-        let key = u32::from_ne_bytes(arr4!(self.body));
+        let key = read_u32(self.body);
         self.body = &self.body[size_of::<u32>()..];
 
-        let flags = u32::from_ne_bytes(arr4!(self.body));
+        let flags = read_u32(self.body);
         self.body = &self.body[size_of::<u32>()..];
 
         let (pod, remaining) = PodDeserializer::new(self.body);
@@ -341,17 +351,17 @@ impl<'a> PodChoiceDeserializer<'a> {
     fn new(size: u32, ty: SpaType, body: &'a [u8]) -> Self {
         assert_eq!(ty, SpaType::Choice);
 
-        let choice_ty = u32::from_ne_bytes(arr4!(body));
+        let choice_ty = read_u32(body);
         let choice_ty = SpaChoiceType::from_raw(choice_ty).unwrap();
         let body = &body[size_of::<u32>()..];
 
-        let flags = u32::from_ne_bytes(arr4!(body));
+        let flags = read_u32(body);
         let body = &body[size_of::<u32>()..];
 
-        let child_size = u32::from_ne_bytes(arr4!(body));
+        let child_size = read_u32(body);
         let body = &body[size_of::<u32>()..];
 
-        let child_ty = u32::from_ne_bytes(arr4!(body));
+        let child_ty = read_u32(body);
         let child_ty = SpaType::from_raw(child_ty).unwrap();
         let body = &body[size_of::<u32>()..];
 

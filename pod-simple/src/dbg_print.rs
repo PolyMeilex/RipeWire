@@ -24,7 +24,7 @@ fn print_item(nest: usize, pod: PodDeserializer) {
             println!("None");
         }
         PodDeserializerKind::Bool(value) => {
-            println!("Book({value:?})");
+            println!("Bool({value:?})");
         }
         PodDeserializerKind::Id(value) => {
             println!("Id({value:?})");
