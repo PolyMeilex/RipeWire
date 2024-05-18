@@ -1,4 +1,4 @@
-use std::mem;
+use std::{fmt, mem};
 
 use super::pad_to_8;
 use bstr::BStr;
@@ -334,54 +334,50 @@ impl<'a> Iterator for PodChoiceDeserializer<'a> {
     }
 }
 
-impl<'a> std::fmt::Debug for PodArrayDeserializer<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for entry in self.clone() {
-            list.entry(&entry);
-        }
-        list.finish()
+fn list_tuple(
+    f: &mut fmt::Formatter<'_>,
+    name: &str,
+    v: impl Iterator<Item = impl fmt::Debug>,
+) -> fmt::Result {
+    let mut tuple = f.debug_tuple(name);
+    for entry in v {
+        tuple.field(&entry);
+    }
+    tuple.finish()
+}
+
+impl<'a> fmt::Debug for PodArrayDeserializer<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        list_tuple(f, "Array", self.clone())
     }
 }
 
-impl<'a> std::fmt::Debug for PodStructDeserializer<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for entry in self.clone() {
-            list.entry(&entry);
-        }
-        list.finish()
+impl<'a> fmt::Debug for PodStructDeserializer<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        list_tuple(f, "Struct", self.clone())
     }
 }
 
-impl<'a> std::fmt::Debug for PobObjectPropertyDeserializer<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<'a> fmt::Debug for PobObjectPropertyDeserializer<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.pod.fmt(f)
     }
 }
 
-impl<'a> std::fmt::Debug for PodObjectDeserializer<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for entry in self.clone() {
-            list.entry(&entry);
-        }
-        list.finish()
+impl<'a> fmt::Debug for PodObjectDeserializer<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        list_tuple(f, "Object", self.clone())
     }
 }
 
-impl<'a> std::fmt::Debug for PodChoiceDeserializer<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for entry in self.clone() {
-            list.entry(&entry);
-        }
-        list.finish()
+impl<'a> fmt::Debug for PodChoiceDeserializer<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        list_tuple(f, "Choice", self.clone())
     }
 }
 
-impl<'a> std::fmt::Debug for PodDeserializer<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<'a> fmt::Debug for PodDeserializer<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
             PodDeserializerKind::Rectangle(v) => f
                 .debug_struct("Rectangle")
@@ -393,34 +389,12 @@ impl<'a> std::fmt::Debug for PodDeserializer<'a> {
                 .field("num", &v.num)
                 .field("denom", &v.denom)
                 .finish(),
-            PodDeserializerKind::Bytes(v) => {
-                let mut tuple = f.debug_tuple("Bytes");
-                for entry in v {
-                    tuple.field(&entry);
-                }
-                tuple.finish()
-            }
-            PodDeserializerKind::Choice(v) => {
-                let mut tuple = f.debug_tuple("Choice");
-                for entry in v.clone() {
-                    tuple.field(&entry);
-                }
-                tuple.finish()
-            }
-            PodDeserializerKind::Array(v) => {
-                let mut tuple = f.debug_tuple("Array");
-                for entry in v.clone() {
-                    tuple.field(&entry);
-                }
-                tuple.finish()
-            }
-            PodDeserializerKind::Struct(v) => {
-                let mut tuple = f.debug_tuple("Struct");
-                for entry in v.clone() {
-                    tuple.field(&entry);
-                }
-                tuple.finish()
-            }
+            PodDeserializerKind::Bitmap(v) => list_tuple(f, "Bitmap", v.iter()),
+            PodDeserializerKind::Bytes(v) => list_tuple(f, "Bytes", v.iter()),
+            PodDeserializerKind::Choice(v) => list_tuple(f, "Choice", v.clone()),
+            PodDeserializerKind::Array(v) => list_tuple(f, "Array", v.clone()),
+            PodDeserializerKind::Struct(v) => list_tuple(f, "Struct", v.clone()),
+            PodDeserializerKind::Object(v) => list_tuple(f, "Object", v.clone()),
             _ => self.kind().fmt(f),
         }
     }
