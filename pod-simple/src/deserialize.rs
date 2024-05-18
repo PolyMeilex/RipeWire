@@ -124,6 +124,7 @@ impl<'a> PodDeserializer<'a> {
     }
 }
 
+#[derive(Debug)]
 pub enum PodDeserializerKind<'a> {
     None,
     Bool(bool),
@@ -147,6 +148,7 @@ pub enum PodDeserializerKind<'a> {
     Unknown(PodDeserializer<'a>),
 }
 
+#[derive(Clone)]
 pub struct PodArrayDeserializer<'a> {
     child_size: u32,
     child_ty: SpaType,
@@ -186,6 +188,7 @@ impl<'a> Iterator for PodArrayDeserializer<'a> {
     }
 }
 
+#[derive(Clone)]
 pub struct PodStructDeserializer<'a> {
     body: &'a [u8],
 }
@@ -214,6 +217,7 @@ impl<'a> Iterator for PodStructDeserializer<'a> {
     }
 }
 
+#[derive(Clone)]
 pub struct PodObjectDeserializer<'a> {
     object_ty: SpaType,
     object_id: u32,
@@ -273,6 +277,7 @@ pub struct PobObjectPropertyDeserializer<'a> {
     pub pod: PodDeserializer<'a>,
 }
 
+#[derive(Clone)]
 pub struct PodChoiceDeserializer<'a> {
     choice_ty: SpaChoiceType,
     flags: u32,
@@ -326,5 +331,97 @@ impl<'a> Iterator for PodChoiceDeserializer<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.pop_element()
+    }
+}
+
+impl<'a> std::fmt::Debug for PodArrayDeserializer<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for entry in self.clone() {
+            list.entry(&entry);
+        }
+        list.finish()
+    }
+}
+
+impl<'a> std::fmt::Debug for PodStructDeserializer<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for entry in self.clone() {
+            list.entry(&entry);
+        }
+        list.finish()
+    }
+}
+
+impl<'a> std::fmt::Debug for PobObjectPropertyDeserializer<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.pod.fmt(f)
+    }
+}
+
+impl<'a> std::fmt::Debug for PodObjectDeserializer<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for entry in self.clone() {
+            list.entry(&entry);
+        }
+        list.finish()
+    }
+}
+
+impl<'a> std::fmt::Debug for PodChoiceDeserializer<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for entry in self.clone() {
+            list.entry(&entry);
+        }
+        list.finish()
+    }
+}
+
+impl<'a> std::fmt::Debug for PodDeserializer<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.kind() {
+            PodDeserializerKind::Rectangle(v) => f
+                .debug_struct("Rectangle")
+                .field("width", &v.width)
+                .field("height", &v.height)
+                .finish(),
+            PodDeserializerKind::Fraction(v) => f
+                .debug_struct("Fraction")
+                .field("num", &v.num)
+                .field("denom", &v.denom)
+                .finish(),
+            PodDeserializerKind::Bytes(v) => {
+                let mut tuple = f.debug_tuple("Bytes");
+                for entry in v {
+                    tuple.field(&entry);
+                }
+                tuple.finish()
+            }
+            PodDeserializerKind::Choice(v) => {
+                let mut tuple = f.debug_tuple("Choice");
+                for entry in v.clone() {
+                    tuple.field(&entry);
+                }
+                tuple.finish()
+            }
+            PodDeserializerKind::Array(v) => {
+                let mut tuple = f.debug_tuple("Array");
+                for entry in v.clone() {
+                    tuple.field(&entry);
+                }
+                tuple.finish()
+            }
+            PodDeserializerKind::Struct(v) => {
+                let mut tuple = f.debug_tuple("Struct");
+                for entry in v.clone() {
+                    tuple.field(&entry);
+                }
+                tuple.finish()
+            }
+            _ => self.kind().fmt(f),
+        }
     }
 }
