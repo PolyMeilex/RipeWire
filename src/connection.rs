@@ -73,69 +73,19 @@ pub struct Connection {
 
 impl Connection {
     pub fn connect<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-        UnixStream::connect(path).map(|stream| Self { stream })
+        UnixStream::connect(path).map(Self::from_stream)
+    }
+
+    pub fn from_stream(stream: UnixStream) -> Self {
+        Self { stream }
     }
 
     pub fn send_msg(&mut self, bytes: &[u8], fds: &[RawFd]) -> io::Result<usize> {
-        // let flags = MsgFlags::MSG_DONTWAIT | MsgFlags::MSG_NOSIGNAL;
-        let flags = MsgFlags::MSG_NOSIGNAL;
-        let iov = [IoSlice::new(bytes)];
-
-        if !fds.is_empty() {
-            let cmsgs = [ControlMessage::ScmRights(fds)];
-            Ok(socket::sendmsg::<()>(
-                self.stream.as_raw_fd(),
-                &iov,
-                &cmsgs,
-                flags,
-                None,
-            )?)
-        } else {
-            Ok(socket::sendmsg::<()>(
-                self.stream.as_raw_fd(),
-                &iov,
-                &[],
-                flags,
-                None,
-            )?)
-        }
+        send_msg(&self.stream, bytes, fds)
     }
 
     pub fn rcv_msg(&mut self) -> io::Result<(Vec<Message>, Vec<RawFd>)> {
-        let mut buffer = vec![0u8; 500000];
-        let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_OUT]);
-
-        let mut iov = [IoSliceMut::new(&mut buffer)];
-
-        let msg = nix::sys::socket::recvmsg::<()>(
-            self.stream.as_raw_fd(),
-            &mut iov,
-            Some(&mut cmsg),
-            MsgFlags::MSG_CMSG_CLOEXEC | socket::MsgFlags::MSG_NOSIGNAL,
-        )?;
-
-        let received_fds: Vec<RawFd> = msg
-            .cmsgs()
-            .flat_map(|cmsg| match cmsg {
-                socket::ControlMessageOwned::ScmRights(s) => s,
-                _ => Vec::new(),
-            })
-            .collect();
-
-        let bytes = msg.bytes;
-
-        let mut buff = &buffer[..bytes];
-
-        let mut messages = Vec::new();
-
-        let hdr_size = 16;
-        while let Some((b, msg)) = Self::read_msg(buff, hdr_size) {
-            buff = b;
-
-            messages.push(msg);
-        }
-
-        Ok((messages, received_fds))
+        rcv_msg(&self.stream)
     }
 
     fn read_msg(buff: &[u8], hdr_size: usize) -> Option<(&[u8], Message)> {
@@ -146,7 +96,7 @@ impl Connection {
         let header = {
             let buff = unsafe { ::std::slice::from_raw_parts_mut(buff.as_ptr() as *mut u32, 4) };
 
-            let header = Header::deserialize(&buff);
+            let header = Header::deserialize(buff);
 
             // if core hello message
             if header.object_id == 0 && header.opcode == 1 {
@@ -189,4 +139,65 @@ impl AsRawFd for Connection {
     fn as_raw_fd(&self) -> RawFd {
         self.stream.as_raw_fd()
     }
+}
+
+pub fn send_msg(stream: &UnixStream, bytes: &[u8], fds: &[RawFd]) -> io::Result<usize> {
+    // let flags = MsgFlags::MSG_DONTWAIT | MsgFlags::MSG_NOSIGNAL;
+    let flags = MsgFlags::MSG_NOSIGNAL;
+    let iov = [IoSlice::new(bytes)];
+
+    if !fds.is_empty() {
+        let cmsgs = [ControlMessage::ScmRights(fds)];
+        Ok(socket::sendmsg::<()>(
+            stream.as_raw_fd(),
+            &iov,
+            &cmsgs,
+            flags,
+            None,
+        )?)
+    } else {
+        Ok(socket::sendmsg::<()>(
+            stream.as_raw_fd(),
+            &iov,
+            &[],
+            flags,
+            None,
+        )?)
+    }
+}
+
+pub fn rcv_msg(stream: &UnixStream) -> io::Result<(Vec<Message>, Vec<RawFd>)> {
+    let mut buffer = vec![0u8; 500000];
+    let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_OUT]);
+
+    let mut iov = [IoSliceMut::new(&mut buffer)];
+
+    let msg = nix::sys::socket::recvmsg::<()>(
+        stream.as_raw_fd(),
+        &mut iov,
+        Some(&mut cmsg),
+        MsgFlags::MSG_CMSG_CLOEXEC | socket::MsgFlags::MSG_NOSIGNAL,
+    )?;
+
+    let received_fds: Vec<RawFd> = msg
+        .cmsgs()
+        .flat_map(|cmsg| match cmsg {
+            socket::ControlMessageOwned::ScmRights(s) => s,
+            _ => Vec::new(),
+        })
+        .collect();
+
+    let bytes = msg.bytes;
+
+    let mut buff = &buffer[..bytes];
+
+    let mut messages = Vec::new();
+
+    let hdr_size = 16;
+    while let Some((b, msg)) = Connection::read_msg(buff, hdr_size) {
+        buff = b;
+        messages.push(msg);
+    }
+
+    Ok((messages, received_fds))
 }
