@@ -1,32 +1,28 @@
 use std::io::Cursor;
 
-use libspa_consts::{SpaFraction, SpaRectangle, SpaType};
-
 fn main() {
     let mut builder = pod_simple::Builder::new(Cursor::new(vec![]));
 
     builder.push_struct_with(|b| {
-        b.push(())
-            .push(false)
-            .push(true)
-            .push(u32::MAX as i32)
-            .push(u64::MAX as i64)
-            .push(SpaRectangle {
-                width: 1,
-                height: 2,
-            })
-            .push(SpaFraction { num: 1, denom: 2 })
+        b.write_none()
+            .write_bool(false)
+            .write_bool(true)
+            .write_int(u32::MAX as i32)
+            .write_long(u64::MAX as i64)
+            .write_rectangle(1, 2)
+            .write_fraction(1, 2)
             .push_struct_with(|b| {
-                b.push(())
-                    .push(false)
-                    .push(true)
-                    .push(u32::MAX as i32)
-                    .push(u64::MAX as i64);
+                b.write_none()
+                    .write_bool(false)
+                    .write_bool(true)
+                    .write_int(u32::MAX as i32)
+                    .write_long(u64::MAX as i64);
             })
-            .push("abc")
-            .push([1, 2].as_slice())
-            .push_array_with(4, SpaType::Int, |b| {
-                b.push(1).push(2).push(3);
+            .write_str("abc")
+            .write_bytes([1, 2])
+            .write_bitmap([1, 2])
+            .write_array_with(|b| {
+                b.write_int(1).write_int(2).write_int(3);
             });
     });
 
