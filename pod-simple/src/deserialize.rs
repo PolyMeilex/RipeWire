@@ -1,4 +1,4 @@
-use std::{fmt, mem};
+use std::{fmt, mem, os::raw::c_void};
 
 use super::pad_to_8;
 use bstr::BStr;
@@ -20,6 +20,13 @@ macro_rules! impl_typed_pods {
     };
 }
 impl_typed_pods!(i32, u32, i64, u64, f32, f64);
+
+impl Primitive for *const c_void {
+    fn read_raw(bytes: &[u8]) -> Self {
+        let bytes = &bytes[..mem::size_of::<Self>()];
+        bytes as *const [u8] as *const c_void
+    }
+}
 
 fn read_raw<T: Primitive + Copy>(bytes: &[u8]) -> T {
     T::read_raw(bytes)
@@ -107,6 +114,12 @@ impl<'a> PodDeserializer<'a> {
             SpaType::Struct => Kind::Struct(PodStructDeserializer::new(self.body)),
             SpaType::Object => Kind::Object(PodObjectDeserializer::new(self.body)),
             // SpaType::Sequence => {},
+            SpaType::Pointer => {
+                let ty = SpaEnum::from_raw(read_raw(self.body));
+                let _padding: u32 = read_raw(&self.body[4..]);
+                let ptr = read_raw(&self.body[8..]);
+                Kind::Pointer { ty, ptr }
+            }
             SpaType::Fd => Kind::Fd(read_raw(self.body)),
             SpaType::Choice => Kind::Choice(PodChoiceDeserializer::new(self.body)),
             _ => Kind::Unknown(self.clone()),
@@ -147,7 +160,10 @@ pub enum PodDeserializerKind<'a> {
     Struct(PodStructDeserializer<'a>),
     Object(PodObjectDeserializer<'a>),
     // Seq
-    // Pointer
+    Pointer {
+        ty: SpaEnum<SpaType>,
+        ptr: *const c_void,
+    },
     Fd(i64),
     Choice(PodChoiceDeserializer<'a>),
     Unknown(PodDeserializer<'a>),
