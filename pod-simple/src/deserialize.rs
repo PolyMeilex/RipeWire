@@ -416,6 +416,10 @@ impl<'a> fmt::Debug for PodDeserializer<'a> {
             PodDeserializerKind::Array(v) => list_tuple(f, "Array", v.clone()),
             PodDeserializerKind::Struct(v) => list_tuple(f, "Struct", v.clone()),
             PodDeserializerKind::Object(v) => list_tuple(f, "Object", v.clone()),
+            PodDeserializerKind::Unknown(pod) => f
+                .debug_struct("UnknownPod")
+                .field("type", &pod.ty())
+                .finish_non_exhaustive(),
             _ => self.kind().fmt(f),
         }
     }
