@@ -1,6 +1,6 @@
 use std::os::fd::RawFd;
 
-use super::HasOpCode;
+use super::*;
 
 pub const OBJECT_ID: u32 = 0;
 
@@ -152,6 +152,35 @@ pub mod events {
         pub properties: pod::dictionary::Dictionary,
     }
 
+    impl Deserialize for Info {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                cookie: pod.pop_field()?.as_u32()?,
+                user_name: pod.pop_field()?.as_str()?.to_string(),
+                host_name: pod.pop_field()?.as_str()?.to_string(),
+                version: pod.pop_field()?.as_str()?.to_string(),
+                name: pod.pop_field()?.as_str()?.to_string(),
+                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_i64()? as u64),
+                properties: {
+                    let mut properties = pod.pop_field()?.as_struct()?;
+                    let count = properties.pop_field()?;
+                    let count = count.as_i32()?;
+                    let mut map = HashMap::new();
+                    for _ in 0..count {
+                        let key = properties.pop_field()?.as_str()?.to_string();
+                        let value = properties.pop_field()?.as_str()?.to_string();
+                        map.insert(key, value);
+                    }
+                    pod::dictionary::Dictionary(map)
+                },
+            })
+        }
+    }
+
     /// The done event is emitted as a result of a sync method with the
     /// same seq number.
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
@@ -161,6 +190,18 @@ pub mod events {
         pub seq: i32,
     }
 
+    impl Deserialize for Done {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                seq: pod.pop_field()?.as_i32()?,
+            })
+        }
+    }
+
     /// The client should reply with a pong reply with the same seq
     /// number.
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
@@ -168,6 +209,18 @@ pub mod events {
     pub struct Ping {
         pub id: u32,
         pub seq: i32,
+    }
+
+    impl Deserialize for Ping {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                seq: pod.pop_field()?.as_i32()?,
+            })
+        }
     }
 
     /// Fatal error event
@@ -182,8 +235,22 @@ pub mod events {
     pub struct Error {
         pub id: u32,
         pub seq: i32,
-        pub res: u32,
-        pub error: String,
+        pub res: i32,
+        pub message: String,
+    }
+
+    impl Deserialize for Error {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                seq: pod.pop_field()?.as_i32()?,
+                res: pod.pop_field()?.as_i32()?,
+                message: pod.pop_field()?.as_str()?.to_string(),
+            })
+        }
     }
 
     /// This event is used by the object ID management
@@ -195,6 +262,17 @@ pub mod events {
     #[op_code(4)]
     pub struct RemoveId {
         pub id: u32,
+    }
+
+    impl Deserialize for RemoveId {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 
     /// This event is emitted when a local object ID is bound to a

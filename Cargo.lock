@@ -452,15 +452,11 @@ dependencies = [
 name = "pod-simple"
 version = "0.1.0"
 dependencies = [
- "bitflags 2.4.0",
  "bstr",
- "cookie-factory",
- "errno",
- "libc",
  "libspa-consts",
- "nom",
  "pod",
  "pod-derive",
+ "thiserror",
 ]
 
 [[package]]

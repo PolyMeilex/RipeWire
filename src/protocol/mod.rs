@@ -1,10 +1,15 @@
 #![allow(unused)]
 
 use pod::serialize::{PodSerialize, PodSerializer};
-use std::io::Cursor;
+use pod_simple::PodDeserializer;
+use std::{collections::HashMap, io::Cursor};
 
 pub trait HasOpCode {
     const OPCODE: u8;
+}
+
+pub trait Deserialize: Sized {
+    fn deserialize(deserializer: &mut PodDeserializer) -> pod_simple::deserialize::Result<Self>;
 }
 
 pub mod pw_client;

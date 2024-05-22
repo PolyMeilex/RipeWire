@@ -4,6 +4,19 @@ use super::pad_to_8;
 use bstr::BStr;
 use libspa_consts::{SpaChoiceType, SpaEnum, SpaFraction, SpaRectangle, SpaType};
 
+#[derive(Debug, thiserror::Error)]
+pub enum DeserializeError {
+    #[error("Expected type '{expected:?}' got '{got:?}'")]
+    UnexpectedType {
+        expected: SpaType,
+        got: SpaEnum<SpaType>,
+    },
+    #[error("Unexpected POD end")]
+    UnexpectedEnd,
+}
+
+pub type Result<T> = std::result::Result<T, DeserializeError>;
+
 trait Primitive {
     fn read_raw(bytes: &[u8]) -> Self;
 }
@@ -99,7 +112,7 @@ impl<'a> PodDeserializer<'a> {
             SpaType::Long => Kind::Long(read_raw(self.body)),
             SpaType::Float => Kind::Float(read_raw(self.body)),
             SpaType::Double => Kind::Double(read_raw(self.body)),
-            SpaType::String => Kind::String(self.as_string().unwrap()),
+            SpaType::String => Kind::String(self.as_str().unwrap()),
             SpaType::Bytes => Kind::Bytes(self.body),
             SpaType::Rectangle => Kind::Rectangle(SpaRectangle {
                 width: read_raw(self.body),
@@ -126,7 +139,42 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
-    pub fn as_string(&self) -> Option<&'a BStr> {
+    fn unexpected_type(&self, expected: SpaType) -> DeserializeError {
+        DeserializeError::UnexpectedType {
+            expected,
+            got: self.ty(),
+        }
+    }
+
+    pub fn as_i32(&self) -> Result<i32> {
+        if let PodDeserializerKind::Int(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Int))
+        }
+    }
+
+    pub fn as_u32(&self) -> Result<u32> {
+        Ok(self.as_i32()? as u32)
+    }
+
+    pub fn as_i64(&self) -> Result<i64> {
+        if let PodDeserializerKind::Long(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Long))
+        }
+    }
+
+    pub fn as_struct(&self) -> Result<PodStructDeserializer<'a>> {
+        if let PodDeserializerKind::Struct(pod) = self.kind() {
+            Ok(pod)
+        } else {
+            Err(self.unexpected_type(SpaType::Struct))
+        }
+    }
+
+    pub fn as_str(&self) -> Result<&'a BStr> {
         if self.ty == SpaEnum::Value(SpaType::String) {
             let bytes = &self.body[..self.size as usize];
 
@@ -135,9 +183,9 @@ impl<'a> PodDeserializer<'a> {
                 None => bytes,
             };
 
-            Some(BStr::new(bytes))
+            Ok(BStr::new(bytes))
         } else {
-            None
+            Err(self.unexpected_type(SpaType::String))
         }
     }
 }
@@ -189,15 +237,15 @@ impl<'a> PodArrayDeserializer<'a> {
         }
     }
 
-    pub fn pop_element(&mut self) -> Option<PodDeserializer<'a>> {
+    pub fn pop_element(&mut self) -> Result<PodDeserializer<'a>> {
         if self.body.is_empty() {
-            return None;
+            return Err(DeserializeError::UnexpectedEnd);
         }
 
         let pod = PodDeserializer::form_body(self.child_size, self.child_ty, self.body);
         self.body = &self.body[pod.size() as usize..];
 
-        Some(pod)
+        Ok(pod)
     }
 }
 
@@ -205,7 +253,7 @@ impl<'a> Iterator for PodArrayDeserializer<'a> {
     type Item = PodDeserializer<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.pop_element()
+        self.pop_element().ok()
     }
 }
 
@@ -219,14 +267,14 @@ impl<'a> PodStructDeserializer<'a> {
         Self { body }
     }
 
-    pub fn pop_field(&mut self) -> Option<PodDeserializer<'a>> {
+    pub fn pop_field(&mut self) -> Result<PodDeserializer<'a>> {
         if self.body.is_empty() {
-            return None;
+            return Err(DeserializeError::UnexpectedEnd);
         }
 
         let (pod, remaining) = PodDeserializer::new(self.body);
         self.body = remaining;
-        Some(pod)
+        Ok(pod)
     }
 }
 
@@ -234,7 +282,7 @@ impl<'a> Iterator for PodStructDeserializer<'a> {
     type Item = PodDeserializer<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.pop_field()
+        self.pop_field().ok()
     }
 }
 
@@ -267,11 +315,11 @@ impl<'a> PodObjectDeserializer<'a> {
         self.object_id
     }
 
-    pub fn pop_property(&mut self) -> Option<PobObjectPropertyDeserializer<'a>> {
+    pub fn pop_property(&mut self) -> Result<PobObjectPropertyDeserializer<'a>> {
         let remaining = self.body;
 
         if remaining.is_empty() {
-            return None;
+            return Err(DeserializeError::UnexpectedEnd);
         }
 
         let (key, remaining) = eat_raw::<u32>(remaining);
@@ -280,7 +328,7 @@ impl<'a> PodObjectDeserializer<'a> {
 
         self.body = remaining;
 
-        Some(PobObjectPropertyDeserializer { key, flags, pod })
+        Ok(PobObjectPropertyDeserializer { key, flags, pod })
     }
 }
 
@@ -288,7 +336,7 @@ impl<'a> Iterator for PodObjectDeserializer<'a> {
     type Item = PobObjectPropertyDeserializer<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.pop_property()
+        self.pop_property().ok()
     }
 }
 
@@ -335,15 +383,15 @@ impl<'a> PodChoiceDeserializer<'a> {
         self.flags
     }
 
-    pub fn pop_element(&mut self) -> Option<PodDeserializer<'a>> {
+    pub fn pop_element(&mut self) -> Result<PodDeserializer<'a>> {
         if self.body.is_empty() {
-            return None;
+            return Err(DeserializeError::UnexpectedEnd);
         }
 
         let pod = PodDeserializer::form_body(self.child_size, self.child_ty, self.body);
         self.body = &self.body[pod.size() as usize..];
 
-        Some(pod)
+        Ok(pod)
     }
 }
 
@@ -351,7 +399,7 @@ impl<'a> Iterator for PodChoiceDeserializer<'a> {
     type Item = PodDeserializer<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.pop_element()
+        self.pop_element().ok()
     }
 }
 

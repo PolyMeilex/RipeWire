@@ -6,8 +6,14 @@ use crate::{
     serialize::PodSerialize,
 };
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct Dictionary(pub HashMap<String, String>);
+
+impl std::fmt::Debug for Dictionary {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 impl<I, Item> From<I> for Dictionary
 where

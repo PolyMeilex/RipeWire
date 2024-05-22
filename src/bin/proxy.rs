@@ -14,7 +14,7 @@ use std::{
 
 use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
 use pod_simple::{deserialize::PodDeserializerKind, PodDeserializer};
-use ripewire::connection::Message;
+use ripewire::{connection::Message, protocol::Deserialize as _};
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
 pub const MAX_BUFFER_SIZE: usize = 500000;
@@ -146,8 +146,8 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
                             unreachable!("Non struct method call");
                         };
 
-                        let _factory_name = pod.next().unwrap().as_string().unwrap();
-                        let interface_type = pod.next().unwrap().as_string().unwrap();
+                        let _factory_name = pod.next().unwrap().as_str().unwrap();
+                        let interface_type = pod.next().unwrap().as_str().unwrap();
                         let _version = pod.next().unwrap();
                         let _props = pod.next().unwrap();
                         let new_id = pod.next().unwrap();
@@ -167,7 +167,7 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
                         };
 
                         let _id = pod.next().unwrap();
-                        let interface_type = pod.next().unwrap().as_string().unwrap();
+                        let interface_type = pod.next().unwrap().as_str().unwrap();
                         let interface_type = interface_type.to_string();
 
                         let _version = pod.next().unwrap();
@@ -194,18 +194,19 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
 fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
     let objects = objects.lock().unwrap();
 
-    print!(" -> ");
+    print!("-> ");
     if let Some(interface) = objects.get(&msg.header.object_id) {
         print!("{}@{}.", strip_prefix(interface), msg.header.object_id);
 
         if let Some((_methods, events)) = interfaces.get(interface.as_str()) {
             let event = events.get(&msg.header.opcode).unwrap();
-            println!("{}()", event);
 
             match interface.as_str() {
                 "PipeWire:Interface:Core" => inspect_core_event(event, msg),
                 "PipeWire:Interface:Registry" => inspect_registry_event(event, msg),
-                _ => {}
+                _ => {
+                    println!("{}()", event);
+                }
             }
         } else {
             println!("{}()", msg.header.opcode);
@@ -216,57 +217,38 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
 }
 
 fn inspect_core_event(event: &str, msg: &Message) {
+    use ripewire::protocol::pw_core;
+    let (mut pod, _) = PodDeserializer::new(&msg.body);
     match event {
-        "Error" => {
-            let (pod, _) = PodDeserializer::new(&msg.body);
-            let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
-                unreachable!("Non struct method call");
-            };
-
-            let _id = pod.next().unwrap();
-            let _seq = pod.next().unwrap();
-            let _res = pod.next().unwrap();
-            let message = pod.next().unwrap().as_string().unwrap();
-            println!("    message: {message}");
+        "Info" => {
+            let event = pw_core::events::Info::deserialize(&mut pod).unwrap();
+            println!("{event:#?}");
         }
-        _ => {}
+        "Done" => {
+            let event = pw_core::events::Done::deserialize(&mut pod).unwrap();
+            println!("{event:?}");
+        }
+        "Error" => {
+            let event = pw_core::events::Error::deserialize(&mut pod).unwrap();
+            println!("{event:?}");
+        }
+        _ => {
+            println!("{}()", event);
+        }
     }
 }
 
 fn inspect_registry_event(event: &str, msg: &Message) {
+    use ripewire::protocol::pw_registry;
+    let (mut pod, _) = PodDeserializer::new(&msg.body);
     match event {
         "Global" => {
-            let (pod, _) = PodDeserializer::new(&msg.body);
-            let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
-                unreachable!("Non struct method call");
-            };
-
-            let _id = pod.next().unwrap();
-            let _permissions = pod.next().unwrap();
-            let interface_type = pod.next().unwrap().as_string().unwrap();
-            let interface_type = interface_type.to_string();
-            let _version = pod.next().unwrap();
-            let props = pod.next().unwrap();
-
-            println!("    interface: {interface_type}");
-            println!("    props:");
-
-            let PodDeserializerKind::Struct(mut props) = props.kind() else {
-                unreachable!("Non struct props");
-            };
-
-            let count = props.next().unwrap();
-            let PodDeserializerKind::Int(count) = count.kind() else {
-                unreachable!("Non int props count");
-            };
-
-            for _ in 0..count {
-                let key = props.next().unwrap().as_string().unwrap();
-                let value = props.next().unwrap().as_string().unwrap();
-                println!("      {key:?}: {value:?}");
-            }
+            let global = pw_registry::events::Global::deserialize(&mut pod).unwrap();
+            println!("{global:#?}");
         }
-        _ => {}
+        _ => {
+            println!("{}()", event);
+        }
     }
 }
 

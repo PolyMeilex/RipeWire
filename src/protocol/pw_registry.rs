@@ -49,6 +49,7 @@ pub mod methods {
 
 pub mod events {
     use super::*;
+    use pod::permissions::PermissionFlags;
 
     /// Notify of a new global object
     ///
@@ -62,7 +63,7 @@ pub mod events {
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
     pub struct Global {
         pub id: u32,
-        pub permissions: pod::permissions::PermissionFlags,
+        pub permissions: PermissionFlags,
         pub obj_type: String,
         pub version: u32,
         pub properties: pod::dictionary::Dictionary,
@@ -70,6 +71,34 @@ pub mod events {
 
     impl HasOpCode for Global {
         const OPCODE: u8 = 0;
+    }
+
+    impl Deserialize for Global {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                permissions: PermissionFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
+                obj_type: pod.pop_field()?.as_str()?.to_string(),
+                version: pod.pop_field()?.as_u32()?,
+                properties: {
+                    let mut props = pod.pop_field()?.as_struct()?;
+
+                    let count = props.pop_field()?;
+                    let count = count.as_i32()?;
+
+                    let mut map = HashMap::new();
+                    for _ in 0..count {
+                        let key = props.pop_field()?.as_str()?.to_string();
+                        let value = props.pop_field()?.as_str()?.to_string();
+                        map.insert(key, value);
+                    }
+                    pod::dictionary::Dictionary(map)
+                },
+            })
+        }
     }
 
     /// Notify of a global object removal
