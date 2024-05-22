@@ -2,8 +2,21 @@ use crate::PodDeserializer;
 
 pub fn dbg_print(bytes: &[u8]) {
     let (pod, buff) = PodDeserializer::new(bytes);
-    assert!(buff.is_empty());
     dbg!(pod);
+
+    if !buff.is_empty() {
+        println!();
+        println!("Footer:");
+        let (pod, _buff) = PodDeserializer::new(bytes);
+        dbg!(pod);
+        // dbg!(buff);
+        // assert!(buff.is_empty());
+
+        println!();
+        return;
+    }
+
+    assert!(buff.is_empty());
     // print_item(0, pod);
 }
 
