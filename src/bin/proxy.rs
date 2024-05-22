@@ -1,15 +1,20 @@
 //! Proxy used to snif the protocol, used whenever one is to lazy to read the C implementation
 
+#![allow(clippy::single_match)]
+
 use std::{
+    collections::HashMap,
     io::{IoSlice, IoSliceMut},
     os::{
         fd::{AsRawFd, RawFd},
         unix::net::{UnixListener, UnixStream},
     },
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 
 use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
+use pod_simple::{deserialize::PodDeserializerKind, PodDeserializer};
+use ripewire::connection::Message;
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
 pub const MAX_BUFFER_SIZE: usize = 500000;
@@ -65,21 +70,22 @@ fn main() {
     let (stream, _add) = listener.accept().unwrap();
     let client = Arc::new(stream);
 
+    let objects = Arc::new(Mutex::new(objects()));
     let client_in = std::thread::spawn({
         let client = client.clone();
         let server = server.clone();
         let mut buffer = vec![0u8; MAX_BUFFER_SIZE];
+        let objects = objects.clone();
+        let interfaces = interfaces();
         move || loop {
             let (bytes, cmsgs) = recvmsg(&client, &mut buffer);
 
             let mut reader = bytes;
-            let mut count = 0;
-            while let Some((rest, _msg)) = ripewire::connection::read_msg(reader) {
+            while let Some((rest, msg)) = ripewire::connection::read_msg(reader) {
                 reader = rest;
-                count += 1;
-                // pod_simple::dbg_print::dbg_print(&_msg.body);
+                inspect_method(&objects, &interfaces, &msg);
+                // pod_simple::dbg_print::dbg_print(&msg.body);
             }
-            println!("MSGs bytes len: {}, count: {count}", bytes.len());
 
             sendmsg(&server, bytes, &cmsgs);
         }
@@ -89,17 +95,17 @@ fn main() {
         let client = client.clone();
         let server = server.clone();
         let mut buffer = vec![0u8; MAX_BUFFER_SIZE];
+        let objects = objects.clone();
+        let interfaces = interfaces();
         move || loop {
             let (bytes, cmsgs) = recvmsg(&server, &mut buffer);
 
             let mut reader = bytes;
-            let mut count = 0;
-            while let Some((rest, _msg)) = ripewire::connection::read_msg(reader) {
+            while let Some((rest, msg)) = ripewire::connection::read_msg(reader) {
                 reader = rest;
-                count += 1;
-                // pod_simple::dbg_print::dbg_print(&_msg.body);
+                inspect_event(&objects, &interfaces, &msg);
+                // pod_simple::dbg_print::dbg_print(&msg.body);
             }
-            println!(" -> MSGs bytes len: {}, count: {count}", bytes.len());
 
             sendmsg(&client, bytes, &cmsgs);
         }
@@ -109,8 +115,204 @@ fn main() {
     server_in.join().unwrap();
 }
 
-pub fn msg_raw(mut msg: ripewire::connection::Message) -> Vec<u8> {
-    let mut bytes = msg.header.serialize().to_vec();
-    bytes.append(&mut msg.body);
-    bytes
+fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
+    let mut objects = objects.lock().unwrap();
+    if let Some(interface) = objects.get(&msg.header.object_id) {
+        print!("{}@{}.", strip_prefix(interface), msg.header.object_id);
+
+        if let Some((methods, _events)) = interfaces.get(interface.as_str()) {
+            let method = methods.get(&msg.header.opcode).unwrap();
+            print!("{}", method);
+
+            match interface.as_str() {
+                "PipeWire:Interface:Core" => match *method {
+                    "GetRegistry" => {
+                        let (pod, _) = PodDeserializer::new(&msg.body);
+                        let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                            unreachable!("Non struct method call");
+                        };
+
+                        let _version = pod.next().unwrap();
+                        let new_id = pod.next().unwrap();
+                        let PodDeserializerKind::Int(new_id) = new_id.kind() else {
+                            unreachable!("Non int new_id");
+                        };
+
+                        objects.insert(new_id as u32, "PipeWire:Interface:Registry".to_string());
+                    }
+                    _ => {}
+                },
+                "PipeWire:Interface:Registry" => match *method {
+                    "Bind" => {
+                        let (pod, _) = PodDeserializer::new(&msg.body);
+                        let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                            unreachable!("Non struct method call");
+                        };
+
+                        let _id = pod.next().unwrap();
+                        let interface_type = pod.next().unwrap().as_string().unwrap();
+                        let interface_type = interface_type.to_string();
+
+                        let _version = pod.next().unwrap();
+                        let new_id = pod.next().unwrap();
+                        let PodDeserializerKind::Int(new_id) = new_id.kind() else {
+                            unreachable!("Non int new_id");
+                        };
+
+                        objects.insert(new_id as u32, interface_type);
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        } else {
+            print!("{}", msg.header.opcode);
+        }
+        println!("()");
+    } else {
+        println!("Header: {:?}", msg.header);
+    }
+}
+
+fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
+    let objects = objects.lock().unwrap();
+
+    print!(" -> ");
+    if let Some(interface) = objects.get(&msg.header.object_id) {
+        print!("{}@{}.", strip_prefix(interface), msg.header.object_id);
+
+        if let Some((_methods, events)) = interfaces.get(interface.as_str()) {
+            let event = events.get(&msg.header.opcode).unwrap();
+            println!("{}()", event);
+
+            match interface.as_str() {
+                "PipeWire:Interface:Registry" => inspect_registry_event(event, msg),
+                _ => {}
+            }
+        } else {
+            println!("{}()", msg.header.opcode);
+        }
+    } else {
+        println!("Header: {:?}", msg.header);
+    }
+}
+
+fn inspect_registry_event(event: &str, msg: &Message) {
+    match event {
+        "Global" => {
+            let (pod, _) = PodDeserializer::new(&msg.body);
+            let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                unreachable!("Non struct method call");
+            };
+
+            let _id = pod.next().unwrap();
+            let _permissions = pod.next().unwrap();
+            let interface_type = pod.next().unwrap().as_string().unwrap();
+            let interface_type = interface_type.to_string();
+            let _version = pod.next().unwrap();
+            let props = pod.next().unwrap();
+
+            println!("    interface: {interface_type}");
+            println!("    props:");
+
+            let PodDeserializerKind::Struct(mut props) = props.kind() else {
+                unreachable!("Non struct props");
+            };
+
+            let count = props.next().unwrap();
+            let PodDeserializerKind::Int(count) = count.kind() else {
+                unreachable!("Non int props count");
+            };
+
+            for _ in 0..count {
+                let key = props.next().unwrap().as_string().unwrap();
+                let value = props.next().unwrap().as_string().unwrap();
+                println!("      {key:?}: {value:?}");
+            }
+        }
+        _ => {}
+    }
+}
+
+type Methods = HashMap<u8, &'static str>;
+type Events = HashMap<u8, &'static str>;
+type Interfaces = HashMap<&'static str, (Methods, Events)>;
+type Objects = HashMap<u32, String>;
+
+fn pw_core() -> (Methods, Events) {
+    (
+        HashMap::from([
+            (1, "Hello"),
+            (2, "Sync"),
+            (3, "Pong"),
+            (4, "Error"),
+            (5, "GetRegistry"),
+            (6, "CreateObject"),
+            (7, "Destroy"),
+        ]),
+        HashMap::from([
+            (0, "Info"),
+            (1, "Done"),
+            (2, "Ping"),
+            (3, "Error"),
+            (4, "RemoveId"),
+            (5, "BoundId"),
+            (6, "AddMem"),
+            (7, "RemoveMem"),
+            (8, "BoundProps"),
+        ]),
+    )
+}
+
+fn pw_registry() -> (Methods, Events) {
+    (
+        HashMap::from([
+            (1, "Bind"),
+            (2, "Destroy"),
+            //
+        ]),
+        HashMap::from([
+            (0, "Global"),
+            (1, "GlobalRemove"),
+            //
+        ]),
+    )
+}
+
+fn pw_client() -> (Methods, Events) {
+    (
+        HashMap::from([
+            (1, "Error"),
+            (2, "UpdateProperties"),
+            (3, "GetPermissions"),
+            (4, "UpdatePermissions"),
+        ]),
+        HashMap::from([
+            (0, "Info"),
+            (1, "Permissions"),
+            //
+        ]),
+    )
+}
+
+fn interfaces() -> Interfaces {
+    HashMap::from([
+        ("PipeWire:Interface:Core", pw_core()),
+        ("PipeWire:Interface:Registry", pw_registry()),
+        ("PipeWire:Interface:Client", pw_client()),
+    ])
+}
+
+fn objects() -> Objects {
+    HashMap::from([
+        (0, "PipeWire:Interface:Core".to_string()),
+        (1, "PipeWire:Interface:Client".to_string()),
+        //
+    ])
+}
+
+fn strip_prefix(interface: &str) -> &str {
+    interface
+        .strip_prefix("PipeWire:Interface:")
+        .unwrap_or(interface)
 }
