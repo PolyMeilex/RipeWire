@@ -140,6 +140,23 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
 
                         objects.insert(new_id as u32, "PipeWire:Interface:Registry".to_string());
                     }
+                    "CreateObject" => {
+                        let (pod, _) = PodDeserializer::new(&msg.body);
+                        let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                            unreachable!("Non struct method call");
+                        };
+
+                        let _factory_name = pod.next().unwrap().as_string().unwrap();
+                        let interface_type = pod.next().unwrap().as_string().unwrap();
+                        let _version = pod.next().unwrap();
+                        let _props = pod.next().unwrap();
+                        let new_id = pod.next().unwrap();
+                        let PodDeserializerKind::Int(new_id) = new_id.kind() else {
+                            unreachable!("Non int new_id");
+                        };
+
+                        objects.insert(new_id as u32, interface_type.to_string());
+                    }
                     _ => {}
                 },
                 "PipeWire:Interface:Registry" => match *method {
@@ -186,6 +203,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
             println!("{}()", event);
 
             match interface.as_str() {
+                "PipeWire:Interface:Core" => inspect_core_event(event, msg),
                 "PipeWire:Interface:Registry" => inspect_registry_event(event, msg),
                 _ => {}
             }
@@ -194,6 +212,24 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
         }
     } else {
         println!("Header: {:?}", msg.header);
+    }
+}
+
+fn inspect_core_event(event: &str, msg: &Message) {
+    match event {
+        "Error" => {
+            let (pod, _) = PodDeserializer::new(&msg.body);
+            let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                unreachable!("Non struct method call");
+            };
+
+            let _id = pod.next().unwrap();
+            let _seq = pod.next().unwrap();
+            let _res = pod.next().unwrap();
+            let message = pod.next().unwrap().as_string().unwrap();
+            println!("    message: {message}");
+        }
+        _ => {}
     }
 }
 
@@ -295,11 +331,39 @@ fn pw_client() -> (Methods, Events) {
     )
 }
 
+fn pw_client_node() -> (Methods, Events) {
+    (
+        HashMap::from([
+            (1, "GetNode"),
+            (2, "Update"),
+            (3, "PortUpdate"),
+            (4, "SetActive"),
+            (5, "Event"),
+            (6, "PortBuffers"),
+        ]),
+        HashMap::from([
+            (0, "Transport"),
+            (1, "SetParam"),
+            (2, "SetIO"),
+            (3, "Event"),
+            (4, "Command"),
+            (5, "AddPort"),
+            (6, "RemovePort"),
+            (7, "PortSetParam"),
+            (8, "UseBuffers"),
+            (9, "PortSetIO"),
+            (10, "SetActivation"),
+            (11, "PortSetMixInfo"),
+        ]),
+    )
+}
+
 fn interfaces() -> Interfaces {
     HashMap::from([
         ("PipeWire:Interface:Core", pw_core()),
         ("PipeWire:Interface:Registry", pw_registry()),
         ("PipeWire:Interface:Client", pw_client()),
+        ("PipeWire:Interface:ClientNode", pw_client_node()),
     ])
 }
 
