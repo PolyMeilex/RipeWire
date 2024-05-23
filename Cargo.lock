@@ -529,6 +529,7 @@ dependencies = [
  "quick-xml",
  "ron",
  "serde",
+ "thiserror",
  "tokio",
 ]
 

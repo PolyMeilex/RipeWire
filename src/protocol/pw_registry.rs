@@ -51,6 +51,13 @@ pub mod events {
     use super::*;
     use pod::permissions::PermissionFlags;
 
+    fn deserialize<T>(
+        event: &'static str,
+        f: impl FnOnce() -> Result<T, pod_simple::DeserializeError>,
+    ) -> Result<T, EventDeserializeError> {
+        EventDeserializeError::wrap("Registry", event, f)
+    }
+
     /// Notify of a new global object
     ///
     /// The registry emits this event when a new global object is available.
@@ -76,14 +83,16 @@ pub mod events {
     impl Deserialize for Global {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> pod_simple::deserialize::Result<Self> {
-            let mut pod = pod.as_struct()?;
-            Ok(Self {
-                id: pod.pop_field()?.as_u32()?,
-                permissions: PermissionFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
-                obj_type: pod.pop_field()?.as_str()?.to_string(),
-                version: pod.pop_field()?.as_u32()?,
-                properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+        ) -> Result<Self, EventDeserializeError> {
+            deserialize("Global", || {
+                let mut pod = pod.as_struct()?;
+                Ok(Self {
+                    id: pod.pop_field()?.as_u32()?,
+                    permissions: PermissionFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
+                    obj_type: pod.pop_field()?.as_str()?.to_string(),
+                    version: pod.pop_field()?.as_u32()?,
+                    properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+                })
             })
         }
     }

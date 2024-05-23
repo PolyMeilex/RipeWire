@@ -8,8 +8,45 @@ pub trait HasOpCode {
     const OPCODE: u8;
 }
 
+#[derive(Debug, thiserror::Error)]
+#[error("{interface}.{event}: {error}")]
+pub struct EventDeserializeError {
+    interface: &'static str,
+    event: &'static str,
+    error: pod_simple::DeserializeError,
+}
+
+impl EventDeserializeError {
+    fn wrap<T>(
+        interface: &'static str,
+        event: &'static str,
+        f: impl FnOnce() -> Result<T, pod_simple::DeserializeError>,
+    ) -> Result<T, Self> {
+        f().map_err(|error| Self {
+            interface,
+            event,
+            error,
+        })
+    }
+}
+
 pub trait Deserialize: Sized {
-    fn deserialize(deserializer: &mut PodDeserializer) -> pod_simple::deserialize::Result<Self>;
+    fn deserialize(deserializer: &mut PodDeserializer) -> Result<Self, EventDeserializeError>;
+}
+
+macro_rules! parse {
+    ($pod: expr, Self ( $(|$a: ident| $b: expr),* $(,)? )) => {{
+        let mut pod = $pod.as_struct()?;
+        Self {
+            $(
+                $a: {
+                    pod.pop_field().and_then(|$a| {
+                        Ok($b)
+                    })?
+                },
+            )*
+        }
+    }};
 }
 
 fn parse_dict(

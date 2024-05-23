@@ -137,6 +137,13 @@ pub mod methods {
 pub mod events {
     use super::*;
 
+    fn deserialize<T>(
+        event: &'static str,
+        f: impl FnOnce() -> Result<T, pod_simple::DeserializeError>,
+    ) -> Result<T, EventDeserializeError> {
+        EventDeserializeError::wrap("Core", event, f)
+    }
+
     /// This event is emitted when first bound to the core or when the
     /// hello method is called.
     #[derive(Debug, Clone, pod_derive::PodDeserialize)]
@@ -155,17 +162,19 @@ pub mod events {
     impl Deserialize for Info {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> pod_simple::deserialize::Result<Self> {
-            let mut pod = pod.as_struct()?;
-            Ok(Self {
-                id: pod.pop_field()?.as_u32()?,
-                cookie: pod.pop_field()?.as_u32()?,
-                user_name: pod.pop_field()?.as_str()?.to_string(),
-                host_name: pod.pop_field()?.as_str()?.to_string(),
-                version: pod.pop_field()?.as_str()?.to_string(),
-                name: pod.pop_field()?.as_str()?.to_string(),
-                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
-                properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+        ) -> Result<Self, EventDeserializeError> {
+            deserialize("Info", || {
+                let mut pod = pod.as_struct()?;
+                Ok(Self {
+                    id: pod.pop_field()?.as_u32()?,
+                    cookie: pod.pop_field()?.as_u32()?,
+                    user_name: pod.pop_field()?.as_str()?.to_string(),
+                    host_name: pod.pop_field()?.as_str()?.to_string(),
+                    version: pod.pop_field()?.as_str()?.to_string(),
+                    name: pod.pop_field()?.as_str()?.to_string(),
+                    change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
+                    properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+                })
             })
         }
     }
@@ -182,11 +191,13 @@ pub mod events {
     impl Deserialize for Done {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> pod_simple::deserialize::Result<Self> {
-            let mut pod = pod.as_struct()?;
-            Ok(Self {
-                id: pod.pop_field()?.as_u32()?,
-                seq: pod.pop_field()?.as_i32()?,
+        ) -> Result<Self, EventDeserializeError> {
+            deserialize("Done", || {
+                let mut pod = pod.as_struct()?;
+                Ok(Self {
+                    id: pod.pop_field()?.as_u32()?,
+                    seq: pod.pop_field()?.as_i32()?,
+                })
             })
         }
     }
@@ -203,11 +214,13 @@ pub mod events {
     impl Deserialize for Ping {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> pod_simple::deserialize::Result<Self> {
-            let mut pod = pod.as_struct()?;
-            Ok(Self {
-                id: pod.pop_field()?.as_u32()?,
-                seq: pod.pop_field()?.as_i32()?,
+        ) -> Result<Self, EventDeserializeError> {
+            deserialize("Ping", || {
+                let mut pod = pod.as_struct()?;
+                Ok(Self {
+                    id: pod.pop_field()?.as_u32()?,
+                    seq: pod.pop_field()?.as_i32()?,
+                })
             })
         }
     }
@@ -231,13 +244,15 @@ pub mod events {
     impl Deserialize for Error {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> pod_simple::deserialize::Result<Self> {
-            let mut pod = pod.as_struct()?;
-            Ok(Self {
-                id: pod.pop_field()?.as_u32()?,
-                seq: pod.pop_field()?.as_i32()?,
-                res: pod.pop_field()?.as_i32()?,
-                message: pod.pop_field()?.as_str()?.to_string(),
+        ) -> Result<Self, EventDeserializeError> {
+            deserialize("Error", || {
+                let mut pod = pod.as_struct()?;
+                Ok(Self {
+                    id: pod.pop_field()?.as_u32()?,
+                    seq: pod.pop_field()?.as_i32()?,
+                    res: pod.pop_field()?.as_i32()?,
+                    message: pod.pop_field()?.as_str()?.to_string(),
+                })
             })
         }
     }
@@ -256,10 +271,12 @@ pub mod events {
     impl Deserialize for RemoveId {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> pod_simple::deserialize::Result<Self> {
-            let mut pod = pod.as_struct()?;
-            Ok(Self {
-                id: pod.pop_field()?.as_u32()?,
+        ) -> Result<Self, EventDeserializeError> {
+            deserialize("RemoveId", || {
+                let mut pod = pod.as_struct()?;
+                Ok(Self {
+                    id: pod.pop_field()?.as_u32()?,
+                })
             })
         }
     }
