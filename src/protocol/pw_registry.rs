@@ -83,20 +83,7 @@ pub mod events {
                 permissions: PermissionFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
                 obj_type: pod.pop_field()?.as_str()?.to_string(),
                 version: pod.pop_field()?.as_u32()?,
-                properties: {
-                    let mut props = pod.pop_field()?.as_struct()?;
-
-                    let count = props.pop_field()?;
-                    let count = count.as_i32()?;
-
-                    let mut map = HashMap::new();
-                    for _ in 0..count {
-                        let key = props.pop_field()?.as_str()?.to_string();
-                        let value = props.pop_field()?.as_str()?.to_string();
-                        map.insert(key, value);
-                    }
-                    pod::dictionary::Dictionary(map)
-                },
+                properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
             })
         }
     }

@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use pod::serialize::{PodSerialize, PodSerializer};
-use pod_simple::PodDeserializer;
+use pod_simple::{deserialize::PodStructDeserializer, PodDeserializer};
 use std::{collections::HashMap, io::Cursor};
 
 pub trait HasOpCode {
@@ -10,6 +10,22 @@ pub trait HasOpCode {
 
 pub trait Deserialize: Sized {
     fn deserialize(deserializer: &mut PodDeserializer) -> pod_simple::deserialize::Result<Self>;
+}
+
+fn parse_dict(
+    pod: &mut PodStructDeserializer,
+) -> pod_simple::deserialize::Result<pod::dictionary::Dictionary> {
+    let count = pod.pop_field()?;
+    let count = count.as_i32()?;
+
+    let mut map = HashMap::new();
+    for _ in 0..count {
+        let key = pod.pop_field()?.as_str()?.to_string();
+        let value = pod.pop_field()?.as_str()?.to_string();
+        map.insert(key, value);
+    }
+
+    Ok(pod::dictionary::Dictionary(map))
 }
 
 pub mod pw_client;

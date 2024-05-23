@@ -164,19 +164,8 @@ pub mod events {
                 host_name: pod.pop_field()?.as_str()?.to_string(),
                 version: pod.pop_field()?.as_str()?.to_string(),
                 name: pod.pop_field()?.as_str()?.to_string(),
-                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_i64()? as u64),
-                properties: {
-                    let mut properties = pod.pop_field()?.as_struct()?;
-                    let count = properties.pop_field()?;
-                    let count = count.as_i32()?;
-                    let mut map = HashMap::new();
-                    for _ in 0..count {
-                        let key = properties.pop_field()?.as_str()?.to_string();
-                        let value = properties.pop_field()?.as_str()?.to_string();
-                        map.insert(key, value);
-                    }
-                    pod::dictionary::Dictionary(map)
-                },
+                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
+                properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
             })
         }
     }

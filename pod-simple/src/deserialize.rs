@@ -166,6 +166,10 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
+    pub fn as_u64(&self) -> Result<u64> {
+        Ok(self.as_i64()? as u64)
+    }
+
     pub fn as_struct(&self) -> Result<PodStructDeserializer<'a>> {
         if let PodDeserializerKind::Struct(pod) = self.kind() {
             Ok(pod)
