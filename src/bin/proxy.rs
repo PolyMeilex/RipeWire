@@ -80,10 +80,18 @@ fn main() {
         move || loop {
             let (bytes, cmsgs) = recvmsg(&client, &mut buffer);
 
+            let fds: Vec<RawFd> = cmsgs
+                .iter()
+                .flat_map(|cmsg| match cmsg {
+                    socket::ControlMessageOwned::ScmRights(s) => s.clone(),
+                    _ => Vec::new(),
+                })
+                .collect();
+
             let mut reader = bytes;
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader) {
                 reader = rest;
-                inspect_method(&objects, &interfaces, &msg);
+                inspect_method(&objects, &interfaces, &msg, &fds);
                 // pod_simple::dbg_print::dbg_print(&msg.body);
             }
 
@@ -100,10 +108,18 @@ fn main() {
         move || loop {
             let (bytes, cmsgs) = recvmsg(&server, &mut buffer);
 
+            let fds: Vec<RawFd> = cmsgs
+                .iter()
+                .flat_map(|cmsg| match cmsg {
+                    socket::ControlMessageOwned::ScmRights(s) => s.clone(),
+                    _ => Vec::new(),
+                })
+                .collect();
+
             let mut reader = bytes;
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader) {
                 reader = rest;
-                inspect_event(&objects, &interfaces, &msg);
+                inspect_event(&objects, &interfaces, &msg, &fds);
                 // pod_simple::dbg_print::dbg_print(&msg.body);
             }
 
@@ -115,7 +131,12 @@ fn main() {
     server_in.join().unwrap();
 }
 
-fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
+fn inspect_method(
+    objects: &Mutex<Objects>,
+    interfaces: &Interfaces,
+    msg: &Message,
+    _fds: &[RawFd],
+) {
     let mut objects = objects.lock().unwrap();
     if let Some(interface) = objects.get(&msg.header.object_id) {
         print!("{}@{}.", strip_prefix(interface), msg.header.object_id);
@@ -191,7 +212,7 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
     }
 }
 
-fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
+fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message, fds: &[RawFd]) {
     let objects = objects.lock().unwrap();
 
     print!("-> ");
@@ -202,8 +223,8 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
             let event = events.get(&msg.header.opcode).unwrap();
 
             match interface.as_str() {
-                "PipeWire:Interface:Core" => inspect_core_event(msg.header.opcode, msg),
-                "PipeWire:Interface:Registry" => inspect_registry_event(event, msg),
+                "PipeWire:Interface:Core" => inspect_core_event(msg.header.opcode, msg, fds),
+                "PipeWire:Interface:Registry" => inspect_registry_event(event, msg, fds),
                 _ => {
                     println!("{}()", event);
                 }
@@ -216,10 +237,10 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
     }
 }
 
-fn inspect_core_event(opcode: u8, msg: &Message) {
+fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_core;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
-    match pw_core::Event::deserialize_event(opcode, &mut pod, &[]).unwrap() {
+    match pw_core::Event::deserialize_event(opcode, &mut pod, fds).unwrap() {
         pw_core::Event::Info(v) => println!("{v:#?}"),
         pw_core::Event::Done(v) => println!("{v:?}"),
         pw_core::Event::Ping(v) => println!("{v:?}"),
@@ -232,12 +253,12 @@ fn inspect_core_event(opcode: u8, msg: &Message) {
     }
 }
 
-fn inspect_registry_event(event: &str, msg: &Message) {
+fn inspect_registry_event(event: &str, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_registry;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
     match event {
         "Global" => {
-            let global = pw_registry::events::Global::deserialize(&mut pod).unwrap();
+            let global = pw_registry::events::Global::deserialize(&mut pod, fds).unwrap();
             println!("{global:#?}");
         }
         _ => {

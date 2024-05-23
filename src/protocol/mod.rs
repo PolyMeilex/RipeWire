@@ -2,7 +2,7 @@
 
 use pod::serialize::{PodSerialize, PodSerializer};
 use pod_simple::{deserialize::PodStructDeserializer, PodDeserializer};
-use std::{collections::HashMap, io::Cursor};
+use std::{collections::HashMap, io::Cursor, os::fd::RawFd};
 
 pub trait HasOpCode {
     const OPCODE: u8;
@@ -25,11 +25,16 @@ pub trait HasInterface {
 }
 
 pub trait EventDeserialize: HasInterface + HasOpCode + HasName + Deserialize {
-    fn deserialize(deserializer: &mut PodDeserializer) -> Result<Self, EventDeserializeError> {
-        <Self as Deserialize>::deserialize(deserializer).map_err(|error| EventDeserializeError {
-            interface: Self::INTERFACE,
-            event: Self::NAME,
-            error,
+    fn deserialize(
+        deserializer: &mut PodDeserializer,
+        fds: &[RawFd],
+    ) -> Result<Self, EventDeserializeError> {
+        <Self as Deserialize>::deserialize(deserializer, fds).map_err(|error| {
+            EventDeserializeError {
+                interface: Self::INTERFACE,
+                event: Self::NAME,
+                error,
+            }
         })
     }
 }
@@ -37,7 +42,10 @@ pub trait EventDeserialize: HasInterface + HasOpCode + HasName + Deserialize {
 impl<T: HasInterface + HasOpCode + HasName + Deserialize> EventDeserialize for T {}
 
 pub trait Deserialize: Sized {
-    fn deserialize(deserializer: &mut PodDeserializer) -> pod_simple::deserialize::Result<Self>;
+    fn deserialize(
+        deserializer: &mut PodDeserializer,
+        fds: &[RawFd],
+    ) -> pod_simple::deserialize::Result<Self>;
 }
 
 macro_rules! parse {

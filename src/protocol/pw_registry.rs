@@ -81,6 +81,7 @@ pub mod events {
     impl Deserialize for Global {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
+            fds: &[RawFd],
         ) -> pod_simple::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
