@@ -146,6 +146,14 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
+    pub fn as_id(&self) -> Result<u32> {
+        if let PodDeserializerKind::Id(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Id))
+        }
+    }
+
     pub fn as_i32(&self) -> Result<i32> {
         if let PodDeserializerKind::Int(v) = self.kind() {
             Ok(v)
@@ -190,6 +198,14 @@ impl<'a> PodDeserializer<'a> {
             Ok(BStr::new(bytes))
         } else {
             Err(self.unexpected_type(SpaType::String))
+        }
+    }
+
+    pub fn as_fd(&self) -> Result<i64> {
+        if let PodDeserializerKind::Fd(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Fd))
         }
     }
 }

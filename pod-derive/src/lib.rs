@@ -274,3 +274,54 @@ pub fn event_deserialize(input: TokenStream) -> TokenStream {
     // Hand the output tokens back to the compiler
     TokenStream::from(expanded)
 }
+
+#[proc_macro_derive(EventDeserialize2)]
+pub fn event_deserialize2(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+
+    let (fds, out) = if let Data::Enum(ref e) = input.data {
+        let fds = e.variants.iter().map(|variant| {
+            let variant = &variant.ident;
+            quote! {
+                Self::#variant(event) => {
+                    event.load_fds(fds);
+                }
+            }
+        });
+
+        let deserialize = e.variants.iter().enumerate().map(|(opcode, variant)| {
+            let opcode = opcode as u8;
+            let variant = &variant.ident;
+            quote!(#opcode => Self::#variant(EventDeserialize::deserialize(pod)?))
+        });
+
+        (fds, deserialize)
+    } else {
+        unimplemented!("Not a struct")
+    };
+
+    let expanded = quote! {
+        impl #name {
+            pub fn deserialize_event(opcode: u8, pod: &mut pod_simple::PodDeserializer, fds: &[std::os::fd::RawFd]) -> Result<Self, EventDeserializeError> {
+                let mut this = match opcode {
+                    #(#out,)*
+                    _ => todo!("opcode: {opcode}"),
+                };
+
+                this._load_fds2(fds);
+
+                Ok(this)
+            }
+
+            fn _load_fds2(&mut self, fds: &[std::os::fd::RawFd]) {
+                match self {
+                    #(#fds,)*
+                }
+            }
+        }
+    };
+
+    // Hand the output tokens back to the compiler
+    TokenStream::from(expanded)
+}

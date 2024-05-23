@@ -202,7 +202,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
             let event = events.get(&msg.header.opcode).unwrap();
 
             match interface.as_str() {
-                "PipeWire:Interface:Core" => inspect_core_event(event, msg),
+                "PipeWire:Interface:Core" => inspect_core_event(msg.header.opcode, msg),
                 "PipeWire:Interface:Registry" => inspect_registry_event(event, msg),
                 _ => {
                     println!("{}()", event);
@@ -216,25 +216,19 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
     }
 }
 
-fn inspect_core_event(event: &str, msg: &Message) {
+fn inspect_core_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_core;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
-    match event {
-        "Info" => {
-            let event = pw_core::events::Info::deserialize(&mut pod).unwrap();
-            println!("{event:#?}");
-        }
-        "Done" => {
-            let event = pw_core::events::Done::deserialize(&mut pod).unwrap();
-            println!("{event:?}");
-        }
-        "Error" => {
-            let event = pw_core::events::Error::deserialize(&mut pod).unwrap();
-            println!("{event:?}");
-        }
-        _ => {
-            println!("{}()", event);
-        }
+    match pw_core::Event::deserialize_event(opcode, &mut pod, &[]).unwrap() {
+        pw_core::Event::Info(v) => println!("{v:#?}"),
+        pw_core::Event::Done(v) => println!("{v:?}"),
+        pw_core::Event::Ping(v) => println!("{v:?}"),
+        pw_core::Event::Error(v) => println!("{v:?}"),
+        pw_core::Event::RemoveId(v) => println!("{v:?}"),
+        pw_core::Event::BoundId(v) => println!("{v:?}"),
+        pw_core::Event::AddMem(v) => println!("{v:#?}"),
+        pw_core::Event::RemoveMem(v) => println!("{v:?}"),
+        pw_core::Event::BoundProps(v) => println!("{v:#?}"),
     }
 }
 

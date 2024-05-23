@@ -298,11 +298,29 @@ pub mod events {
     /// This event is emitted when a local object ID is bound to a
     /// global ID. It is emitted before the global becomes visible in the
     /// registry.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(5)]
     pub struct BoundId {
         pub id: u32,
         pub global_id: u32,
+    }
+
+    impl HasInterface for BoundId {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
+    impl Deserialize for BoundId {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                global_id: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 
     /// Add memory for a client
@@ -311,7 +329,9 @@ pub mod events {
     /// memory `type`.
     ///
     /// Further references to this fd will be made with the per memory\nunique identifier `id`.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(6)]
     pub struct AddMem {
         pub id: u32,
@@ -321,15 +341,82 @@ pub mod events {
         pub flags: MemblockFlags,
     }
 
+    impl HasInterface for AddMem {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
+    impl Deserialize for AddMem {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                ty: pod::utils::Id(pod.pop_field()?.as_id()?),
+                fd: pod::utils::Fd {
+                    id: pod.pop_field()?.as_fd()?,
+                    // TODO:
+                    fd: None,
+                },
+                flags: MemblockFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
+            })
+        }
+    }
+
     /// Remove memory for a client
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(7)]
     pub struct RemoveMem {
         pub id: u32,
     }
+
+    impl HasInterface for RemoveMem {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
+    impl Deserialize for RemoveMem {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+            })
+        }
+    }
+
+    /// This event is emitted when a local object ID is bound to a global ID. It is emitted before the global becomes visible in the registry.
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
+    #[op_code(8)]
+    pub struct BoundProps {
+        pub id: u32,
+        pub global_id: u32,
+        pub properties: pod::dictionary::Dictionary,
+    }
+
+    impl HasInterface for BoundProps {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
+    impl Deserialize for BoundProps {
+        fn deserialize(
+            pod: &mut pod_simple::PodDeserializer,
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                global_id: pod.pop_field()?.as_u32()?,
+                properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+            })
+        }
+    }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize, pod_derive::EventDeserialize2)]
 pub enum Event {
     /// This event is emitted when first bound to the core or when the hello method is called.
     Info(events::Info),
@@ -356,4 +443,6 @@ pub enum Event {
     AddMem(events::AddMem),
     /// Remove memory for a client
     RemoveMem(events::RemoveMem),
+    /// This event is emitted when a local object ID is bound to a global ID. It is emitted before the global becomes visible in the registry.
+    BoundProps(events::BoundProps),
 }
