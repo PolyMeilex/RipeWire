@@ -51,12 +51,7 @@ pub mod events {
     use super::*;
     use pod::permissions::PermissionFlags;
 
-    fn deserialize<T>(
-        event: &'static str,
-        f: impl FnOnce() -> Result<T, pod_simple::DeserializeError>,
-    ) -> Result<T, EventDeserializeError> {
-        EventDeserializeError::wrap("Registry", event, f)
-    }
+    const INTERFACE: &str = "Registry";
 
     /// Notify of a new global object
     ///
@@ -67,7 +62,10 @@ pub mod events {
     /// - type: the type of the interface
     /// - version: the version of the interface
     /// - props: extra properties of the global
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
+    #[op_code(0)]
     pub struct Global {
         pub id: u32,
         pub permissions: PermissionFlags,
@@ -76,23 +74,21 @@ pub mod events {
         pub properties: pod::dictionary::Dictionary,
     }
 
-    impl HasOpCode for Global {
-        const OPCODE: u8 = 0;
+    impl HasInterface for Global {
+        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for Global {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> Result<Self, EventDeserializeError> {
-            deserialize("Global", || {
-                let mut pod = pod.as_struct()?;
-                Ok(Self {
-                    id: pod.pop_field()?.as_u32()?,
-                    permissions: PermissionFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
-                    obj_type: pod.pop_field()?.as_str()?.to_string(),
-                    version: pod.pop_field()?.as_u32()?,
-                    properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
-                })
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                permissions: PermissionFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
+                obj_type: pod.pop_field()?.as_str()?.to_string(),
+                version: pod.pop_field()?.as_u32()?,
+                properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
             })
         }
     }

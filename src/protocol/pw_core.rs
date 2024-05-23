@@ -3,6 +3,7 @@ use std::os::fd::RawFd;
 use super::*;
 
 pub const OBJECT_ID: u32 = 0;
+pub const INTERFACE: &str = "Core";
 
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
@@ -137,16 +138,11 @@ pub mod methods {
 pub mod events {
     use super::*;
 
-    fn deserialize<T>(
-        event: &'static str,
-        f: impl FnOnce() -> Result<T, pod_simple::DeserializeError>,
-    ) -> Result<T, EventDeserializeError> {
-        EventDeserializeError::wrap("Core", event, f)
-    }
-
     /// This event is emitted when first bound to the core or when the
     /// hello method is called.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(0)]
     pub struct Info {
         pub id: u32,
@@ -159,68 +155,78 @@ pub mod events {
         pub properties: pod::dictionary::Dictionary,
     }
 
+    impl HasInterface for Info {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
     impl Deserialize for Info {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> Result<Self, EventDeserializeError> {
-            deserialize("Info", || {
-                let mut pod = pod.as_struct()?;
-                Ok(Self {
-                    id: pod.pop_field()?.as_u32()?,
-                    cookie: pod.pop_field()?.as_u32()?,
-                    user_name: pod.pop_field()?.as_str()?.to_string(),
-                    host_name: pod.pop_field()?.as_str()?.to_string(),
-                    version: pod.pop_field()?.as_str()?.to_string(),
-                    name: pod.pop_field()?.as_str()?.to_string(),
-                    change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
-                    properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
-                })
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                cookie: pod.pop_field()?.as_u32()?,
+                user_name: pod.pop_field()?.as_str()?.to_string(),
+                host_name: pod.pop_field()?.as_str()?.to_string(),
+                version: pod.pop_field()?.as_str()?.to_string(),
+                name: pod.pop_field()?.as_str()?.to_string(),
+                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
+                properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
             })
         }
     }
 
     /// The done event is emitted as a result of a sync method with the
     /// same seq number.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(1)]
     pub struct Done {
         pub id: u32,
         pub seq: i32,
     }
 
+    impl HasInterface for Done {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
     impl Deserialize for Done {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> Result<Self, EventDeserializeError> {
-            deserialize("Done", || {
-                let mut pod = pod.as_struct()?;
-                Ok(Self {
-                    id: pod.pop_field()?.as_u32()?,
-                    seq: pod.pop_field()?.as_i32()?,
-                })
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                seq: pod.pop_field()?.as_i32()?,
             })
         }
     }
 
     /// The client should reply with a pong reply with the same seq
     /// number.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(2)]
     pub struct Ping {
         pub id: u32,
         pub seq: i32,
     }
 
+    impl HasInterface for Ping {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
     impl Deserialize for Ping {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> Result<Self, EventDeserializeError> {
-            deserialize("Ping", || {
-                let mut pod = pod.as_struct()?;
-                Ok(Self {
-                    id: pod.pop_field()?.as_u32()?,
-                    seq: pod.pop_field()?.as_i32()?,
-                })
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                seq: pod.pop_field()?.as_i32()?,
             })
         }
     }
@@ -232,7 +238,9 @@ pub mod events {
     /// the error occurred, most often in response to a request to that
     /// object. The message is a brief description of the error,
     /// for (debugging) convenience.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(3)]
     pub struct Error {
         pub id: u32,
@@ -241,18 +249,20 @@ pub mod events {
         pub message: String,
     }
 
+    impl HasInterface for Error {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
     impl Deserialize for Error {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> Result<Self, EventDeserializeError> {
-            deserialize("Error", || {
-                let mut pod = pod.as_struct()?;
-                Ok(Self {
-                    id: pod.pop_field()?.as_u32()?,
-                    seq: pod.pop_field()?.as_i32()?,
-                    res: pod.pop_field()?.as_i32()?,
-                    message: pod.pop_field()?.as_str()?.to_string(),
-                })
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                seq: pod.pop_field()?.as_i32()?,
+                res: pod.pop_field()?.as_i32()?,
+                message: pod.pop_field()?.as_str()?.to_string(),
             })
         }
     }
@@ -262,21 +272,25 @@ pub mod events {
     /// this event to acknowledge that it has seen the delete request.
     /// When the client receives this event, it will know that it can
     /// safely reuse the object ID.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(
+        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
+    )]
     #[op_code(4)]
     pub struct RemoveId {
         pub id: u32,
     }
 
+    impl HasInterface for RemoveId {
+        const INTERFACE: &'static str = INTERFACE;
+    }
+
     impl Deserialize for RemoveId {
         fn deserialize(
             pod: &mut pod_simple::PodDeserializer,
-        ) -> Result<Self, EventDeserializeError> {
-            deserialize("RemoveId", || {
-                let mut pod = pod.as_struct()?;
-                Ok(Self {
-                    id: pod.pop_field()?.as_u32()?,
-                })
+        ) -> pod_simple::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
             })
         }
     }
@@ -284,7 +298,7 @@ pub mod events {
     /// This event is emitted when a local object ID is bound to a
     /// global ID. It is emitted before the global becomes visible in the
     /// registry.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(5)]
     pub struct BoundId {
         pub id: u32,
@@ -297,7 +311,7 @@ pub mod events {
     /// memory `type`.
     ///
     /// Further references to this fd will be made with the per memory\nunique identifier `id`.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(6)]
     pub struct AddMem {
         pub id: u32,
@@ -308,7 +322,7 @@ pub mod events {
     }
 
     /// Remove memory for a client
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(7)]
     pub struct RemoveMem {
         pub id: u32,

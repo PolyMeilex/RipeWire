@@ -14,7 +14,7 @@ use std::{
 
 use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
 use pod_simple::{deserialize::PodDeserializerKind, PodDeserializer};
-use ripewire::{connection::Message, protocol::Deserialize as _};
+use ripewire::{connection::Message, protocol::EventDeserialize as _};
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
 pub const MAX_BUFFER_SIZE: usize = 500000;

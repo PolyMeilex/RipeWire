@@ -11,27 +11,33 @@ pub trait HasOpCode {
 #[derive(Debug, thiserror::Error)]
 #[error("{interface}.{event}: {error}")]
 pub struct EventDeserializeError {
-    interface: &'static str,
-    event: &'static str,
-    error: pod_simple::DeserializeError,
+    pub interface: &'static str,
+    pub event: &'static str,
+    pub error: pod_simple::DeserializeError,
 }
 
-impl EventDeserializeError {
-    fn wrap<T>(
-        interface: &'static str,
-        event: &'static str,
-        f: impl FnOnce() -> Result<T, pod_simple::DeserializeError>,
-    ) -> Result<T, Self> {
-        f().map_err(|error| Self {
-            interface,
-            event,
+pub trait HasName {
+    const NAME: &'static str;
+}
+
+pub trait HasInterface {
+    const INTERFACE: &'static str;
+}
+
+pub trait EventDeserialize: HasInterface + HasOpCode + HasName + Deserialize {
+    fn deserialize(deserializer: &mut PodDeserializer) -> Result<Self, EventDeserializeError> {
+        <Self as Deserialize>::deserialize(deserializer).map_err(|error| EventDeserializeError {
+            interface: Self::INTERFACE,
+            event: Self::NAME,
             error,
         })
     }
 }
 
+impl<T: HasInterface + HasOpCode + HasName + Deserialize> EventDeserialize for T {}
+
 pub trait Deserialize: Sized {
-    fn deserialize(deserializer: &mut PodDeserializer) -> Result<Self, EventDeserializeError>;
+    fn deserialize(deserializer: &mut PodDeserializer) -> pod_simple::deserialize::Result<Self>;
 }
 
 macro_rules! parse {

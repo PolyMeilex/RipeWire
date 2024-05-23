@@ -33,7 +33,28 @@ fn op_code(attrs: &[syn::Attribute], name: &syn::Ident) -> proc_macro2::TokenStr
     }
 }
 
-#[proc_macro_derive(PodSerialize, attributes(op_code))]
+#[proc_macro_derive(HasOpCode, attributes(op_code))]
+pub fn has_opcode(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+
+    op_code(&input.attrs, &name).into()
+}
+
+#[proc_macro_derive(HasName)]
+pub fn has_name(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+
+    quote! {
+        impl HasName for #name {
+            const NAME: &'static str = stringify!(#name);
+        }
+    }
+    .into()
+}
+
+#[proc_macro_derive(PodSerialize, attributes(op_code, fd))]
 pub fn pod_serialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
@@ -68,12 +89,10 @@ pub fn pod_serialize(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-#[proc_macro_derive(PodDeserialize, attributes(op_code, fd))]
+#[proc_macro_derive(PodDeserialize, attributes(fd))]
 pub fn pod_deserialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
-
-    let op_code = op_code(&input.attrs, &name);
 
     let (fds, out) = if let Data::Struct(ref s) = input.data {
         let fds = s
@@ -109,7 +128,6 @@ pub fn pod_deserialize(input: TokenStream) -> TokenStream {
     };
 
     let expanded = quote! {
-        #op_code
         impl<'de> pod::deserialize::PodDeserialize<'de> for #name {
             fn deserialize(
                 deserializer: pod::deserialize::PodDeserializer<'de>,
