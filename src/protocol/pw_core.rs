@@ -3,7 +3,6 @@ use std::os::fd::RawFd;
 use super::*;
 
 pub const OBJECT_ID: u32 = 0;
-pub const INTERFACE: &str = "Core";
 
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
@@ -140,9 +139,7 @@ pub mod events {
 
     /// This event is emitted when first bound to the core or when the
     /// hello method is called.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(0)]
     pub struct Info {
         pub id: u32,
@@ -153,10 +150,6 @@ pub mod events {
         pub name: String,
         pub change_mask: ChangeMask,
         pub properties: pod::dictionary::Dictionary,
-    }
-
-    impl HasInterface for Info {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for Info {
@@ -180,17 +173,11 @@ pub mod events {
 
     /// The done event is emitted as a result of a sync method with the
     /// same seq number.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(1)]
     pub struct Done {
         pub id: u32,
         pub seq: i32,
-    }
-
-    impl HasInterface for Done {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for Done {
@@ -208,17 +195,11 @@ pub mod events {
 
     /// The client should reply with a pong reply with the same seq
     /// number.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(2)]
     pub struct Ping {
         pub id: u32,
         pub seq: i32,
-    }
-
-    impl HasInterface for Ping {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for Ping {
@@ -241,19 +222,13 @@ pub mod events {
     /// the error occurred, most often in response to a request to that
     /// object. The message is a brief description of the error,
     /// for (debugging) convenience.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(3)]
     pub struct Error {
         pub id: u32,
         pub seq: i32,
         pub res: i32,
         pub message: String,
-    }
-
-    impl HasInterface for Error {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for Error {
@@ -276,16 +251,10 @@ pub mod events {
     /// this event to acknowledge that it has seen the delete request.
     /// When the client receives this event, it will know that it can
     /// safely reuse the object ID.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(4)]
     pub struct RemoveId {
         pub id: u32,
-    }
-
-    impl HasInterface for RemoveId {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for RemoveId {
@@ -303,17 +272,11 @@ pub mod events {
     /// This event is emitted when a local object ID is bound to a
     /// global ID. It is emitted before the global becomes visible in the
     /// registry.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(5)]
     pub struct BoundId {
         pub id: u32,
         pub global_id: u32,
-    }
-
-    impl HasInterface for BoundId {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for BoundId {
@@ -335,9 +298,7 @@ pub mod events {
     /// memory `type`.
     ///
     /// Further references to this fd will be made with the per memory\nunique identifier `id`.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(6)]
     pub struct AddMem {
         pub id: u32,
@@ -345,10 +306,6 @@ pub mod events {
         #[fd]
         pub fd: pod::utils::Fd,
         pub flags: MemblockFlags,
-    }
-
-    impl HasInterface for AddMem {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for AddMem {
@@ -373,16 +330,10 @@ pub mod events {
     }
 
     /// Remove memory for a client
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(7)]
     pub struct RemoveMem {
         pub id: u32,
-    }
-
-    impl HasInterface for RemoveMem {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for RemoveMem {
@@ -398,18 +349,12 @@ pub mod events {
     }
 
     /// This event is emitted when a local object ID is bound to a global ID. It is emitted before the global becomes visible in the registry.
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(8)]
     pub struct BoundProps {
         pub id: u32,
         pub global_id: u32,
         pub properties: pod::dictionary::Dictionary,
-    }
-
-    impl HasInterface for BoundProps {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for BoundProps {
@@ -456,4 +401,8 @@ pub enum Event {
     RemoveMem(events::RemoveMem),
     /// This event is emitted when a local object ID is bound to a global ID. It is emitted before the global becomes visible in the registry.
     BoundProps(events::BoundProps),
+}
+
+impl HasInterface for Event {
+    const INTERFACE: &'static str = "Core";
 }

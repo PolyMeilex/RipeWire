@@ -14,7 +14,7 @@ use std::{
 
 use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
 use pod_v2::{deserialize::PodDeserializerKind, PodDeserializer};
-use ripewire::{connection::Message, protocol::EventDeserialize as _};
+use ripewire::connection::Message;
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
 pub const MAX_BUFFER_SIZE: usize = 500000;
@@ -219,18 +219,19 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
     if let Some(interface) = objects.get(&msg.header.object_id) {
         print!("{}@{}.", strip_prefix(interface), msg.header.object_id);
 
-        if let Some((_methods, events)) = interfaces.get(interface.as_str()) {
-            let event = events.get(&msg.header.opcode).unwrap();
-
-            match interface.as_str() {
-                "PipeWire:Interface:Core" => inspect_core_event(msg.header.opcode, msg, fds),
-                "PipeWire:Interface:Registry" => inspect_registry_event(event, msg, fds),
-                _ => {
+        match interface.as_str() {
+            "PipeWire:Interface:Core" => inspect_core_event(msg.header.opcode, msg, fds),
+            "PipeWire:Interface:Registry" => inspect_registry_event(msg.header.opcode, msg, fds),
+            _ => {
+                if let Some(event) = interfaces
+                    .get(interface.as_str())
+                    .and_then(|(_, events)| events.get(&msg.header.opcode))
+                {
                     println!("{}()", event);
+                } else {
+                    println!("{}()", msg.header.opcode);
                 }
             }
-        } else {
-            println!("{}()", msg.header.opcode);
         }
     } else {
         println!("Header: {:?}", msg.header);
@@ -238,32 +239,27 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
 }
 
 fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
-    use ripewire::protocol::pw_core;
+    use ripewire::protocol::pw_core::Event;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
-    match pw_core::Event::deserialize_event(opcode, &mut pod, fds).unwrap() {
-        pw_core::Event::Info(v) => println!("{v:#?}"),
-        pw_core::Event::Done(v) => println!("{v:?}"),
-        pw_core::Event::Ping(v) => println!("{v:?}"),
-        pw_core::Event::Error(v) => println!("{v:?}"),
-        pw_core::Event::RemoveId(v) => println!("{v:?}"),
-        pw_core::Event::BoundId(v) => println!("{v:?}"),
-        pw_core::Event::AddMem(v) => println!("{v:#?}"),
-        pw_core::Event::RemoveMem(v) => println!("{v:?}"),
-        pw_core::Event::BoundProps(v) => println!("{v:#?}"),
+    match Event::deserialize_event(opcode, &mut pod, fds).unwrap() {
+        Event::Info(v) => println!("{v:#?}"),
+        Event::Done(v) => println!("{v:?}"),
+        Event::Ping(v) => println!("{v:?}"),
+        Event::Error(v) => println!("{v:?}"),
+        Event::RemoveId(v) => println!("{v:?}"),
+        Event::BoundId(v) => println!("{v:?}"),
+        Event::AddMem(v) => println!("{v:#?}"),
+        Event::RemoveMem(v) => println!("{v:?}"),
+        Event::BoundProps(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_registry_event(event: &str, msg: &Message, fds: &[RawFd]) {
-    use ripewire::protocol::pw_registry;
+fn inspect_registry_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+    use ripewire::protocol::pw_registry::Event;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
-    match event {
-        "Global" => {
-            let global = pw_registry::events::Global::deserialize(&mut pod, fds).unwrap();
-            println!("{global:#?}");
-        }
-        _ => {
-            println!("{}()", event);
-        }
+    match Event::deserialize_event(opcode, &mut pod, fds).unwrap() {
+        Event::Global(v) => println!("{v:#?}"),
+        Event::GlobalRemove(v) => println!("{v:?}"),
     }
 }
 

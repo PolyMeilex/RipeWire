@@ -41,19 +41,6 @@ pub fn has_opcode(input: TokenStream) -> TokenStream {
     op_code(&input.attrs, &name).into()
 }
 
-#[proc_macro_derive(HasName)]
-pub fn has_name(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = input.ident;
-
-    quote! {
-        impl HasName for #name {
-            const NAME: &'static str = stringify!(#name);
-        }
-    }
-    .into()
-}
-
 #[proc_macro_derive(PodSerialize, attributes(op_code, fd))]
 pub fn pod_serialize(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -283,7 +270,15 @@ pub fn event_deserialize2(input: TokenStream) -> TokenStream {
     let out = if let Data::Enum(ref e) = input.data {
         e.variants.iter().map(|variant| {
             let variant = &variant.ident;
-            quote!(events::#variant::OPCODE => Self::#variant(EventDeserialize::deserialize(pod, fds)?))
+            quote!(events::#variant::OPCODE => Self::#variant(
+                Deserialize::deserialize(pod, fds).map_err(|error| {
+                    EventDeserializeError {
+                        interface: Self::INTERFACE,
+                        event: stringify!(#variant),
+                        error,
+                    }
+                })?
+            ))
         })
     } else {
         unimplemented!("Not a struct")

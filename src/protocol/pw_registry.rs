@@ -62,9 +62,7 @@ pub mod events {
     /// - type: the type of the interface
     /// - version: the version of the interface
     /// - props: extra properties of the global
-    #[derive(
-        Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasName, pod_derive::HasOpCode,
-    )]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
     #[op_code(0)]
     pub struct Global {
         pub id: u32,
@@ -72,10 +70,6 @@ pub mod events {
         pub obj_type: String,
         pub version: u32,
         pub properties: pod::dictionary::Dictionary,
-    }
-
-    impl HasInterface for Global {
-        const INTERFACE: &'static str = INTERFACE;
     }
 
     impl Deserialize for Global {
@@ -100,17 +94,26 @@ pub mod events {
     /// If the client has any bindings to the global, it should destroy those.
     ///
     /// - id: the id of the global that was removed
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
+    #[op_code(1)]
     pub struct GlobalRemove {
         pub id: u32,
     }
 
-    impl HasOpCode for GlobalRemove {
-        const OPCODE: u8 = 1;
+    impl Deserialize for GlobalRemove {
+        fn deserialize(
+            pod: &mut pod_v2::PodDeserializer,
+            _fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize, pod_derive::EventDeserialize2)]
 pub enum Event {
     /// Notify of a new global object
     ///
@@ -122,4 +125,8 @@ pub enum Event {
     /// Emitted when a global object was removed from the registry.
     /// If the client has any bindings to the global, it should destroy those.
     GlobalRemove(events::GlobalRemove),
+}
+
+impl HasInterface for Event {
+    const INTERFACE: &'static str = "Registry";
 }

@@ -16,30 +16,9 @@ pub struct EventDeserializeError {
     pub error: pod_v2::DeserializeError,
 }
 
-pub trait HasName {
-    const NAME: &'static str;
-}
-
 pub trait HasInterface {
     const INTERFACE: &'static str;
 }
-
-pub trait EventDeserialize: HasInterface + HasOpCode + HasName + Deserialize {
-    fn deserialize(
-        deserializer: &mut PodDeserializer,
-        fds: &[RawFd],
-    ) -> Result<Self, EventDeserializeError> {
-        <Self as Deserialize>::deserialize(deserializer, fds).map_err(|error| {
-            EventDeserializeError {
-                interface: Self::INTERFACE,
-                event: Self::NAME,
-                error,
-            }
-        })
-    }
-}
-
-impl<T: HasInterface + HasOpCode + HasName + Deserialize> EventDeserialize for T {}
 
 pub trait Deserialize: Sized {
     fn deserialize(
