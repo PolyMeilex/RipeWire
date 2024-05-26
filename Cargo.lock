@@ -449,13 +449,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "pod-simple"
+name = "pod-v2"
 version = "0.1.0"
 dependencies = [
  "bstr",
  "libspa-consts",
- "pod",
- "pod-derive",
  "thiserror",
 ]
 
@@ -525,7 +523,7 @@ dependencies = [
  "nix 0.26.2",
  "pod",
  "pod-derive",
- "pod-simple",
+ "pod-v2",
  "quick-xml",
  "ron",
  "serde",
@@ -562,7 +560,6 @@ name = "scanner"
 version = "0.1.0"
 dependencies = [
  "heck",
- "pod",
  "proc-macro2",
  "quick-xml",
  "quote",

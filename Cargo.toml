@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["pod", "pod-simple", "pod-derive", "libspa-consts", "scanner"]
+members = ["pod", "pod-v2", "pod-derive", "libspa-consts", "scanner"]
 
 [dependencies]
 calloop = "0.10.5"
@@ -14,7 +14,7 @@ bitflags = "2.0.0"
 thiserror = "1"
 libspa-consts = { path = "./libspa-consts" }
 pod = { path = "./pod" }
-pod-simple = { path = "./pod-simple" }
+pod-v2 = { path = "./pod-v2" }
 pod-derive = { path = "./pod-derive" }
 quick-xml = "0.28.0"
 tokio = { version = "1", features = [

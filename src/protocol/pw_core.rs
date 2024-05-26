@@ -161,9 +161,9 @@ pub mod events {
 
     impl Deserialize for Info {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -195,9 +195,9 @@ pub mod events {
 
     impl Deserialize for Done {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -223,9 +223,9 @@ pub mod events {
 
     impl Deserialize for Ping {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -258,9 +258,9 @@ pub mod events {
 
     impl Deserialize for Error {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -290,9 +290,9 @@ pub mod events {
 
     impl Deserialize for RemoveId {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -318,9 +318,9 @@ pub mod events {
 
     impl Deserialize for BoundId {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -353,9 +353,9 @@ pub mod events {
 
     impl Deserialize for AddMem {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -387,9 +387,9 @@ pub mod events {
 
     impl Deserialize for RemoveMem {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -414,9 +414,9 @@ pub mod events {
 
     impl Deserialize for BoundProps {
         fn deserialize(
-            pod: &mut pod_simple::PodDeserializer,
+            pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_simple::deserialize::Result<Self> {
+        ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,

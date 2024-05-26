@@ -1,5 +1,4 @@
-use libspa_consts::{SpaParamType, SpaProp, SpaType};
-use pod::{Object, Property, PropertyFlags, Value};
+use pod::{Object, Value};
 
 use crate::{
     context::Context,

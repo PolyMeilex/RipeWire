@@ -291,7 +291,7 @@ pub fn event_deserialize2(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl #name {
-            pub fn deserialize_event(opcode: u8, pod: &mut pod_simple::PodDeserializer, fds: &[std::os::fd::RawFd]) -> Result<Self, EventDeserializeError> {
+            pub fn deserialize_event(opcode: u8, pod: &mut pod_v2::PodDeserializer, fds: &[std::os::fd::RawFd]) -> Result<Self, EventDeserializeError> {
                 let mut this = match opcode {
                     #(#out,)*
                     _ => todo!("opcode: {opcode}"),

@@ -1,7 +1,7 @@
 use std::io::Cursor;
 
 fn main() {
-    let mut builder = pod_simple::Builder::new(Cursor::new(vec![]));
+    let mut builder = pod_v2::Builder::new(Cursor::new(vec![]));
 
     builder.push_struct_with(|b| {
         b.write_none()
@@ -48,7 +48,7 @@ fn main() {
     // dbg!(&value);
 
     dbg!(builder_out.len());
-    pod_simple::dbg_print::dbg_print(&builder_out);
+    pod_v2::dbg_print::dbg_print(&builder_out);
 
     let builder_out = vec![
         72, 1, 0, 0, 14, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 76, 1, 0, 64, 0, 0, 0, 0, 4, 0, 0, 0, 3,
@@ -66,7 +66,7 @@ fn main() {
     ];
 
     dbg!(builder_out.len());
-    pod_simple::dbg_print::dbg_print(&builder_out);
+    pod_v2::dbg_print::dbg_print(&builder_out);
 
     // for _ in 0..1000 {
     //     println!("{:?} => {}", deserializer.ty(), deserializer.size());

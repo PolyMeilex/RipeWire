@@ -8,6 +8,3 @@ heck = "0.4.1"
 quick-xml = "0.28.0"
 quote = { version = "1", default-features = false }
 proc-macro2 = "1"
-
-[dev-dependencies]
-pod = { path = "../pod" }

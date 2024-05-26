@@ -1,5 +1,5 @@
 [package]
-name = "pod-simple"
+name = "pod-v2"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,5 +8,3 @@ bstr = "1"
 thiserror = "1"
 
 libspa-consts = { version = "0", path = "../libspa-consts" }
-pod-derive = { path = "../pod-derive/" }
-pod = { path = "../pod/" }

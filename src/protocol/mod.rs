@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use pod::serialize::{PodSerialize, PodSerializer};
-use pod_simple::{deserialize::PodStructDeserializer, PodDeserializer};
+use pod_v2::{deserialize::PodStructDeserializer, PodDeserializer};
 use std::{collections::HashMap, io::Cursor, os::fd::RawFd};
 
 pub trait HasOpCode {
@@ -13,7 +13,7 @@ pub trait HasOpCode {
 pub struct EventDeserializeError {
     pub interface: &'static str,
     pub event: &'static str,
-    pub error: pod_simple::DeserializeError,
+    pub error: pod_v2::DeserializeError,
 }
 
 pub trait HasName {
@@ -45,7 +45,7 @@ pub trait Deserialize: Sized {
     fn deserialize(
         deserializer: &mut PodDeserializer,
         fds: &[RawFd],
-    ) -> pod_simple::deserialize::Result<Self>;
+    ) -> pod_v2::deserialize::Result<Self>;
 }
 
 macro_rules! parse {
@@ -65,7 +65,7 @@ macro_rules! parse {
 
 fn parse_dict(
     pod: &mut PodStructDeserializer,
-) -> pod_simple::deserialize::Result<pod::dictionary::Dictionary> {
+) -> pod_v2::deserialize::Result<pod::dictionary::Dictionary> {
     let count = pod.pop_field()?;
     let count = count.as_i32()?;
 
