@@ -61,7 +61,7 @@ macro_rules! parse {
 
 fn parse_dict(
     pod: &mut PodStructDeserializer,
-) -> pod_v2::deserialize::Result<pod::dictionary::Dictionary> {
+) -> pod_v2::deserialize::Result<HashMap<String, String>> {
     let count = pod.pop_field()?;
     let count = count.as_i32()?;
 
@@ -72,7 +72,7 @@ fn parse_dict(
         map.insert(key, value);
     }
 
-    Ok(pod::dictionary::Dictionary(map))
+    Ok(map)
 }
 
 pub mod pw_client;

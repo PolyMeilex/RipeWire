@@ -68,7 +68,7 @@ pub mod events {
         pub permissions: PermissionFlags,
         pub obj_type: String,
         pub version: u32,
-        pub properties: pod::dictionary::Dictionary,
+        pub properties: HashMap<String, String>,
     }
 
     impl EventDeserialize for Global {

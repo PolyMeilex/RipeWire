@@ -182,7 +182,7 @@ impl PipewireState {
         let device = self.globals.globals.iter().find(|global| {
             global.obj_type == "PipeWire:Interface:Device"
                 && matches!(
-                    global.properties.0.get("device.name").map(|s| s.as_str()),
+                    global.properties.get("device.name").map(|s| s.as_str()),
                     Some("alsa_card.pci-0000_0b_00.6")
                 )
         });

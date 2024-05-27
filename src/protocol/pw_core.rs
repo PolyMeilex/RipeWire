@@ -157,7 +157,7 @@ pub mod events {
         pub version: String,
         pub name: String,
         pub change_mask: ChangeMask,
-        pub properties: pod::dictionary::Dictionary,
+        pub properties: HashMap<String, String>,
     }
 
     impl EventDeserialize for Info {
@@ -369,7 +369,7 @@ pub mod events {
     pub struct BoundProps {
         pub id: u32,
         pub global_id: u32,
-        pub properties: pod::dictionary::Dictionary,
+        pub properties: HashMap<String, String>,
     }
 
     impl EventDeserialize for BoundProps {

@@ -221,6 +221,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
 
         match interface.as_str() {
             "PipeWire:Interface:Core" => inspect_core_event(msg.header.opcode, msg, fds),
+            "PipeWire:Interface:Client" => inspect_client_event(msg.header.opcode, msg, fds),
             "PipeWire:Interface:Registry" => inspect_registry_event(msg.header.opcode, msg, fds),
             _ => {
                 if let Some(event) = interfaces
@@ -251,6 +252,15 @@ fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
         Event::AddMem(v) => println!("{v:#?}"),
         Event::RemoveMem(v) => println!("{v:?}"),
         Event::BoundProps(v) => println!("{v:#?}"),
+    }
+}
+
+fn inspect_client_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+    use ripewire::protocol::pw_client::Event;
+    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+        Event::Info(v) => println!("{v:#?}"),
+        Event::Permissions(v) => println!("{v:#?}"),
     }
 }
 

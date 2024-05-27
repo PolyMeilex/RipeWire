@@ -133,7 +133,7 @@ impl PwClient {
             .unwrap();
     }
 
-    pub fn get_permissions<D>(self, context: &mut Context<D>, index: u32, num: u32) {
+    pub fn get_permissions<D>(&self, context: &mut Context<D>, index: u32, num: u32) {
         let data = pw_client::methods::GetPermissions { index, num };
         context
             .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
