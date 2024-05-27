@@ -4,27 +4,6 @@ use super::*;
 
 pub const OBJECT_ID: u32 = 0;
 
-bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
-    pub struct ChangeMask: u64 {
-        const PROPS = 1;
-    }
-}
-
-bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
-    pub struct MemblockFlags: u32 {
-        const READABLE = 1;
-        const WRITABLE = 2;
-        const SEAL = 4;
-        const MAP = 8;
-        const DONT_CLOSE = 16;
-        const DONT_NOTIFY = 32;
-
-        const READWRITE = Self::READABLE.bits() | Self::WRITABLE.bits();
-    }
-}
-
 pub mod methods {
     use super::*;
 
@@ -134,8 +113,38 @@ pub mod methods {
     }
 }
 
+pub use events::{ChangeMask, MemblockFlags};
 pub mod events {
     use super::*;
+
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct ChangeMask: u64 {
+            const PROPS = 1;
+        }
+    }
+
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct MemblockFlags: u32 {
+            /// memory is readable
+            const READABLE = 1 << 0;
+            /// memory is writable
+            const WRITABLE = 1 << 1;
+            /// seal the fd
+            const SEAL = 1 << 2;
+            /// mmap the fd
+            const MAP = 1 << 3;
+            /// don't close fd
+            const DONT_CLOSE = 1 << 4;
+            /// don't notify events
+            const DONT_NOTIFY = 1 << 5;
+            /// the fd can not be mmapped
+            const UNMAPPABLE = 1 << 6;
+
+            const READWRITE = Self::READABLE.bits() | Self::WRITABLE.bits();
+        }
+    }
 
     /// This event is emitted when first bound to the core or when the
     /// hello method is called.
