@@ -119,7 +119,9 @@ impl<D> Context<D> {
                 self.dispatch_event_inner(state, registry, event);
             }
             ObjectType::Device => {
-                let event = pw_device::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
+                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let event =
+                    pw_device::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
 
                 let device = PwDevice::from_id(id);
                 self.dispatch_event_inner(state, device, event);

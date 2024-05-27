@@ -108,6 +108,7 @@ pub mod methods {
     }
 }
 
+pub use events::ChangeMask;
 pub mod events {
     use super::*;
 

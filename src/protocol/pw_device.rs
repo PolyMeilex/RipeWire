@@ -1,13 +1,5 @@
 use super::*;
 
-bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
-    pub struct ChangeMask: u64 {
-        const PROPS = 1;
-        const PARAMS = 2;
-    }
-}
-
 pub mod methods {
     use super::*;
 
@@ -77,22 +69,87 @@ pub mod methods {
         const OPCODE: u8 = 3;
     }
 }
+
+pub use events::{ChangeMask, ParamFlags};
 pub mod events {
     use super::*;
+
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct ChangeMask: u64 {
+            const PROPS = 1 << 0;
+            const PARAMS = 1 << 1;
+        }
+    }
+
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct ParamFlags: u32 {
+            /// bit to signal update even when the
+            /// read/write flags don't change
+            const SERIAL = 1 << 0;
+            const READ = 1 << 1;
+            const WRITE = 1 << 2;
+            const READWRITE = Self::WRITE.bits() | Self::READ.bits();
+        }
+    }
+
+    #[derive(Debug, Clone)]
+    pub struct ParamInfo {
+        id: u32,
+        flags: ParamFlags,
+    }
+
+    fn parse_params(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Vec<ParamInfo>> {
+        let mut pod = pod.as_struct()?;
+
+        let len = pod.pop_field()?.as_i32()?;
+
+        if len <= 0 {
+            return Ok(Vec::new());
+        }
+        let len = len as u32;
+
+        let mut params = Vec::with_capacity(len as usize);
+
+        for _ in 0..len {
+            let id = pod.pop_field()?.as_id()?;
+            let flags = pod.pop_field()?.as_u32()?;
+            params.push(ParamInfo {
+                id,
+                flags: ParamFlags::from_bits_retain(flags),
+            });
+        }
+
+        Ok(params)
+    }
 
     /// Notify device info
     ///
     /// info - info about the device
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct Info {
         pub id: u32,
         pub change_mask: ChangeMask,
-        pub props: pod::dictionary::Dictionary,
-        pub params: pod::pod_struct::Struct,
+        pub props: HashMap<String, String>,
+        pub params: Vec<ParamInfo>,
     }
 
-    impl HasOpCode for Info {
+    impl EventDeserialize for Info {
         const OPCODE: u8 = 0;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_u32()?,
+                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
+                props: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+                params: parse_params(&mut pod.pop_field()?)?,
+            })
+        }
     }
 
     /// Notify a device param
@@ -104,21 +161,48 @@ pub mod events {
     /// index - the param index
     /// next - the param index of the next param
     /// param - the parameter
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Clone)]
     pub struct Param {
         pub seq: i32,
-        pub id: pod::utils::Id,
+        pub id: u32,
         pub index: u32,
         pub next: u32,
-        pub params: pod::Value,
+        /// Bytes of a spa object
+        pub params: Vec<u8>,
     }
 
-    impl HasOpCode for Param {
+    impl std::fmt::Debug for Param {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.debug_struct("Param")
+                .field("seq", &self.seq)
+                .field("id", &self.id)
+                .field("index", &self.index)
+                .field("next", &self.next)
+                .field("params", &"...")
+                .finish()
+        }
+    }
+
+    impl EventDeserialize for Param {
         const OPCODE: u8 = 1;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                seq: pod.pop_field()?.as_i32()?,
+                id: pod.pop_field()?.as_id()?,
+                index: pod.pop_field()?.as_u32()?,
+                next: pod.pop_field()?.as_u32()?,
+                params: pod.pop_field()?.body().to_vec(),
+            })
+        }
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize2)]
 pub enum Event {
     /// Notify device info
     Info(events::Info),
@@ -127,4 +211,8 @@ pub enum Event {
     ///
     /// Event emitted as a result of the enum_params method.
     Param(events::Param),
+}
+
+impl HasInterface for Event {
+    const INTERFACE: &'static str = "Device";
 }
