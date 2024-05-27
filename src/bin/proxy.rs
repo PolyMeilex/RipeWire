@@ -224,6 +224,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
             "PipeWire:Interface:Client" => inspect_client_event(msg.header.opcode, msg, fds),
             "PipeWire:Interface:Device" => inspect_device_event(msg.header.opcode, msg, fds),
             "PipeWire:Interface:Factory" => inspect_factory_event(msg.header.opcode, msg, fds),
+            "PipeWire:Interface:Link" => inspect_link_event(msg.header.opcode, msg, fds),
             "PipeWire:Interface:Registry" => inspect_registry_event(msg.header.opcode, msg, fds),
             _ => {
                 if let Some(event) = interfaces
@@ -277,6 +278,14 @@ fn inspect_device_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_factory_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_factory::Event;
+    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+        Event::Info(v) => println!("{v:#?}"),
+    }
+}
+
+fn inspect_link_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+    use ripewire::protocol::pw_link::Event;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
