@@ -175,12 +175,12 @@ impl PipewireState {
             .globals
             .globals
             .iter()
-            .filter(|global| global.obj_type == "PipeWire:Interface:Client")
+            .filter(|global| global.interface == "PipeWire:Interface:Client")
             .skip(1)
             .next();
 
         let device = self.globals.globals.iter().find(|global| {
-            global.obj_type == "PipeWire:Interface:Device"
+            global.interface == "PipeWire:Interface:Device"
                 && matches!(
                     global.properties.get("device.name").map(|s| s.as_str()),
                     Some("alsa_card.pci-0000_0b_00.6")
@@ -218,7 +218,7 @@ impl PipewireState {
                 ctx,
                 pw_core::methods::CreateObject {
                     factory_name: "client-node".into(),
-                    obj_type: "PipeWire:Interface:ClientNode".into(),
+                    interface: "PipeWire:Interface:ClientNode".into(),
                     version: 3,
                     properties: Dictionary::from([
                         ("application.name", "rustypipe"),

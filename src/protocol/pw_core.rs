@@ -88,14 +88,14 @@ pub mod methods {
     /// Create a new object on the PipeWire server from a factory.
     ///
     /// factory_name - the factory name to use
-    /// obj_type - the interface to bind to
+    /// interface - the interface to bind to
     /// version - the version of the interface
     /// properties - extra properties
     #[derive(Debug, Clone, pod_derive::PodSerialize)]
     #[op_code(6)]
     pub struct CreateObject {
         pub factory_name: String,
-        pub obj_type: String,
+        pub interface: String,
         pub version: u32,
         pub properties: pod::dictionary::Dictionary,
         pub new_id: u32,

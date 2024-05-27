@@ -83,7 +83,7 @@ impl PwCore {
         context: &mut Context<D>,
         mut data: pw_core::methods::CreateObject,
     ) -> I {
-        let new_id = context.new_object(ObjectType::from_interface_name(&data.obj_type));
+        let new_id = context.new_object(ObjectType::from_interface_name(&data.interface));
         data.new_id = new_id.object_id;
 
         context
@@ -176,10 +176,10 @@ impl PwRegistry {
     ) -> I {
         let data = pw_registry::methods::Bind {
             id: global.id,
-            obj_type: global.obj_type.clone(),
+            interface: global.interface.clone(),
             version: global.version,
             new_id: context
-                .new_object(ObjectType::from_interface_name(&global.obj_type))
+                .new_object(ObjectType::from_interface_name(&global.interface))
                 .protocol_id(),
         };
 
