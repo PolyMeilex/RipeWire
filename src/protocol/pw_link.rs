@@ -35,7 +35,7 @@ pub mod events {
         pub input_node_id: u32,
         pub input_port_id: u32,
         pub change_mask: ChangeMask,
-        pub state: u32,
+        pub state: SpaEnum<libspa_consts::PwLinkState, i32>,
         pub error: Option<String>,
         /// Pod bytes
         pub format: Vec<u8>,
@@ -74,7 +74,7 @@ pub mod events {
                 input_node_id: pod.pop_field()?.as_u32()?,
                 input_port_id: pod.pop_field()?.as_u32()?,
                 change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
-                state: pod.pop_field()?.as_u32()?,
+                state: SpaEnum::from_i32(pod.pop_field()?.as_i32()?),
                 error: {
                     let pod = pod.pop_field()?;
                     match pod.kind() {

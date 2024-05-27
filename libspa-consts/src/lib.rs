@@ -44,6 +44,14 @@ impl<T: num_traits::FromPrimitive> SpaEnum<T, u32> {
     }
 }
 
+impl<T: num_traits::FromPrimitive> SpaEnum<T, i32> {
+    pub fn from_i32(raw: i32) -> Self {
+        T::from_i32(raw)
+            .map(Self::Value)
+            .unwrap_or(Self::Unknown(raw))
+    }
+}
+
 impl<T, RAW> SpaEnum<T, RAW>
 where
     T: Into<RAW> + Clone,

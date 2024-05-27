@@ -419,3 +419,22 @@ pub enum SpaFormat {
     StartStream = 327680,
     StartApplication = 393216,
 }
+#[repr(i32)]
+#[doc = " \\enum pw_link_state The different link states"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
+pub enum PwLinkState {
+    #[doc = "< the link is in error"]
+    Error = -2,
+    #[doc = "< the link is unlinked"]
+    Unlinked = -1,
+    #[doc = "< the link is initialized"]
+    Init = 0,
+    #[doc = "< the link is negotiating formats"]
+    Negotiating = 1,
+    #[doc = "< the link is allocating buffers"]
+    Allocating = 2,
+    #[doc = "< the link is paused"]
+    Paused = 3,
+    #[doc = "< the link is active"]
+    Active = 4,
+}

@@ -11,6 +11,8 @@ calloop = "0.10.5"
 nix = "0.26"
 bitflags = "2.0.0"
 
+num-traits = "0.2"
+num-derive = "0.4"
 thiserror = "1"
 libspa-consts = { path = "./libspa-consts" }
 pod = { path = "./pod" }

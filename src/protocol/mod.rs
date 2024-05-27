@@ -1,5 +1,6 @@
 #![allow(unused)]
 
+use libspa_consts::SpaEnum;
 use pod::serialize::{PodSerialize, PodSerializer};
 use pod_v2::{deserialize::PodStructDeserializer, PodDeserializer};
 use std::{collections::HashMap, io::Cursor, os::fd::RawFd};
