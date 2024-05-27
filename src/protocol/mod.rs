@@ -20,6 +20,23 @@ pub trait HasInterface {
     const INTERFACE: &'static str;
 }
 
+trait EventDeserialize: Sized {
+    const OPCODE: u8;
+    fn deserialize(
+        deserializer: &mut PodDeserializer,
+        fds: &[RawFd],
+    ) -> pod_v2::deserialize::Result<Self>;
+}
+
+impl<T: EventDeserialize> Deserialize for T {
+    fn deserialize(
+        deserializer: &mut PodDeserializer,
+        fds: &[RawFd],
+    ) -> pod_v2::deserialize::Result<Self> {
+        <T as EventDeserialize>::deserialize(deserializer, fds)
+    }
+}
+
 pub trait Deserialize: Sized {
     fn deserialize(
         deserializer: &mut PodDeserializer,

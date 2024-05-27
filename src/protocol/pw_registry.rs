@@ -62,8 +62,7 @@ pub mod events {
     /// - type: the type of the interface
     /// - version: the version of the interface
     /// - props: extra properties of the global
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(0)]
+    #[derive(Debug, Clone)]
     pub struct Global {
         pub id: u32,
         pub permissions: PermissionFlags,
@@ -72,7 +71,9 @@ pub mod events {
         pub properties: pod::dictionary::Dictionary,
     }
 
-    impl Deserialize for Global {
+    impl EventDeserialize for Global {
+        const OPCODE: u8 = 0;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -94,13 +95,14 @@ pub mod events {
     /// If the client has any bindings to the global, it should destroy those.
     ///
     /// - id: the id of the global that was removed
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(1)]
+    #[derive(Debug, Clone)]
     pub struct GlobalRemove {
         pub id: u32,
     }
 
-    impl Deserialize for GlobalRemove {
+    impl EventDeserialize for GlobalRemove {
+        const OPCODE: u8 = 1;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             _fds: &[RawFd],
@@ -113,7 +115,7 @@ pub mod events {
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize, pod_derive::EventDeserialize2)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize2)]
 pub enum Event {
     /// Notify of a new global object
     ///

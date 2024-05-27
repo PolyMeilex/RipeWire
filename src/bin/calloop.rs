@@ -1,7 +1,7 @@
 use std::os::fd::AsRawFd;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
-use libspa_consts::{SpaDirection, SpaParamType};
+use libspa_consts::SpaDirection;
 use pod::{dictionary::Dictionary, Value};
 
 use ripewire::context::Context;

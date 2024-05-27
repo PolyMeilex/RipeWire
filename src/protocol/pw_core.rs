@@ -139,8 +139,7 @@ pub mod events {
 
     /// This event is emitted when first bound to the core or when the
     /// hello method is called.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(0)]
+    #[derive(Debug, Clone)]
     pub struct Info {
         pub id: u32,
         pub cookie: u32,
@@ -152,7 +151,9 @@ pub mod events {
         pub properties: pod::dictionary::Dictionary,
     }
 
-    impl Deserialize for Info {
+    impl EventDeserialize for Info {
+        const OPCODE: u8 = 0;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -173,14 +174,15 @@ pub mod events {
 
     /// The done event is emitted as a result of a sync method with the
     /// same seq number.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(1)]
+    #[derive(Debug, Clone)]
     pub struct Done {
         pub id: u32,
         pub seq: i32,
     }
 
-    impl Deserialize for Done {
+    impl EventDeserialize for Done {
+        const OPCODE: u8 = 1;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -195,14 +197,15 @@ pub mod events {
 
     /// The client should reply with a pong reply with the same seq
     /// number.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(2)]
+    #[derive(Debug, Clone)]
     pub struct Ping {
         pub id: u32,
         pub seq: i32,
     }
 
-    impl Deserialize for Ping {
+    impl EventDeserialize for Ping {
+        const OPCODE: u8 = 2;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -222,8 +225,7 @@ pub mod events {
     /// the error occurred, most often in response to a request to that
     /// object. The message is a brief description of the error,
     /// for (debugging) convenience.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(3)]
+    #[derive(Debug, Clone)]
     pub struct Error {
         pub id: u32,
         pub seq: i32,
@@ -231,7 +233,9 @@ pub mod events {
         pub message: String,
     }
 
-    impl Deserialize for Error {
+    impl EventDeserialize for Error {
+        const OPCODE: u8 = 3;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -251,13 +255,14 @@ pub mod events {
     /// this event to acknowledge that it has seen the delete request.
     /// When the client receives this event, it will know that it can
     /// safely reuse the object ID.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(4)]
+    #[derive(Debug, Clone)]
     pub struct RemoveId {
         pub id: u32,
     }
 
-    impl Deserialize for RemoveId {
+    impl EventDeserialize for RemoveId {
+        const OPCODE: u8 = 4;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -272,14 +277,15 @@ pub mod events {
     /// This event is emitted when a local object ID is bound to a
     /// global ID. It is emitted before the global becomes visible in the
     /// registry.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(5)]
+    #[derive(Debug, Clone)]
     pub struct BoundId {
         pub id: u32,
         pub global_id: u32,
     }
 
-    impl Deserialize for BoundId {
+    impl EventDeserialize for BoundId {
+        const OPCODE: u8 = 5;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -298,17 +304,17 @@ pub mod events {
     /// memory `type`.
     ///
     /// Further references to this fd will be made with the per memory\nunique identifier `id`.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(6)]
+    #[derive(Debug, Clone)]
     pub struct AddMem {
         pub id: u32,
         pub ty: pod::utils::Id,
-        #[fd]
         pub fd: pod::utils::Fd,
         pub flags: MemblockFlags,
     }
 
-    impl Deserialize for AddMem {
+    impl EventDeserialize for AddMem {
+        const OPCODE: u8 = 6;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -330,13 +336,14 @@ pub mod events {
     }
 
     /// Remove memory for a client
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(7)]
+    #[derive(Debug, Clone)]
     pub struct RemoveMem {
         pub id: u32,
     }
 
-    impl Deserialize for RemoveMem {
+    impl EventDeserialize for RemoveMem {
+        const OPCODE: u8 = 7;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -349,15 +356,16 @@ pub mod events {
     }
 
     /// This event is emitted when a local object ID is bound to a global ID. It is emitted before the global becomes visible in the registry.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize, pod_derive::HasOpCode)]
-    #[op_code(8)]
+    #[derive(Debug, Clone)]
     pub struct BoundProps {
         pub id: u32,
         pub global_id: u32,
         pub properties: pod::dictionary::Dictionary,
     }
 
-    impl Deserialize for BoundProps {
+    impl EventDeserialize for BoundProps {
+        const OPCODE: u8 = 8;
+
         fn deserialize(
             pod: &mut pod_v2::PodDeserializer,
             fds: &[RawFd],
@@ -372,7 +380,7 @@ pub mod events {
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize, pod_derive::EventDeserialize2)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize2)]
 pub enum Event {
     /// This event is emitted when first bound to the core or when the hello method is called.
     Info(events::Info),

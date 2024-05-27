@@ -241,7 +241,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
 fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_core::Event;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
-    match Event::deserialize_event(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Done(v) => println!("{v:?}"),
         Event::Ping(v) => println!("{v:?}"),
@@ -257,7 +257,7 @@ fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 fn inspect_registry_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_registry::Event;
     let (mut pod, _) = PodDeserializer::new(&msg.body);
-    match Event::deserialize_event(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Global(v) => println!("{v:#?}"),
         Event::GlobalRemove(v) => println!("{v:?}"),
     }

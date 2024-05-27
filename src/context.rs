@@ -87,7 +87,8 @@ impl<D> Context<D> {
 
         match self.object_type(&id).unwrap() {
             ObjectType::Core => {
-                let event = pw_core::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
+                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let event = pw_core::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
 
                 if let pw_core::Event::RemoveId(ref event) = event {
                     self.map.remove(event.id);
@@ -108,7 +109,9 @@ impl<D> Context<D> {
                 self.dispatch_event_inner(state, client_node, event);
             }
             ObjectType::Registry => {
-                let event = pw_registry::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
+                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let event =
+                    pw_registry::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
 
                 let registry = PwRegistry::from_id(id);
                 self.dispatch_event_inner(state, registry, event);

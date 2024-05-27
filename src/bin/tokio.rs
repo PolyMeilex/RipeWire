@@ -1,4 +1,3 @@
-use libspa_consts::SpaParamType;
 use pod::dictionary::Dictionary;
 use std::io;
 use std::os::fd::AsRawFd;
