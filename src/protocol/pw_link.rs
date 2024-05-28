@@ -27,7 +27,7 @@ pub mod events {
     /// Notify link info
     ///
     /// info - info about the link
-    #[derive(Clone)]
+    #[derive(Debug, Clone)]
     pub struct Info {
         pub id: u32,
         pub output_node_id: u32,
@@ -38,25 +38,8 @@ pub mod events {
         pub state: SpaEnum<libspa_consts::PwLinkState, i32>,
         pub error: Option<String>,
         /// Pod bytes
-        pub format: Vec<u8>,
+        pub format: OwnedPod,
         pub props: HashMap<String, String>,
-    }
-
-    impl std::fmt::Debug for Info {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            f.debug_struct("Info")
-                .field("id", &self.id)
-                .field("output_node_id", &self.output_node_id)
-                .field("output_port_id", &self.output_port_id)
-                .field("input_node_id", &self.input_node_id)
-                .field("input_port_id", &self.input_port_id)
-                .field("change_mask", &self.change_mask)
-                .field("state", &self.state)
-                .field("error", &self.error)
-                .field("format", &"...")
-                .field("props", &self.props)
-                .finish()
-        }
     }
 
     impl EventDeserialize for Info {
@@ -88,7 +71,7 @@ pub mod events {
                         }
                     }
                 },
-                format: pod.pop_field()?.body().to_vec(),
+                format: pod.pop_field()?.to_owned(),
                 props: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
             })
         }

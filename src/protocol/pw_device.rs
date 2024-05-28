@@ -161,26 +161,14 @@ pub mod events {
     /// index - the param index
     /// next - the param index of the next param
     /// param - the parameter
-    #[derive(Clone)]
+    #[derive(Debug, Clone)]
     pub struct Param {
         pub seq: i32,
         pub id: u32,
         pub index: u32,
         pub next: u32,
         /// Bytes of a spa object
-        pub params: Vec<u8>,
-    }
-
-    impl std::fmt::Debug for Param {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            f.debug_struct("Param")
-                .field("seq", &self.seq)
-                .field("id", &self.id)
-                .field("index", &self.index)
-                .field("next", &self.next)
-                .field("params", &"...")
-                .finish()
-        }
+        pub params: OwnedPod,
     }
 
     impl EventDeserialize for Param {
@@ -196,7 +184,7 @@ pub mod events {
                 id: pod.pop_field()?.as_id()?,
                 index: pod.pop_field()?.as_u32()?,
                 next: pod.pop_field()?.as_u32()?,
-                params: pod.pop_field()?.body().to_vec(),
+                params: pod.pop_field()?.to_owned(),
             })
         }
     }

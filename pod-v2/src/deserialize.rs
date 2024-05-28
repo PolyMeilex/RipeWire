@@ -51,6 +51,32 @@ fn eat_raw<T: Primitive + Copy>(bytes: &[u8]) -> (T, &[u8]) {
 }
 
 #[derive(Clone)]
+pub struct OwnedPod {
+    size: u32,
+    ty: SpaEnum<SpaType>,
+    body: Vec<u8>,
+}
+
+impl std::fmt::Debug for OwnedPod {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("OwnedPod")
+            .field("size", &self.size)
+            .field("ty", &self.ty)
+            .finish_non_exhaustive()
+    }
+}
+
+impl OwnedPod {
+    pub fn as_deserializer(&self) -> PodDeserializer<'_> {
+        PodDeserializer {
+            size: self.size,
+            ty: self.ty,
+            body: self.body.as_ref(),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct PodDeserializer<'a> {
     size: u32,
     ty: SpaEnum<SpaType>,
@@ -83,6 +109,14 @@ impl<'a> PodDeserializer<'a> {
 
     pub fn size(&self) -> u32 {
         self.size
+    }
+
+    pub fn to_owned(&self) -> OwnedPod {
+        OwnedPod {
+            size: self.size(),
+            ty: self.ty(),
+            body: self.body().to_owned(),
+        }
     }
 
     fn padding(&self) -> u32 {
