@@ -235,6 +235,23 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
+    pub fn as_str_or_none(&self) -> Result<Option<&'a BStr>> {
+        if self.ty == SpaEnum::Value(SpaType::String) {
+            let bytes = &self.body[..self.size as usize];
+
+            let bytes = match bytes.iter().position(|b| *b == 0) {
+                Some(end) => &bytes[..end],
+                None => bytes,
+            };
+
+            Ok(Some(BStr::new(bytes)))
+        } else if self.ty == SpaEnum::Value(SpaType::None) {
+            Ok(None)
+        } else {
+            Err(self.unexpected_type(SpaType::String))
+        }
+    }
+
     pub fn as_fd(&self) -> Result<i64> {
         if let PodDeserializerKind::Fd(v) = self.kind() {
             Ok(v)

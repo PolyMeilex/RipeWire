@@ -58,19 +58,7 @@ pub mod events {
                 input_port_id: pod.pop_field()?.as_u32()?,
                 change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
                 state: SpaEnum::from_i32(pod.pop_field()?.as_i32()?),
-                error: {
-                    let pod = pod.pop_field()?;
-                    match pod.kind() {
-                        pod_v2::PodDeserializerKind::None => None,
-                        pod_v2::PodDeserializerKind::String(v) => Some(v.to_string()),
-                        _ => {
-                            return Err(pod_v2::deserialize::DeserializeError::UnexpectedType {
-                                expected: libspa_consts::SpaType::String,
-                                got: pod.ty(),
-                            })
-                        }
-                    }
-                },
+                error: pod.pop_field()?.as_str_or_none()?.map(ToString::to_string),
                 format: pod.pop_field()?.to_owned(),
                 props: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
             })
