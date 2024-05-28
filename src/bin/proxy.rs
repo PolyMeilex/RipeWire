@@ -14,7 +14,7 @@ use std::{
 
 use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
 use pod_v2::{deserialize::PodDeserializerKind, PodDeserializer};
-use ripewire::connection::Message;
+use ripewire::{connection::Message, object_map::ObjectType};
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
 pub const MAX_BUFFER_SIZE: usize = 500000;
@@ -139,14 +139,14 @@ fn inspect_method(
 ) {
     let mut objects = objects.lock().unwrap();
     if let Some(interface) = objects.get(&msg.header.object_id) {
-        print!("{}@{}.", strip_prefix(interface), msg.header.object_id);
+        print!("{:?}@{}.", interface, msg.header.object_id);
 
-        if let Some((methods, _events)) = interfaces.get(interface.as_str()) {
+        if let Some((methods, _events)) = interfaces.get(interface) {
             let method = methods.get(&msg.header.opcode).unwrap();
             print!("{}", method);
 
-            match interface.as_str() {
-                "PipeWire:Interface:Core" => match *method {
+            match interface {
+                ObjectType::Core => match *method {
                     "GetRegistry" => {
                         let (pod, _) = PodDeserializer::new(&msg.body);
                         let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
@@ -159,7 +159,7 @@ fn inspect_method(
                             unreachable!("Non int new_id");
                         };
 
-                        objects.insert(new_id as u32, "PipeWire:Interface:Registry".to_string());
+                        objects.insert(new_id as u32, ObjectType::Registry);
                     }
                     "CreateObject" => {
                         let (pod, _) = PodDeserializer::new(&msg.body);
@@ -176,11 +176,14 @@ fn inspect_method(
                             unreachable!("Non int new_id");
                         };
 
-                        objects.insert(new_id as u32, interface_type.to_string());
+                        objects.insert(
+                            new_id as u32,
+                            ObjectType::from_interface_name(&interface_type.to_string()),
+                        );
                     }
                     _ => {}
                 },
-                "PipeWire:Interface:Registry" => match *method {
+                ObjectType::Registry => match *method {
                     "Bind" => {
                         let (pod, _) = PodDeserializer::new(&msg.body);
                         let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
@@ -197,7 +200,10 @@ fn inspect_method(
                             unreachable!("Non int new_id");
                         };
 
-                        objects.insert(new_id as u32, interface_type);
+                        objects.insert(
+                            new_id as u32,
+                            ObjectType::from_interface_name(&interface_type.to_string()),
+                        );
                     }
                     _ => {}
                 },
@@ -217,19 +223,19 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
 
     print!("-> ");
     if let Some(interface) = objects.get(&msg.header.object_id) {
-        print!("{}@{}.", strip_prefix(interface), msg.header.object_id);
+        print!("{:?}@{}.", interface, msg.header.object_id);
 
-        match interface.as_str() {
-            "PipeWire:Interface:Core" => inspect_core_event(msg.header.opcode, msg, fds),
-            "PipeWire:Interface:Client" => inspect_client_event(msg.header.opcode, msg, fds),
-            "PipeWire:Interface:Device" => inspect_device_event(msg.header.opcode, msg, fds),
-            "PipeWire:Interface:Factory" => inspect_factory_event(msg.header.opcode, msg, fds),
-            "PipeWire:Interface:Link" => inspect_link_event(msg.header.opcode, msg, fds),
-            "PipeWire:Interface:Module" => inspect_module_event(msg.header.opcode, msg, fds),
-            "PipeWire:Interface:Registry" => inspect_registry_event(msg.header.opcode, msg, fds),
+        match interface {
+            ObjectType::Core => inspect_core_event(msg.header.opcode, msg, fds),
+            ObjectType::Client => inspect_client_event(msg.header.opcode, msg, fds),
+            ObjectType::Device => inspect_device_event(msg.header.opcode, msg, fds),
+            ObjectType::Factory => inspect_factory_event(msg.header.opcode, msg, fds),
+            ObjectType::Link => inspect_link_event(msg.header.opcode, msg, fds),
+            ObjectType::Module => inspect_module_event(msg.header.opcode, msg, fds),
+            ObjectType::Registry => inspect_registry_event(msg.header.opcode, msg, fds),
             _ => {
                 if let Some(event) = interfaces
-                    .get(interface.as_str())
+                    .get(interface)
                     .and_then(|(_, events)| events.get(&msg.header.opcode))
                 {
                     println!("{}()", event);
@@ -312,8 +318,8 @@ fn inspect_registry_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 type Methods = HashMap<u8, &'static str>;
 type Events = HashMap<u8, &'static str>;
-type Interfaces = HashMap<&'static str, (Methods, Events)>;
-type Objects = HashMap<u32, String>;
+type Interfaces = HashMap<ObjectType, (Methods, Events)>;
+type Objects = HashMap<u32, ObjectType>;
 
 fn pw_core() -> (Methods, Events) {
     (
@@ -400,23 +406,17 @@ fn pw_client_node() -> (Methods, Events) {
 
 fn interfaces() -> Interfaces {
     HashMap::from([
-        ("PipeWire:Interface:Core", pw_core()),
-        ("PipeWire:Interface:Registry", pw_registry()),
-        ("PipeWire:Interface:Client", pw_client()),
-        ("PipeWire:Interface:ClientNode", pw_client_node()),
+        (ObjectType::Core, pw_core()),
+        (ObjectType::Registry, pw_registry()),
+        (ObjectType::Client, pw_client()),
+        (ObjectType::ClientNode, pw_client_node()),
     ])
 }
 
 fn objects() -> Objects {
     HashMap::from([
-        (0, "PipeWire:Interface:Core".to_string()),
-        (1, "PipeWire:Interface:Client".to_string()),
+        (0, ObjectType::Core),
+        (1, ObjectType::Client),
         //
     ])
-}
-
-fn strip_prefix(interface: &str) -> &str {
-    interface
-        .strip_prefix("PipeWire:Interface:")
-        .unwrap_or(interface)
 }
