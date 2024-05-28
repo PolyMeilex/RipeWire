@@ -96,7 +96,7 @@ pub mod events {
 
     #[derive(Debug, Clone)]
     pub struct ParamInfo {
-        id: u32,
+        id: SpaEnum<SpaParamType>,
         flags: ParamFlags,
     }
 
@@ -116,7 +116,7 @@ pub mod events {
             let id = pod.pop_field()?.as_id()?;
             let flags = pod.pop_field()?.as_u32()?;
             params.push(ParamInfo {
-                id,
+                id: SpaEnum::from_raw(id),
                 flags: ParamFlags::from_bits_retain(flags),
             });
         }
@@ -164,7 +164,7 @@ pub mod events {
     #[derive(Debug, Clone)]
     pub struct Param {
         pub seq: i32,
-        pub id: u32,
+        pub id: SpaEnum<SpaParamType>,
         pub index: u32,
         pub next: u32,
         /// Bytes of a spa object
@@ -181,7 +181,7 @@ pub mod events {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 seq: pod.pop_field()?.as_i32()?,
-                id: pod.pop_field()?.as_id()?,
+                id: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 index: pod.pop_field()?.as_u32()?,
                 next: pod.pop_field()?.as_u32()?,
                 params: pod.pop_field()?.to_owned(),

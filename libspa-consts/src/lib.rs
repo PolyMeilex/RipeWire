@@ -162,6 +162,12 @@ impl SpaChoiceType {
     }
 }
 
+impl SpaParamType {
+    pub fn from_raw(v: u32) -> Option<Self> {
+        num_traits::FromPrimitive::from_u32(v)
+    }
+}
+
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct PwMemblockFlags: u32 {

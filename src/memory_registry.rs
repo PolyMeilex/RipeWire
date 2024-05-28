@@ -3,7 +3,7 @@ use std::{
     os::fd::{FromRawFd, OwnedFd},
 };
 
-use libspa_consts::SpaDataType;
+use libspa_consts::{SpaDataType, SpaEnum};
 
 use crate::protocol::pw_core;
 
@@ -12,7 +12,7 @@ pub type MemId = u32;
 #[derive(Debug)]
 pub struct Mem {
     id: u32,
-    mem_type: SpaDataType,
+    mem_type: SpaEnum<SpaDataType>,
     flags: pw_core::MemblockFlags,
     fd: OwnedFd,
 }
@@ -32,7 +32,7 @@ impl MemoryRegistry {
     pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem) {
         let fd = add_mem.fd.fd.unwrap();
 
-        let mem_type = SpaDataType::from_raw(add_mem.ty.0).unwrap();
+        let mem_type = add_mem.ty;
 
         self.map.insert(
             add_mem.id,

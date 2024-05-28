@@ -47,7 +47,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
 
     fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
         match info.name {
-            "SpaChoiceType" | "SpaDataType" | "SpaFormat" | "PwLinkState" => {
+            "SpaChoiceType" | "SpaDataType" | "SpaFormat" | "PwLinkState" | "SpaParamType" => {
                 vec!["num_derive::FromPrimitive".into()]
             }
             _ => vec![],

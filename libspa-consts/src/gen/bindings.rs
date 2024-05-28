@@ -78,7 +78,7 @@ pub enum SpaIoType {
 }
 #[repr(u32)]
 #[doc = " different parameter types that can be queried"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
 pub enum SpaParamType {
     #[doc = "< invalid"]
     Invalid = 0,
