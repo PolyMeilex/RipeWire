@@ -1,11 +1,34 @@
 use super::*;
 use libspa_consts::SpaDirection;
 
-pub use methods::ChangeMask;
 pub mod methods {
+    use super::*;
+    use bitflags::Flags;
+
+    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    pub struct AddListener {}
+
+    impl HasOpCode for AddListener {
+        const OPCODE: u8 = 0;
+    }
+
+    /// Get the node object associated with the client-node.
+    /// This binds to the server side Node object.
+    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    pub struct GetNode {
+        /// The Node version to bind as
+        pub version: u32,
+        /// The proxy id
+        pub new_id: u32,
+    }
+
+    impl HasOpCode for GetNode {
+        const OPCODE: u8 = 1;
+    }
+
     bitflags::bitflags! {
         #[derive(Debug, Clone, Copy)]
-        pub struct ChangeMask: u64 {
+        pub struct NodeInfoChangeMask: u64 {
             const FLAGS = 1 << 0;
             const PROPS = 1 << 1;
             const PARAMS = 1 << 2;
@@ -36,35 +59,11 @@ pub mod methods {
         }
     }
 
-    use bitflags::Flags;
-
-    use super::*;
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    pub struct AddListener {}
-
-    impl HasOpCode for AddListener {
-        const OPCODE: u8 = 0;
-    }
-
-    /// Get the node object associated with the client-node.
-    /// This binds to the server side Node object.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    pub struct GetNode {
-        /// The Node version to bind as
-        pub version: u32,
-        /// The proxy id
-        pub new_id: u32,
-    }
-
-    impl HasOpCode for GetNode {
-        const OPCODE: u8 = 1;
-    }
-
     #[derive(Debug, Clone)]
     pub struct NodeInfo {
         pub max_input_ports: u32,
         pub max_output_ports: u32,
-        pub change_mask: ChangeMask,
+        pub change_mask: NodeInfoChangeMask,
         pub flags: NodeFlags,
         pub props: pod::dictionary::Dictionary,
         pub params: Vec<ParamInfo>,
@@ -75,7 +74,7 @@ pub mod methods {
             Ok(Self {
                 max_input_ports: pod.pop_field()?.as_u32()?,
                 max_output_ports: pod.pop_field()?.as_u32()?,
-                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
+                change_mask: NodeInfoChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
                 flags: NodeFlags::from_bits_retain(pod.pop_field()?.as_u64()?),
                 props: pod::dictionary::Dictionary(parse_dict(pod)?),
                 params: parse_params(pod)?,
@@ -109,13 +108,21 @@ pub mod methods {
         }
     }
 
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct UpdateChangeMask: u32 {
+            const PARAMS = 1 << 0;
+            const INFO = 1 << 1;
+        }
+    }
+
     /// Update the params and info of the node.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct Update {
         /// A bitfield of changed items
-        pub change_mask: u32,
+        pub change_mask: UpdateChangeMask,
         /// Number of update params, valid when change_mask has (1<<0)
-        pub n_params: u32,
+        pub params: Vec<OwnedPod>,
         // An updated param
         pub info: NodeInfo,
     }
@@ -124,19 +131,42 @@ pub mod methods {
         const OPCODE: u8 = 2;
     }
 
+    impl pod::serialize::PodSerialize for Update {
+        fn serialize<O: std::io::Write + std::io::Seek>(
+            &self,
+            mut serializer: pod::serialize::PodSerializer<O>,
+            flatten: bool,
+        ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
+            let mut s = serializer.serialize_struct(flatten)?;
+            s.serialize_field(&self.change_mask.bits())?;
+            if !self.params.is_empty() {
+                // s.serialize_field(&self.n_params)?;
+                todo!()
+            } else {
+                s.serialize_field(&0u32)?;
+            }
+            s.serialize_field(&self.info)?;
+            s.end()
+        }
+    }
+
     impl Update {
         pub fn deserialize(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
-                change_mask: pod.pop_field()?.as_u32()?,
-                n_params: {
-                    let n_params = pod.pop_field()?.as_u32()?;
+                change_mask: UpdateChangeMask::from_bits_retain(pod.pop_field()?.as_u32()?),
+                params: {
+                    let n_params = pod.pop_field()?.as_i32()?;
 
-                    for _ in 0..n_params {
-                        pod.pop_field()?;
+                    if let Ok(n_params) = usize::try_from(n_params) {
+                        let mut params = Vec::with_capacity(n_params);
+                        for _ in 0..n_params {
+                            params.push(pod.pop_field()?.to_owned());
+                        }
+                        params
+                    } else {
+                        Vec::new()
                     }
-
-                    n_params
                 },
                 info: NodeInfo::deserialize(&mut pod.pop_field()?.as_struct()?)?,
             })

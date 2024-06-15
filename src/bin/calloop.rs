@@ -237,13 +237,15 @@ impl PipewireState {
             ctx.set_object_callback(&client_node, Self::client_node_event);
 
             let msg = pw_client_node::methods::Update {
-                change_mask: 0b11,
-                n_params: 0,
+                change_mask: pw_client_node::methods::UpdateChangeMask::from_bits_retain(0b11),
+                params: vec![],
                 info: pw_client_node::methods::NodeInfo {
                     max_input_ports: u32::MAX,
                     max_output_ports: u32::MAX,
-                    change_mask: 0b111,
-                    flags: 0b1,
+                    change_mask: pw_client_node::methods::NodeInfoChangeMask::from_bits_retain(
+                        0b111,
+                    ),
+                    flags: pw_client_node::methods::NodeFlags::from_bits_retain(0b1),
                     props: Dictionary::from([
                         ("object.register", "false"),
                         ("media.type", "Midi"),
