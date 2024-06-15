@@ -36,6 +36,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "spa_direction",
             "spa_param_availability",
             "pw_link_state",
+            "pw_node_state",
         ];
 
         if rename.contains(&original_item_name) {
@@ -47,7 +48,8 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
 
     fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
         match info.name {
-            "SpaChoiceType" | "SpaDataType" | "SpaFormat" | "PwLinkState" | "SpaParamType" => {
+            "SpaChoiceType" | "SpaDataType" | "SpaFormat" | "SpaParamType" | "PwLinkState"
+            | "PwNodeState" => {
                 vec!["num_derive::FromPrimitive".into()]
             }
             _ => vec![],
@@ -90,6 +92,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "enum spa_direction" => "SPA_DIRECTION_",
             "enum spa_param_availability" => "SPA_PARAM_AVAILABILITY_",
             "enum pw_link_state" => "PW_LINK_STATE_",
+            "enum pw_node_state" => "PW_NODE_STATE_",
             _ => return None,
         };
 
@@ -137,6 +140,7 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_direction",
         "spa_param_availability",
         "pw_link_state",
+        "pw_node_state",
     ] {
         builder = builder.allowlist_type(name).rustified_enum(name);
     }

@@ -232,6 +232,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
             ObjectType::Factory => inspect_factory_event(msg.header.opcode, msg, fds),
             ObjectType::Link => inspect_link_event(msg.header.opcode, msg, fds),
             ObjectType::Module => inspect_module_event(msg.header.opcode, msg, fds),
+            ObjectType::Node => inspect_node_event(msg.header.opcode, msg, fds),
             ObjectType::Registry => inspect_registry_event(msg.header.opcode, msg, fds),
             _ => {
                 if let Some(event) = interfaces
@@ -304,6 +305,15 @@ fn inspect_module_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     let (mut pod, _) = PodDeserializer::new(&msg.body);
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
+    }
+}
+
+fn inspect_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+    use ripewire::protocol::pw_node::Event;
+    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+        Event::Info(v) => println!("{v:#?}"),
+        Event::Param(v) => println!("{v:#?}"),
     }
 }
 

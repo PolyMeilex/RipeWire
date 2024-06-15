@@ -438,3 +438,18 @@ pub enum PwLinkState {
     #[doc = "< the link is active"]
     Active = 4,
 }
+#[repr(i32)]
+#[doc = " \\enum pw_node_state The different node states"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
+pub enum PwNodeState {
+    #[doc = "< error state"]
+    Error = -1,
+    #[doc = "< the node is being created"]
+    Creating = 0,
+    #[doc = "< the node is suspended, the device might\n   be closed"]
+    Suspended = 1,
+    #[doc = "< the node is running but there is no active\n   port"]
+    Idle = 2,
+    #[doc = "< the node is running"]
+    Running = 3,
+}

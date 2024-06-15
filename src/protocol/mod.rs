@@ -79,6 +79,48 @@ fn parse_dict(
     Ok(map)
 }
 
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct ParamFlags: u32 {
+        /// bit to signal update even when the
+        /// read/write flags don't change
+        const SERIAL = 1 << 0;
+        const READ = 1 << 1;
+        const WRITE = 1 << 2;
+        const READWRITE = Self::WRITE.bits() | Self::READ.bits();
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ParamInfo {
+    id: SpaEnum<SpaParamType>,
+    flags: ParamFlags,
+}
+
+fn parse_params(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Vec<ParamInfo>> {
+    let mut pod = pod.as_struct()?;
+
+    let len = pod.pop_field()?.as_i32()?;
+
+    if len <= 0 {
+        return Ok(Vec::new());
+    }
+    let len = len as u32;
+
+    let mut params = Vec::with_capacity(len as usize);
+
+    for _ in 0..len {
+        let id = pod.pop_field()?.as_id()?;
+        let flags = pod.pop_field()?.as_u32()?;
+        params.push(ParamInfo {
+            id: SpaEnum::from_raw(id),
+            flags: ParamFlags::from_bits_retain(flags),
+        });
+    }
+
+    Ok(params)
+}
+
 pub mod pw_client;
 pub mod pw_client_node;
 pub mod pw_core;
