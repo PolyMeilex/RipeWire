@@ -76,7 +76,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, num_derive::FromPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, num_derive::FromPrimitive, num_derive::ToPrimitive)]
 #[repr(u32)]
 pub enum SpaType {
     /* Basic types 0x00000 */

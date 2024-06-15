@@ -1,4 +1,4 @@
-use std::{fmt, mem, os::raw::c_void};
+use std::{fmt, io::Write, mem, os::raw::c_void};
 
 use super::pad_to_8;
 use bstr::BStr;
@@ -64,6 +64,14 @@ impl std::fmt::Debug for OwnedPod {
 }
 
 impl OwnedPod {
+    pub fn to_raw(&self) -> Vec<u8> {
+        let mut buff = Vec::with_capacity(self.body.len());
+        buff.write_all(&self.size.to_le_bytes()).unwrap();
+        buff.write_all(&self.ty.as_raw().to_le_bytes()).unwrap();
+        buff.write_all(&self.body).unwrap();
+        buff
+    }
+
     pub fn as_deserializer(&self) -> PodDeserializer<'_> {
         PodDeserializer {
             size: self.size,
@@ -207,6 +215,10 @@ impl<'a> PodDeserializer<'a> {
 
     pub fn as_u64(&self) -> Result<u64> {
         Ok(self.as_i64()? as u64)
+    }
+
+    pub fn is_none(&self) -> bool {
+        matches!(self.kind(), PodDeserializerKind::None)
     }
 
     pub fn as_struct(&self) -> Result<PodStructDeserializer<'a>> {

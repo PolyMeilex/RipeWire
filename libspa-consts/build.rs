@@ -52,7 +52,10 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
         match info.name {
             "SpaDirection" | "SpaChoiceType" | "SpaDataType" | "SpaFormat" | "SpaParamType"
             | "SpaIoType" | "SpaMetaType" | "SpaControlType" | "PwLinkState" | "PwNodeState" => {
-                vec!["num_derive::FromPrimitive".into(), "num_derive::ToPrimitive".into()]
+                vec![
+                    "num_derive::FromPrimitive".into(),
+                    "num_derive::ToPrimitive".into(),
+                ]
             }
             _ => vec![],
         }

@@ -4,6 +4,7 @@ use libspa_consts::SpaDirection;
 pub mod methods {
     use super::*;
     use bitflags::Flags;
+    use pod::dictionary;
 
     #[derive(Debug, Clone, pod_derive::PodSerialize)]
     pub struct AddListener {}
@@ -124,7 +125,7 @@ pub mod methods {
         /// Number of update params, valid when change_mask has (1<<0)
         pub params: Vec<OwnedPod>,
         // An updated param
-        pub info: NodeInfo,
+        pub info: Option<NodeInfo>,
     }
 
     impl HasOpCode for Update {
@@ -145,7 +146,13 @@ pub mod methods {
             } else {
                 s.serialize_field(&0u32)?;
             }
-            s.serialize_field(&self.info)?;
+
+            if let Some(info) = self.info.as_ref() {
+                s.serialize_field(info)?;
+            } else {
+                s.serialize_field(&pod::Value::None)?;
+            }
+
             s.end()
         }
     }
@@ -168,7 +175,14 @@ pub mod methods {
                         Vec::new()
                     }
                 },
-                info: NodeInfo::deserialize(&mut pod.pop_field()?.as_struct()?)?,
+                info: {
+                    let field = pod.pop_field()?;
+                    if field.is_none() {
+                        None
+                    } else {
+                        Some(NodeInfo::deserialize(&mut field.as_struct()?)?)
+                    }
+                },
             })
         }
     }
@@ -230,7 +244,7 @@ pub mod methods {
         /// Updated properties, valid when info.change_mask has (1<<2)
         pub items: pod::dictionary::Dictionary,
         /// Updated struct spa_param_info, valid when info.change_mask has (1<<3)
-        pub params: Vec<(pod::utils::Id, u32)>,
+        pub params: Vec<ParamInfo>,
     }
 
     impl pod::serialize::PodSerialize for PortInfo {
@@ -250,12 +264,25 @@ pub mod methods {
 
             s.serialize_field(&(self.params.len() as i32))?;
 
-            for (id, flags) in self.params.iter() {
-                s.serialize_field(id)?;
-                s.serialize_field(flags)?;
+            for ParamInfo { id, flags } in self.params.iter() {
+                s.serialize_field(&id.as_raw())?;
+                s.serialize_field(&flags.bits())?;
             }
 
             s.end()
+        }
+    }
+
+    impl PortInfo {
+        pub fn deserialize(pod: &mut PodStructDeserializer) -> pod_v2::deserialize::Result<Self> {
+            Ok(Self {
+                change_mask: PortInfoChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
+                flags: PortFlags::from_bits_retain(pod.pop_field()?.as_u64()?),
+                rate_num: pod.pop_field()?.as_u32()?,
+                rate_denom: pod.pop_field()?.as_u32()?,
+                items: pod::dictionary::Dictionary(parse_dict(pod)?),
+                params: parse_params(pod)?,
+            })
         }
     }
 
@@ -274,7 +301,7 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct PortUpdate {
         /// The port direction
-        pub direction: SpaDirection,
+        pub direction: SpaEnum<SpaDirection>,
         /// The port id
         pub port_id: u32,
         /// A bitfield of changed items
@@ -292,7 +319,7 @@ pub mod methods {
             flatten: bool,
         ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
             let mut s = serializer.serialize_struct(flatten)?;
-            s.serialize_field(&(self.direction as u32))?;
+            s.serialize_field(&self.direction.as_raw())?;
             s.serialize_field(&self.port_id)?;
             s.serialize_field(&self.change_mask.bits())?;
 
@@ -312,6 +339,40 @@ pub mod methods {
         }
     }
 
+    impl PortUpdate {
+        pub fn deserialize(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
+                port_id: pod.pop_field()?.as_u32()?,
+                change_mask: PortUpdateChangeMask::from_bits_retain(pod.pop_field()?.as_u32()?),
+                params: {
+                    let n_params = pod.pop_field()?.as_i32()?;
+
+                    if let Ok(n_params) = usize::try_from(n_params) {
+                        let mut params = Vec::with_capacity(n_params);
+                        for _ in 0..n_params {
+                            let pod = pod.pop_field()?.to_owned().to_raw();
+                            let (_, pod) =
+                                pod::deserialize::PodDeserializer::deserialize_from(&pod).unwrap();
+                            params.push(pod);
+                        }
+                        params
+                    } else {
+                        Vec::new()
+                    }
+                },
+                info: {
+                    let field = pod.pop_field()?;
+                    if field.is_none() {
+                        None
+                    } else {
+                        Some(PortInfo::deserialize(&mut field.as_struct()?)?)
+                    }
+                },
+            })
+        }
+    }
     impl HasOpCode for PortUpdate {
         const OPCODE: u8 = 3;
     }

@@ -363,6 +363,10 @@ fn inspect_client_node_method(opcode: u8, msg: &Message, _fds: &[RawFd]) {
             let msg = methods::Update::deserialize(&mut pod).unwrap();
             print!("{msg:#?}");
         }
+        3 => {
+            let msg = methods::PortUpdate::deserialize(&mut pod).unwrap();
+            print!("{msg:#?}");
+        }
         _ => {}
     }
 }

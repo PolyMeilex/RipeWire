@@ -239,7 +239,7 @@ impl PipewireState {
             let msg = pw_client_node::methods::Update {
                 change_mask: pw_client_node::methods::UpdateChangeMask::from_bits_retain(0b11),
                 params: vec![],
-                info: pw_client_node::methods::NodeInfo {
+                info: Some(pw_client_node::methods::NodeInfo {
                     max_input_ports: u32::MAX,
                     max_output_ports: u32::MAX,
                     change_mask: pw_client_node::methods::NodeInfoChangeMask::from_bits_retain(
@@ -273,7 +273,7 @@ impl PipewireState {
                             flags: ParamFlags::from_bits_retain(0b100),
                         },
                     ],
-                },
+                }),
             };
 
             let msg = protocol::create_msg(id, &msg);
@@ -283,7 +283,7 @@ impl PipewireState {
             let msg = protocol::create_msg(
                 id,
                 &pw_client_node::methods::PortUpdate {
-                    direction: SpaDirection::Output,
+                    direction: SpaEnum::Value(SpaDirection::Output),
                     port_id: 0,
                     change_mask: pw_client_node::methods::PortUpdateChangeMask::from_bits_retain(
                         0b11,
@@ -317,12 +317,30 @@ impl PipewireState {
                             ("port.alias", "rustypipe:input"),
                         ]),
                         params: vec![
-                            (pod::utils::Id(3), 0b011),
-                            (pod::utils::Id(6), 0b000),
-                            (pod::utils::Id(7), 0b011),
-                            (pod::utils::Id(4), 0b100),
-                            (pod::utils::Id(5), 0b000),
-                            (pod::utils::Id(15), 0b100),
+                            ParamInfo {
+                                id: SpaEnum::from_raw(3),
+                                flags: ParamFlags::from_bits_retain(0b011),
+                            },
+                            ParamInfo {
+                                id: SpaEnum::from_raw(6),
+                                flags: ParamFlags::from_bits_retain(0b000),
+                            },
+                            ParamInfo {
+                                id: SpaEnum::from_raw(7),
+                                flags: ParamFlags::from_bits_retain(0b011),
+                            },
+                            ParamInfo {
+                                id: SpaEnum::from_raw(4),
+                                flags: ParamFlags::from_bits_retain(0b100),
+                            },
+                            ParamInfo {
+                                id: SpaEnum::from_raw(5),
+                                flags: ParamFlags::from_bits_retain(0b000),
+                            },
+                            ParamInfo {
+                                id: SpaEnum::from_raw(15),
+                                flags: ParamFlags::from_bits_retain(0b100),
+                            },
                         ],
                     }),
                 },
