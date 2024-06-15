@@ -59,10 +59,7 @@ pub struct OwnedPod {
 
 impl std::fmt::Debug for OwnedPod {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("OwnedPod")
-            .field("size", &self.size)
-            .field("ty", &self.ty)
-            .finish_non_exhaustive()
+        self.as_deserializer().fmt(f)
     }
 }
 
