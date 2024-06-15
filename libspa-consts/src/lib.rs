@@ -36,6 +36,12 @@ impl<T, RAW: std::fmt::Debug> SpaEnum<T, RAW> {
     }
 }
 
+impl<T, RAW> From<T> for SpaEnum<T, RAW> {
+    fn from(value: T) -> Self {
+        Self::Value(value)
+    }
+}
+
 impl<T: num_traits::FromPrimitive> SpaEnum<T, u32> {
     pub fn from_raw(raw: u32) -> Self {
         T::from_u32(raw)

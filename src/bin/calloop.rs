@@ -1,11 +1,14 @@
 use std::os::fd::AsRawFd;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
-use libspa_consts::{SpaDirection, SpaEnum};
+use libspa_consts::{SpaDirection, SpaEnum, SpaParamType};
 use pod::{dictionary::Dictionary, Value};
 
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
+use ripewire::protocol::pw_client_node::methods::{
+    NodeInfoChangeMask, PortInfoChangeMask, PortUpdateChangeMask,
+};
 use ripewire::protocol::{
     self, pw_client, pw_client_node, pw_core, pw_device, pw_registry, ParamFlags, ParamInfo,
 };
@@ -242,10 +245,10 @@ impl PipewireState {
                 info: Some(pw_client_node::methods::NodeInfo {
                     max_input_ports: u32::MAX,
                     max_output_ports: u32::MAX,
-                    change_mask: pw_client_node::methods::NodeInfoChangeMask::from_bits_retain(
-                        0b111,
-                    ),
-                    flags: pw_client_node::methods::NodeFlags::from_bits_retain(0b1),
+                    change_mask: NodeInfoChangeMask::FLAGS
+                        | NodeInfoChangeMask::PROPS
+                        | NodeInfoChangeMask::PARAMS,
+                    flags: pw_client_node::methods::NodeFlags::RT,
                     props: Dictionary::from([
                         ("object.register", "false"),
                         ("media.type", "Midi"),
@@ -257,19 +260,19 @@ impl PipewireState {
                     ]),
                     params: vec![
                         ParamInfo {
-                            id: SpaEnum::from_raw(1),
-                            flags: ParamFlags::from_bits_retain(0b000),
+                            id: SpaParamType::PropInfo.into(),
+                            flags: ParamFlags::empty(),
                         },
                         ParamInfo {
-                            id: SpaEnum::from_raw(2),
+                            id: SpaParamType::Props.into(),
                             flags: ParamFlags::from_bits_retain(0b100),
                         },
                         ParamInfo {
-                            id: SpaEnum::from_raw(3),
+                            id: SpaParamType::EnumFormat.into(),
                             flags: ParamFlags::from_bits_retain(0b010),
                         },
                         ParamInfo {
-                            id: SpaEnum::from_raw(4),
+                            id: SpaParamType::Format.into(),
                             flags: ParamFlags::from_bits_retain(0b100),
                         },
                     ],
@@ -285,9 +288,7 @@ impl PipewireState {
                 &pw_client_node::methods::PortUpdate {
                     direction: SpaEnum::Value(SpaDirection::Output),
                     port_id: 0,
-                    change_mask: pw_client_node::methods::PortUpdateChangeMask::from_bits_retain(
-                        0b11,
-                    ),
+                    change_mask: PortUpdateChangeMask::PARAMS | PortUpdateChangeMask::INFO,
                     params: vec![
                         Value::Object(
                             pod::params::FormatParamBuilder::enum_format()
@@ -303,9 +304,10 @@ impl PipewireState {
                         ),
                     ],
                     info: Some(pw_client_node::methods::PortInfo {
-                        change_mask: pw_client_node::methods::PortInfoChangeMask::from_bits_retain(
-                            0b1111,
-                        ),
+                        change_mask: PortInfoChangeMask::FLAGS
+                            | PortInfoChangeMask::RATE
+                            | PortInfoChangeMask::PROPS
+                            | PortInfoChangeMask::PARAMS,
                         flags: pw_client_node::methods::PortFlags::empty(),
                         rate_num: 0,
                         rate_denom: 1,
@@ -318,27 +320,27 @@ impl PipewireState {
                         ]),
                         params: vec![
                             ParamInfo {
-                                id: SpaEnum::from_raw(3),
+                                id: SpaParamType::EnumFormat.into(),
                                 flags: ParamFlags::from_bits_retain(0b011),
                             },
                             ParamInfo {
-                                id: SpaEnum::from_raw(6),
-                                flags: ParamFlags::from_bits_retain(0b000),
+                                id: SpaParamType::Meta.into(),
+                                flags: ParamFlags::empty(),
                             },
                             ParamInfo {
-                                id: SpaEnum::from_raw(7),
+                                id: SpaParamType::Io.into(),
                                 flags: ParamFlags::from_bits_retain(0b011),
                             },
                             ParamInfo {
-                                id: SpaEnum::from_raw(4),
+                                id: SpaParamType::Format.into(),
                                 flags: ParamFlags::from_bits_retain(0b100),
                             },
                             ParamInfo {
-                                id: SpaEnum::from_raw(5),
+                                id: SpaParamType::Buffers.into(),
                                 flags: ParamFlags::from_bits_retain(0b000),
                             },
                             ParamInfo {
-                                id: SpaEnum::from_raw(15),
+                                id: SpaParamType::Latency.into(),
                                 flags: ParamFlags::from_bits_retain(0b100),
                             },
                         ],
