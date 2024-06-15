@@ -185,7 +185,7 @@ pub mod events {
     /// same seq number.
     #[derive(Debug, Clone)]
     pub struct Done {
-        pub id: u32,
+        pub id: Option<u32>,
         pub seq: i32,
     }
 
@@ -198,7 +198,15 @@ pub mod events {
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
-                id: pod.pop_field()?.as_u32()?,
+                id: {
+                    let id = pod.pop_field()?.as_u32()?;
+                    // is SPA_ID_INVALID
+                    if id == u32::MAX {
+                        None
+                    } else {
+                        Some(id)
+                    }
+                },
                 seq: pod.pop_field()?.as_i32()?,
             })
         }
