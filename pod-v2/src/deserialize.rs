@@ -157,7 +157,7 @@ impl<'a> PodDeserializer<'a> {
             SpaType::Array => Kind::Array(PodArrayDeserializer::new(self.body)),
             SpaType::Struct => Kind::Struct(PodStructDeserializer::new(self.body)),
             SpaType::Object => Kind::Object(PodObjectDeserializer::new(self.body)),
-            // SpaType::Sequence => {},
+            SpaType::Sequence => Kind::Sequence(PodSequenceDeserializer::new(self.body)),
             SpaType::Pointer => {
                 let ty = SpaEnum::from_raw(read_raw(self.body));
                 let _padding: u32 = read_raw(&self.body[4..]);
@@ -275,7 +275,7 @@ pub enum PodDeserializerKind<'a> {
     Array(PodArrayDeserializer<'a>),
     Struct(PodStructDeserializer<'a>),
     Object(PodObjectDeserializer<'a>),
-    // Seq
+    Sequence(PodSequenceDeserializer<'a>),
     Pointer {
         ty: SpaEnum<SpaType>,
         ptr: *const c_void,
@@ -468,6 +468,75 @@ impl<'a> Iterator for PodChoiceDeserializer<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.pop_element().ok()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct PodSequenceDeserializer<'a> {
+    unit: u32,
+    body: &'a [u8],
+}
+
+impl<'a> PodSequenceDeserializer<'a> {
+    fn new(body: &'a [u8]) -> Self {
+        let (unit, body) = eat_raw::<u32>(body);
+        let (pad, body) = eat_raw::<u32>(body);
+        debug_assert_eq!(pad, 0);
+
+        Self { unit, body }
+    }
+
+    pub fn unit(&self) -> u32 {
+        self.unit
+    }
+
+    pub fn pop_control(&mut self) -> Result<PodControlDeserializer<'a>> {
+        let remaining = self.body;
+
+        if remaining.is_empty() {
+            return Err(DeserializeError::UnexpectedEnd);
+        }
+
+        let (offset, remaining) = eat_raw::<u32>(remaining);
+        let (type_, remaining) = eat_raw::<u32>(remaining);
+        let (value, remaining) = PodDeserializer::new(remaining);
+
+        self.body = remaining;
+
+        Ok(PodControlDeserializer {
+            offset,
+            type_,
+            value,
+        })
+    }
+}
+
+impl<'a> Iterator for PodSequenceDeserializer<'a> {
+    type Item = PodControlDeserializer<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.pop_control().ok()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct PodControlDeserializer<'a> {
+    offset: u32,
+    type_: u32,
+    value: PodDeserializer<'a>,
+}
+
+impl<'a> PodControlDeserializer<'a> {
+    pub fn offset(&self) -> u32 {
+        self.offset
+    }
+
+    pub fn type_(&self) -> u32 {
+        self.type_
+    }
+
+    pub fn value(&self) -> &PodDeserializer<'a> {
+        &self.value
     }
 }
 
