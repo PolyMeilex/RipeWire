@@ -118,7 +118,7 @@ impl PipewireState {
         dbg!(&core_event);
         match core_event {
             pw_core::Event::Done(done) => {
-                if done.id == 0 && done.seq == 0 {
+                if done.id == Some(0) && done.seq == 0 {
                     self.done(ctx);
                 }
             }
@@ -282,10 +282,12 @@ impl PipewireState {
 
             let msg = protocol::create_msg(
                 id,
-                &protocol::pw_client_node::methods::PortUpdate {
+                &pw_client_node::methods::PortUpdate {
                     direction: SpaDirection::Output,
                     port_id: 0,
-                    change_mask: 0b11,
+                    change_mask: pw_client_node::methods::PortUpdateChangeMask::from_bits_retain(
+                        0b11,
+                    ),
                     params: vec![
                         Value::Object(
                             pod::params::FormatParamBuilder::enum_format()
@@ -300,9 +302,11 @@ impl PipewireState {
                                 .build(),
                         ),
                     ],
-                    info: Some(protocol::pw_client_node::methods::PortInfo {
-                        change_mask: 0b1111,
-                        flags: 0,
+                    info: Some(pw_client_node::methods::PortInfo {
+                        change_mask: pw_client_node::methods::PortInfoChangeMask::from_bits_retain(
+                            0b1111,
+                        ),
+                        flags: pw_client_node::methods::PortFlags::empty(),
                         rate_num: 0,
                         rate_denom: 1,
                         items: pod::dictionary::Dictionary::from([

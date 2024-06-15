@@ -173,13 +173,56 @@ pub mod methods {
         }
     }
 
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct PortInfoChangeMask: u64 {
+            const FLAGS = 1 << 0;
+            const RATE = 1 << 1;
+            const PROPS = 1 << 2;
+            const PARAMS = 1 << 3;
+        }
+    }
+
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct PortFlags: u64 {
+            /// Port can be removed
+            const SPA_PORT_FLAG_REMOVABLE = 1 << 0;
+            /// processing on port is optional
+            const SPA_PORT_FLAG_OPTIONAL = 1 << 1;
+            /// the port can allocate buffer data
+            const SPA_PORT_FLAG_CAN_ALLOC_BUFFERS =	1 << 2;
+            /// The port can process data in-place and
+            /// will need a writable input buffer
+            const SPA_PORT_FLAG_IN_PLACE = 1 << 3;
+            /// The port does not keep a ref on the buffer.
+            /// This means the node will always completely
+            /// consume the input buffer and it will be
+            /// recycled after process.
+            const SPA_PORT_FLAG_NO_REF = 1 << 4;
+            /// Output buffers from this port are
+            /// timestamped against a live clock.
+            const SPA_PORT_FLAG_LIVE = 1 << 5;
+            /// Connects to some device
+            const SPA_PORT_FLAG_PHYSICAL = 1 << 6;
+            /// Data was not created from this port
+            /// or will not be made available on another
+            /// port
+            const SPA_PORT_FLAG_TERMINAL = 1 << 7;
+            /// Data pointer on buffers can be changed.
+            /// Only the buffer data marked as DYNAMIC
+            /// can be changed.
+            const SPA_PORT_FLAG_DYNAMIC_DATA = 1 << 8;
+        }
+    }
+
     // This is not a method, just part of PortuUpdate
     #[derive(Debug, Clone)]
     pub struct PortInfo {
         /// Bitmask of changed items
-        pub change_mask: u64,
+        pub change_mask: PortInfoChangeMask,
         /// Flags, see struct spa_port_info, when change_mask has (1<<0)
-        pub flags: u64,
+        pub flags: PortFlags,
         /// Updated rate numerator
         pub rate_num: u32,
         /// Updated rate denominator, when info.change_mask has (1<<1)
@@ -198,8 +241,8 @@ pub mod methods {
         ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
             let mut s = serializer.serialize_struct(flatten)?;
 
-            s.serialize_field(&self.change_mask)?;
-            s.serialize_field(&self.flags)?;
+            s.serialize_field(&self.change_mask.bits())?;
+            s.serialize_field(&self.flags.bits())?;
             s.serialize_field(&self.rate_num)?;
             s.serialize_field(&self.rate_denom)?;
 
@@ -216,6 +259,14 @@ pub mod methods {
         }
     }
 
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct PortUpdateChangeMask: u32 {
+            const PARAMS = 1 << 0;
+            const INFO = 1 << 1;
+        }
+    }
+
     /// Create, Update or destroy a node port.
     ///
     /// When the port is not known on the server, the port is created.
@@ -227,7 +278,7 @@ pub mod methods {
         /// The port id
         pub port_id: u32,
         /// A bitfield of changed items
-        pub change_mask: u32,
+        pub change_mask: PortUpdateChangeMask,
         /// Updated params
         pub params: Vec<pod::Value>,
         /// An updated [`PortInfo`], valid when change_mask has (1<<1)
@@ -243,7 +294,7 @@ pub mod methods {
             let mut s = serializer.serialize_struct(flatten)?;
             s.serialize_field(&(self.direction as u32))?;
             s.serialize_field(&self.port_id)?;
-            s.serialize_field(&self.change_mask)?;
+            s.serialize_field(&self.change_mask.bits())?;
 
             s.serialize_field(&(self.params.len() as i32))?;
 

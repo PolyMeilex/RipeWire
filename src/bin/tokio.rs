@@ -24,7 +24,7 @@ impl PipewireState {
 
         match core_event {
             pw_core::Event::Done(done) => {
-                if done.id == 0 && done.seq == 0 {
+                if done.id == Some(0) && done.seq == 0 {
                     self.done(context);
                 }
             }
@@ -35,7 +35,7 @@ impl PipewireState {
                 context.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
-                core.pong(context, ping.id as u32, ping.seq);
+                core.pong(context, ping.id, ping.seq);
             }
             _ => {}
         }
