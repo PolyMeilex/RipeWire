@@ -105,7 +105,7 @@ pub mod events {
                 id: pod.pop_field()?.as_u32()?,
                 change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
                 props: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
-                params: parse_params(&mut pod.pop_field()?)?,
+                params: parse_params(&mut pod.pop_field()?.as_struct()?)?,
             })
         }
     }

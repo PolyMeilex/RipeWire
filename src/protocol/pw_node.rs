@@ -136,7 +136,7 @@ pub mod events {
                 state: SpaEnum::from_i32(pod.pop_field()?.as_id()? as i32),
                 error: pod.pop_field()?.as_str_or_none()?.map(ToString::to_string),
                 props: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
-                params: parse_params(&mut pod.pop_field()?)?,
+                params: parse_params(&mut pod.pop_field()?.as_struct()?)?,
             })
         }
     }

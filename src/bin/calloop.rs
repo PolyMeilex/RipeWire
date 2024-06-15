@@ -1,12 +1,14 @@
 use std::os::fd::AsRawFd;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
-use libspa_consts::SpaDirection;
+use libspa_consts::{SpaDirection, SpaEnum};
 use pod::{dictionary::Dictionary, Value};
 
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
-use ripewire::protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_registry};
+use ripewire::protocol::{
+    self, pw_client, pw_client_node, pw_core, pw_device, pw_registry, ParamFlags, ParamInfo,
+};
 use ripewire::proxy::{PwClient, PwClientNode, PwCore, PwDevice, PwRegistry};
 
 fn properties() -> Dictionary {
@@ -252,10 +254,22 @@ impl PipewireState {
                         ("node.want-driver", "true"),
                     ]),
                     params: vec![
-                        (pod::utils::Id(1), 0b000),
-                        (pod::utils::Id(2), 0b100),
-                        (pod::utils::Id(3), 0b010),
-                        (pod::utils::Id(4), 0b100),
+                        ParamInfo {
+                            id: SpaEnum::from_raw(1),
+                            flags: ParamFlags::from_bits_retain(0b000),
+                        },
+                        ParamInfo {
+                            id: SpaEnum::from_raw(2),
+                            flags: ParamFlags::from_bits_retain(0b100),
+                        },
+                        ParamInfo {
+                            id: SpaEnum::from_raw(3),
+                            flags: ParamFlags::from_bits_retain(0b010),
+                        },
+                        ParamInfo {
+                            id: SpaEnum::from_raw(4),
+                            flags: ParamFlags::from_bits_retain(0b100),
+                        },
                     ],
                 },
             };

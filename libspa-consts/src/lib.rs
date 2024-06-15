@@ -52,15 +52,26 @@ impl<T: num_traits::FromPrimitive> SpaEnum<T, i32> {
     }
 }
 
-impl<T, RAW> SpaEnum<T, RAW>
+impl<T> SpaEnum<T, u32>
 where
-    T: Into<RAW> + Clone,
-    RAW: Clone,
+    T: num_traits::cast::ToPrimitive + Clone,
 {
-    pub fn as_raw(&self) -> RAW {
+    pub fn as_raw(&self) -> u32 {
         match self {
-            SpaEnum::Value(v) => v.clone().into(),
-            SpaEnum::Unknown(v) => v.clone(),
+            SpaEnum::Value(v) => v.to_u32().unwrap(),
+            SpaEnum::Unknown(v) => *v,
+        }
+    }
+}
+
+impl<T> SpaEnum<T, i32>
+where
+    T: num_traits::cast::ToPrimitive + Clone,
+{
+    pub fn as_raw(&self) -> i32 {
+        match self {
+            SpaEnum::Value(v) => v.to_i32().unwrap(),
+            SpaEnum::Unknown(v) => *v,
         }
     }
 }

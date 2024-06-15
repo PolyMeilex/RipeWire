@@ -1,7 +1,43 @@
 use super::*;
 use libspa_consts::SpaDirection;
 
+pub use methods::ChangeMask;
 pub mod methods {
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct ChangeMask: u64 {
+            const FLAGS = 1 << 0;
+            const PROPS = 1 << 1;
+            const PARAMS = 1 << 2;
+        }
+    }
+
+    bitflags::bitflags! {
+        #[derive(Debug, Clone, Copy)]
+        pub struct NodeFlags: u64 {
+            /// Node can do real-time processing
+            const RT = 1 << 0;
+            /// Input ports can be added/removed
+            const IN_DYNAMIC_PORTS = 1 << 1;
+            /// Output ports can be added/removed
+            const OUT_DYNAMIC_PORTS = 1 << 2;
+            /// Input ports can be reconfigured with PortConfig parameter
+            const IN_PORT_CONFIG = 1 << 3;
+            /// Output ports can be reconfigured with PortConfig parameter
+            const OUT_PORT_CONFIG = 1 << 4;
+            /// Node needs configuration before it can be started.
+            const NEED_CONFIGURE = 1 << 5;
+            /// the process function might not
+            /// immediately produce or consume data
+            /// but might offload the work to a worker
+            /// thread.
+            const ASYNC = 1 << 6;
+
+        }
+    }
+
+    use bitflags::Flags;
+
     use super::*;
     #[derive(Debug, Clone, pod_derive::PodSerialize)]
     pub struct AddListener {}
@@ -28,28 +64,23 @@ pub mod methods {
     pub struct NodeInfo {
         pub max_input_ports: u32,
         pub max_output_ports: u32,
-        // TODO:
-        // SPA_NODE_CHANGE_MASK_FLAGS		(1u<<0)
-        // SPA_NODE_CHANGE_MASK_PROPS		(1u<<1)
-        // SPA_NODE_CHANGE_MASK_PARAMS		(1u<<2)
-        pub change_mask: u64,
-        // TODO:
-        // SPA_NODE_FLAG_RT			(1u<<0)	/**< node can do real-time processing */
-        // SPA_NODE_FLAG_IN_DYNAMIC_PORTS		(1u<<1)	/**< input ports can be added/removed */
-        // SPA_NODE_FLAG_OUT_DYNAMIC_PORTS		(1u<<2)	/**< output ports can be added/removed */
-        // SPA_NODE_FLAG_IN_PORT_CONFIG		(1u<<3)	/**< input ports can be reconfigured with
-        //                       *  PortConfig parameter */
-        // SPA_NODE_FLAG_OUT_PORT_CONFIG		(1u<<4)	/**< output ports can be reconfigured with
-        //                       *  PortConfig parameter */
-        // SPA_NODE_FLAG_NEED_CONFIGURE		(1u<<5)	/**< node needs configuration before it can
-        //                       *  be started. */
-        // SPA_NODE_FLAG_ASYNC			(1u<<6)	/**< the process function might not
-        //                       *  immediately produce or consume data
-        //                       *  but might offload the work to a worker
-        //                       *  thread. */
-        pub flags: u64,
+        pub change_mask: ChangeMask,
+        pub flags: NodeFlags,
         pub props: pod::dictionary::Dictionary,
-        pub params: Vec<(pod::utils::Id, u32)>,
+        pub params: Vec<ParamInfo>,
+    }
+
+    impl NodeInfo {
+        fn deserialize(pod: &mut PodStructDeserializer) -> pod_v2::deserialize::Result<Self> {
+            Ok(Self {
+                max_input_ports: pod.pop_field()?.as_u32()?,
+                max_output_ports: pod.pop_field()?.as_u32()?,
+                change_mask: ChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
+                flags: NodeFlags::from_bits_retain(pod.pop_field()?.as_u64()?),
+                props: pod::dictionary::Dictionary(parse_dict(pod)?),
+                params: parse_params(pod)?,
+            })
+        }
     }
 
     impl pod::serialize::PodSerialize for NodeInfo {
@@ -62,16 +93,16 @@ pub mod methods {
 
             s.serialize_field(&self.max_input_ports)?;
             s.serialize_field(&self.max_output_ports)?;
-            s.serialize_field(&self.change_mask)?;
-            s.serialize_field(&self.flags)?;
+            s.serialize_field(&self.change_mask.bits())?;
+            s.serialize_field(&self.flags.bits())?;
 
             s.serialize_flattened(&self.props)?;
 
             s.serialize_field(&(self.params.len() as i32))?;
 
-            for (id, flags) in self.params.iter() {
-                s.serialize_field(id)?;
-                s.serialize_field(flags)?;
+            for ParamInfo { id, flags } in self.params.iter() {
+                s.serialize_field(&id.as_raw())?;
+                s.serialize_field(&flags.bits())?;
             }
 
             s.end()
@@ -91,6 +122,25 @@ pub mod methods {
 
     impl HasOpCode for Update {
         const OPCODE: u8 = 2;
+    }
+
+    impl Update {
+        pub fn deserialize(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                change_mask: pod.pop_field()?.as_u32()?,
+                n_params: {
+                    let n_params = pod.pop_field()?.as_u32()?;
+
+                    for _ in 0..n_params {
+                        pod.pop_field()?;
+                    }
+
+                    n_params
+                },
+                info: NodeInfo::deserialize(&mut pod.pop_field()?.as_struct()?)?,
+            })
+        }
     }
 
     // This is not a method, just part of PortuUpdate

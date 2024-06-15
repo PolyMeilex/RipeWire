@@ -131,12 +131,7 @@ fn main() {
     server_in.join().unwrap();
 }
 
-fn inspect_method(
-    objects: &Mutex<Objects>,
-    interfaces: &Interfaces,
-    msg: &Message,
-    _fds: &[RawFd],
-) {
+fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message, fds: &[RawFd]) {
     let mut objects = objects.lock().unwrap();
     if let Some(interface) = objects.get(&msg.header.object_id) {
         print!("{:?}@{}.", interface, msg.header.object_id);
@@ -207,6 +202,10 @@ fn inspect_method(
                     }
                     _ => {}
                 },
+                ObjectType::ClientNode => {
+                    print!(" ");
+                    inspect_client_node_method(msg.header.opcode, msg, fds);
+                }
                 _ => {}
             }
         } else {
@@ -353,6 +352,18 @@ fn inspect_registry_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Global(v) => println!("{v:#?}"),
         Event::GlobalRemove(v) => println!("{v:?}"),
+    }
+}
+
+fn inspect_client_node_method(opcode: u8, msg: &Message, _fds: &[RawFd]) {
+    use ripewire::protocol::pw_client_node::methods;
+    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    match opcode {
+        2 => {
+            let msg = methods::Update::deserialize(&mut pod).unwrap();
+            print!("{msg:#?}");
+        }
+        _ => {}
     }
 }
 

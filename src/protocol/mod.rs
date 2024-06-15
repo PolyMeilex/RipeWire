@@ -93,13 +93,11 @@ bitflags::bitflags! {
 
 #[derive(Debug, Clone)]
 pub struct ParamInfo {
-    id: SpaEnum<SpaParamType>,
-    flags: ParamFlags,
+    pub id: SpaEnum<SpaParamType>,
+    pub flags: ParamFlags,
 }
 
-fn parse_params(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Vec<ParamInfo>> {
-    let mut pod = pod.as_struct()?;
-
+fn parse_params(pod: &mut PodStructDeserializer) -> pod_v2::deserialize::Result<Vec<ParamInfo>> {
     let len = pod.pop_field()?.as_i32()?;
 
     if len <= 0 {
