@@ -1,4 +1,5 @@
 use pod::dictionary::Dictionary;
+use ripewire::memory_registry::MemoryRegistry;
 use ripewire::object_map::ObjectType;
 use std::io;
 use std::os::fd::AsRawFd;
@@ -12,6 +13,7 @@ use ripewire::proxy::{PwClient, PwCore, PwDevice, PwRegistry};
 struct PipewireState {
     registry: PwRegistry,
     globals: GlobalList,
+    mems: MemoryRegistry,
 }
 
 impl PipewireState {
@@ -30,10 +32,10 @@ impl PipewireState {
                 }
             }
             pw_core::Event::AddMem(add_mem) => {
-                context.add_mem(&add_mem);
+                self.mems.add_mem(&add_mem);
             }
             pw_core::Event::RemoveMem(remove_mem) => {
-                context.remove_mem(&remove_mem);
+                self.mems.remove_mem(&remove_mem);
             }
             pw_core::Event::Ping(ping) => {
                 core.pong(context, ping.id, ping.seq);
@@ -139,6 +141,7 @@ async fn main() {
         state: PipewireState {
             registry,
             globals: GlobalList::default(),
+            mems: MemoryRegistry::default(),
         },
     };
 

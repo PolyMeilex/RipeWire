@@ -7,7 +7,6 @@ use std::{
 
 use crate::{
     connection::{Connection, Message},
-    memory_registry::MemoryRegistry,
     object_map::{Object, ObjectMap, ObjectType},
     protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_registry},
     proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwRegistry},
@@ -20,7 +19,6 @@ struct ObjectData<D> {
 pub struct Context<D = ()> {
     conn: Connection,
     map: ObjectMap<ObjectData<D>>,
-    mem: MemoryRegistry,
 }
 
 impl<D> Context<D> {
@@ -30,7 +28,6 @@ impl<D> Context<D> {
         let mut this = Self {
             conn,
             map: ObjectMap::new(),
-            mem: MemoryRegistry::new(),
         };
 
         let core_id = this.map.client_insert_new(Object {
@@ -168,14 +165,6 @@ impl<D> Context<D> {
             let event: Box<P::Event> = event.downcast().unwrap();
             cb(state, context, P::from_id(object_id), *event);
         }));
-    }
-
-    pub fn add_mem(&mut self, add_mem: &pw_core::events::AddMem) {
-        self.mem.add_mem(add_mem)
-    }
-
-    pub fn remove_mem(&mut self, remove_mem: &pw_core::events::RemoveMem) {
-        self.mem.remove_mem(remove_mem)
     }
 }
 
