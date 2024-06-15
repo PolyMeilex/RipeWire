@@ -280,7 +280,7 @@ pub mod events {
     #[derive(Debug, Clone)]
     pub struct SetParam {
         /// The param id to set.
-        pub id: u32, // TODO: is this SpaParamType?
+        pub id: SpaEnum<SpaParamType>,
         /// Extra flags
         pub flags: u32,
         /// The param object to set
@@ -296,7 +296,7 @@ pub mod events {
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
-                id: pod.pop_field()?.as_id()?,
+                id: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 flags: pod.pop_field()?.as_u32()?,
                 param: pod.pop_field()?.to_owned(),
             })
@@ -434,7 +434,7 @@ pub mod events {
         /// The port id of the port
         pub port_id: u32,
         /// The param id to set.
-        pub id: u32, // TODO: Is this SpaParamType?
+        pub id: SpaEnum<SpaParamType>,
         /// Extra flags
         pub flags: u32,
         /// The param object to set
@@ -452,7 +452,7 @@ pub mod events {
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
                 port_id: pod.pop_field()?.as_u32()?,
-                id: pod.pop_field()?.as_id()?,
+                id: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 flags: pod.pop_field()?.as_u32()?,
                 param: pod.pop_field()?.to_owned(),
             })
@@ -465,7 +465,7 @@ pub mod events {
         /// The data type, this can be:
         /// - SPA_DATA_MemId to reference a memfd from Core:AddMem
         /// - SPA_DATA_MemPtr to reference this buffer memid
-        pub type_: u32, // TODO: Enum
+        pub type_: SpaEnum<SpaDataType>,
         /// Contains the memid or offset in the memid
         pub data: u32,
         /// Extra flags for the data
@@ -481,7 +481,7 @@ pub mod events {
             pod: &mut pod_v2::deserialize::PodStructDeserializer,
         ) -> pod_v2::deserialize::Result<Self> {
             Ok(Self {
-                type_: pod.pop_field()?.as_id()?,
+                type_: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 data: pod.pop_field()?.as_u32()?,
                 flags: pod.pop_field()?.as_u32()?,
                 mapoffset: pod.pop_field()?.as_u32()?,
@@ -500,7 +500,7 @@ pub mod events {
         /// The size of the buffer metadata or data
         pub size: u32,
         /// Number of metadata. The buffer memory first contains this number of metadata parts of the given type and size
-        pub metas: Vec<(u32, u32)>,
+        pub metas: Vec<(SpaEnum<SpaMetaType>, u32)>,
         /// Datablocks
         pub data_blocks: Vec<PortBufferData>,
     }
@@ -517,7 +517,7 @@ pub mod events {
                     let n_metas = pod.pop_field()?.as_u32()? as usize;
                     let mut metas = Vec::with_capacity(n_metas);
                     for _ in 0..n_metas {
-                        let id = pod.pop_field()?.as_u32()?;
+                        let id = SpaEnum::from_raw(pod.pop_field()?.as_u32()?);
                         let size = pod.pop_field()?.as_u32()?;
                         metas.push((id, size));
                     }
@@ -584,7 +584,7 @@ pub mod events {
         /// The mix id of the port
         pub mix_id: u32,
         /// The IO area to set. See enum spa_io_type
-        pub id: u32, // TODO: enum
+        pub id: SpaEnum<SpaIoType>,
         /// The memid of the io area, added with Core::AddMem
         pub memid: u32,
         /// The offset in the memid
@@ -605,7 +605,7 @@ pub mod events {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
                 port_id: pod.pop_field()?.as_u32()?,
                 mix_id: pod.pop_field()?.as_u32()?,
-                id: pod.pop_field()?.as_id()?,
+                id: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 memid: pod.pop_field()?.as_u32()?,
                 offset: pod.pop_field()?.as_u32()?,
                 size: pod.pop_field()?.as_u32()?,

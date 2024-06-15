@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use libspa_consts::{SpaDataType, SpaEnum, SpaParamType};
+use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
 use pod::serialize::{PodSerialize, PodSerializer};
 use pod_v2::{
     deserialize::{OwnedPod, PodStructDeserializer},

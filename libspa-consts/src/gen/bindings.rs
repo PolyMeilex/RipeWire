@@ -41,6 +41,30 @@ pub enum SpaChoiceType {
 #[repr(u32)]
 #[doc = " \\addtogroup spa_buffer\n \\{"]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
+pub enum SpaMetaType {
+    Invalid = 0,
+    #[doc = "< struct spa_meta_header"]
+    Header = 1,
+    #[doc = "< struct spa_meta_region with cropping data"]
+    VideoCrop = 2,
+    #[doc = "< array of struct spa_meta_region with damage, where an invalid entry or end-of-array marks the end."]
+    VideoDamage = 3,
+    #[doc = "< struct spa_meta_bitmap"]
+    Bitmap = 4,
+    #[doc = "< struct spa_meta_cursor"]
+    Cursor = 5,
+    #[doc = "< metadata contains a spa_meta_control\n  associated with the data"]
+    Control = 6,
+    #[doc = "< don't write to buffer when count > 0"]
+    Busy = 7,
+    #[doc = "< struct spa_meta_transform"]
+    VideoTransform = 8,
+    #[doc = "< not part of ABI/API"]
+    _SPA_META_LAST = 9,
+}
+#[repr(u32)]
+#[doc = " \\addtogroup spa_buffer\n \\{"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
 pub enum SpaDataType {
     Invalid = 0,
     #[doc = "< pointer to memory, the data field in\n  struct spa_data is set."]
@@ -68,7 +92,7 @@ pub enum SpaControlType {
 }
 #[repr(u32)]
 #[doc = " Different IO area types"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
 pub enum SpaIoType {
     Invalid = 0,
     #[doc = "< area to exchange buffers, struct spa_io_buffers"]
