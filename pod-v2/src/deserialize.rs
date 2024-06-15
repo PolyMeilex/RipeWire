@@ -582,7 +582,11 @@ impl<'a> fmt::Debug for PodStructDeserializer<'a> {
 
 impl<'a> fmt::Debug for PobObjectPropertyDeserializer<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.pod.fmt(f)
+        f.debug_struct("Property")
+            .field("key", &self.key)
+            .field("flags", &self.flags)
+            .field("value", &self.pod)
+            .finish()
     }
 }
 
@@ -594,7 +598,13 @@ impl<'a> fmt::Debug for PodObjectDeserializer<'a> {
 
 impl<'a> fmt::Debug for PodChoiceDeserializer<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        list_tuple(f, "Choice", self.clone())
+        let choices: Vec<_> = self.clone().collect();
+        f.debug_struct("Choice")
+            .field("choice_ty", &self.choice_ty)
+            .field("flags", &self.flags)
+            .field("child_ty", &self.child_ty)
+            .field("value", &choices)
+            .finish()
     }
 }
 
@@ -613,10 +623,10 @@ impl<'a> fmt::Debug for PodDeserializer<'a> {
                 .finish(),
             PodDeserializerKind::Bitmap(v) => list_tuple(f, "Bitmap", v.iter()),
             PodDeserializerKind::Bytes(v) => list_tuple(f, "Bytes", v.iter()),
-            PodDeserializerKind::Choice(v) => list_tuple(f, "Choice", v.clone()),
             PodDeserializerKind::Array(v) => list_tuple(f, "Array", v.clone()),
             PodDeserializerKind::Struct(v) => list_tuple(f, "Struct", v.clone()),
             PodDeserializerKind::Object(v) => list_tuple(f, "Object", v.clone()),
+            PodDeserializerKind::Choice(v) => v.fmt(f),
             PodDeserializerKind::Unknown(pod) => f
                 .debug_struct("UnknownPod")
                 .field("type", &pod.ty())
