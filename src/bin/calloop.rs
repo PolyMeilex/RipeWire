@@ -6,6 +6,7 @@ use pod::{dictionary::Dictionary, Value};
 
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
+use ripewire::object_map::ObjectType;
 use ripewire::protocol::pw_client_node::methods::{
     NodeInfoChangeMask, PortInfoChangeMask, PortUpdateChangeMask,
 };
@@ -178,19 +179,18 @@ impl PipewireState {
     pub fn done(&mut self, ctx: &mut Context<Self>) {
         let client = self
             .globals
+            .iter()
+            .filter(|global| global.interface == ObjectType::Client)
+            .nth(1);
+
+        let device = self
             .globals
             .iter()
-            .filter(|global| global.interface == "PipeWire:Interface:Client")
-            .skip(1)
-            .next();
-
-        let device = self.globals.globals.iter().find(|global| {
-            global.interface == "PipeWire:Interface:Device"
-                && matches!(
-                    global.properties.get("device.name").map(|s| s.as_str()),
-                    Some("alsa_card.pci-0000_0b_00.6")
-                )
-        });
+            .filter(|g| g.interface == ObjectType::Device)
+            .find(|g| {
+                g.properties.get("device.name").map(String::as_str)
+                    == Some("alsa_card.pci-0000_0b_00.6")
+            });
 
         if let Some(global) = client {
             let client: PwClient = self.registry.bind(ctx, global);

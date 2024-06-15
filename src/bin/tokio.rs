@@ -1,4 +1,5 @@
 use pod::dictionary::Dictionary;
+use ripewire::object_map::ObjectType;
 use std::io;
 use std::os::fd::AsRawFd;
 use tokio::io::unix::AsyncFd;
@@ -70,13 +71,14 @@ impl PipewireState {
     }
 
     pub fn done(&mut self, context: &mut Context<Self>) {
-        let device = self.globals.globals.iter().find(|global| {
-            global.interface == "PipeWire:Interface:Device"
-                && matches!(
-                    global.properties.get("device.name").map(|s| s.as_str()),
-                    Some("alsa_card.pci-0000_0b_00.6")
-                )
-        });
+        let device = self
+            .globals
+            .iter()
+            .filter(|g| g.interface == ObjectType::Device)
+            .find(|g| {
+                g.properties.get("device.name").map(String::as_str)
+                    == Some("alsa_card.pci-0000_0b_00.6")
+            });
 
         let Some(global) = device else {
             return;

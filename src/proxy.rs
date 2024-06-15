@@ -176,11 +176,9 @@ impl PwRegistry {
     ) -> I {
         let data = pw_registry::methods::Bind {
             id: global.id,
-            interface: global.interface.clone(),
+            interface: global.interface.as_interface_name().to_string(),
             version: global.version,
-            new_id: context
-                .new_object(ObjectType::from_interface_name(&global.interface))
-                .protocol_id(),
+            new_id: context.new_object(global.interface.clone()).protocol_id(),
         };
 
         context

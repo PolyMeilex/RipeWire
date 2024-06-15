@@ -49,6 +49,30 @@ impl ObjectType {
             _ => Self::Other(name.to_string()),
         }
     }
+
+    pub fn as_interface_name(&self) -> &str {
+        match self {
+            Self::Client => "PipeWire:Interface:Client",
+            Self::ClientEndpoint => "PipeWire:Interface:ClientEndpoint",
+            Self::ClientNode => "PipeWire:Interface:ClientNode",
+            Self::ClientSession => "PipeWire:Interface:ClientSession",
+            Self::Core => "PipeWire:Interface:Core",
+            Self::Device => "PipeWire:Interface:Device",
+            Self::Endpoint => "PipeWire:Interface:Endpoint",
+            Self::EndpointLink => "PipeWire:Interface:EndpointLink",
+            Self::EndpointStream => "PipeWire:Interface:EndpointStream",
+            Self::Factory => "PipeWire:Interface:Factory",
+            Self::Link => "PipeWire:Interface:Link",
+            Self::Metadata => "PipeWire:Interface:Metadata",
+            Self::Module => "PipeWire:Interface:Module",
+            Self::Node => "PipeWire:Interface:Node",
+            Self::Port => "PipeWire:Interface:Port",
+            Self::Profiler => "PipeWire:Interface:Profiler",
+            Self::Registry => "PipeWire:Interface:Registry",
+            Self::Session => "PipeWire:Interface:Session",
+            Self::Other(name) => name,
+        }
+    }
 }
 
 /// The representation of a protocol object

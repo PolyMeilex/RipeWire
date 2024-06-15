@@ -1,5 +1,6 @@
 #![allow(unused)]
 
+use crate::object_map::ObjectType;
 use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
 use pod::serialize::{PodSerialize, PodSerializer};
 use pod_v2::{

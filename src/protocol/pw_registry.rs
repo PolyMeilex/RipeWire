@@ -21,6 +21,7 @@ pub mod methods {
     #[derive(Debug, Clone, pod_derive::PodSerialize)]
     pub struct Bind {
         pub id: u32,
+        // TODO: ObjectType here
         pub interface: String,
         pub version: u32,
         pub new_id: u32,
@@ -66,7 +67,7 @@ pub mod events {
     pub struct Global {
         pub id: u32,
         pub permissions: PermissionFlags,
-        pub interface: String,
+        pub interface: ObjectType,
         pub version: u32,
         pub properties: HashMap<String, String>,
     }
@@ -82,7 +83,7 @@ pub mod events {
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
                 permissions: PermissionFlags::from_bits_retain(pod.pop_field()?.as_u32()?),
-                interface: pod.pop_field()?.as_str()?.to_string(),
+                interface: ObjectType::from_interface_name(&pod.pop_field()?.as_str()?.to_string()),
                 version: pod.pop_field()?.as_u32()?,
                 properties: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
             })
