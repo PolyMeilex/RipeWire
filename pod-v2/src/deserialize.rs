@@ -2,7 +2,7 @@ use std::{fmt, mem, os::raw::c_void};
 
 use super::pad_to_8;
 use bstr::BStr;
-use libspa_consts::{SpaChoiceType, SpaEnum, SpaFraction, SpaRectangle, SpaType};
+use libspa_consts::{SpaChoiceType, SpaControlType, SpaEnum, SpaFraction, SpaRectangle, SpaType};
 
 #[derive(Debug, thiserror::Error)]
 pub enum DeserializeError {
@@ -214,6 +214,22 @@ impl<'a> PodDeserializer<'a> {
             Ok(pod)
         } else {
             Err(self.unexpected_type(SpaType::Struct))
+        }
+    }
+
+    pub fn as_sequence(&self) -> Result<PodSequenceDeserializer<'a>> {
+        if let PodDeserializerKind::Sequence(pod) = self.kind() {
+            Ok(pod)
+        } else {
+            Err(self.unexpected_type(SpaType::Sequence))
+        }
+    }
+
+    pub fn as_bytes(&self) -> Result<&'a [u8]> {
+        if let PodDeserializerKind::Bytes(pod) = self.kind() {
+            Ok(pod)
+        } else {
+            Err(self.unexpected_type(SpaType::Bytes))
         }
     }
 
@@ -505,7 +521,7 @@ impl<'a> PodSequenceDeserializer<'a> {
 
         Ok(PodControlDeserializer {
             offset,
-            type_,
+            type_: SpaEnum::from_raw(type_),
             value,
         })
     }
@@ -522,7 +538,7 @@ impl<'a> Iterator for PodSequenceDeserializer<'a> {
 #[derive(Clone, Debug)]
 pub struct PodControlDeserializer<'a> {
     offset: u32,
-    type_: u32,
+    type_: SpaEnum<SpaControlType>,
     value: PodDeserializer<'a>,
 }
 
@@ -531,7 +547,7 @@ impl<'a> PodControlDeserializer<'a> {
         self.offset
     }
 
-    pub fn type_(&self) -> u32 {
+    pub fn type_(&self) -> SpaEnum<SpaControlType> {
         self.type_
     }
 

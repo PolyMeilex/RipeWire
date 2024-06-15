@@ -53,6 +53,20 @@ pub enum SpaDataType {
     MemId = 4,
 }
 #[repr(u32)]
+#[doc = " Different Control types"]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive)]
+pub enum SpaControlType {
+    Invalid = 0,
+    #[doc = "< data contains a SPA_TYPE_OBJECT_Props"]
+    Properties = 1,
+    #[doc = "< data contains a spa_pod_bytes with raw midi data"]
+    Midi = 2,
+    #[doc = "< data contains a spa_pod_bytes with an OSC packet"]
+    Osc = 3,
+    #[doc = "< not part of ABI"]
+    _SPA_CONTROL_LAST = 4,
+}
+#[repr(u32)]
 #[doc = " Different IO area types"]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum SpaIoType {

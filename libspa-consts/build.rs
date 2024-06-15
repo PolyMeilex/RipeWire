@@ -35,6 +35,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "spa_fraction",
             "spa_direction",
             "spa_param_availability",
+            "spa_control_type",
             "pw_link_state",
             "pw_node_state",
         ];
@@ -49,7 +50,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
     fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
         match info.name {
             "SpaDirection" | "SpaChoiceType" | "SpaDataType" | "SpaFormat" | "SpaParamType"
-            | "PwLinkState" | "PwNodeState" => {
+            | "SpaControlType" | "PwLinkState" | "PwNodeState" => {
                 vec!["num_derive::FromPrimitive".into()]
             }
             _ => vec![],
@@ -91,6 +92,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "enum spa_format" => "SPA_FORMAT_",
             "enum spa_direction" => "SPA_DIRECTION_",
             "enum spa_param_availability" => "SPA_PARAM_AVAILABILITY_",
+            "enum spa_control_type" => "SPA_CONTROL_",
             "enum pw_link_state" => "PW_LINK_STATE_",
             "enum pw_node_state" => "PW_NODE_STATE_",
             _ => return None,
@@ -139,6 +141,7 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_media_subtype",
         "spa_direction",
         "spa_param_availability",
+        "spa_control_type",
         "pw_link_state",
         "pw_node_state",
     ] {
