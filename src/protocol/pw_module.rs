@@ -55,7 +55,7 @@ pub mod events {
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize2)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize)]
 pub enum Event {
     /// Notify module info
     Info(events::Info),

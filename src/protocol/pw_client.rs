@@ -7,7 +7,7 @@ use super::*;
 pub const OBJECT_ID: u32 = 1;
 
 bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+    #[derive(Debug, Clone, Copy)]
     pub struct PermissionFlags: u32 {
         /// object can be seen and events can be received
         const R = 0o400;
@@ -193,7 +193,7 @@ pub mod events {
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize2)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize)]
 pub enum Event {
     /// Get client information updates. This is emitted when binding to a client or when the client info is updated later.
     Info(events::Info),

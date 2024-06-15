@@ -148,7 +148,7 @@ pub mod events {
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize2)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize)]
 pub enum Event {
     /// Notify device info
     Info(events::Info),

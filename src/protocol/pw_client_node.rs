@@ -232,13 +232,11 @@ pub mod events {
     /// The writefd is meant to wake up the server after the driver completes so that the profiler can collect the information.
     /// The profiler is active when the pw_node_activation::flags fields has PW_NODE_ACTIVATION_FLAG_PROFILER set.
     /// When the profiler is disabled (or when the node is not driving), this eventfd should not be signaled.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct Transport {
         /// The eventfd to start processing
-        #[fd]
         pub readfd: pod::utils::Fd,
         /// The eventfd to signal when the driver completes and profiling is enabled.
-        #[fd]
         pub writefd: pod::utils::Fd,
         /// The index of the memfd of the activation record
         pub memid: u32,
@@ -248,30 +246,68 @@ pub mod events {
         pub size: u32,
     }
 
-    impl HasOpCode for Transport {
+    impl EventDeserialize for Transport {
         const OPCODE: u8 = 0;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                readfd: {
+                    let id = pod.pop_field()?.as_fd()?;
+                    pod::utils::Fd {
+                        id,
+                        fd: fds.get(id as usize).copied(),
+                    }
+                },
+                writefd: {
+                    let id = pod.pop_field()?.as_fd()?;
+                    pod::utils::Fd {
+                        id,
+                        fd: fds.get(id as usize).copied(),
+                    }
+                },
+                memid: pod.pop_field()?.as_u32()?,
+                offset: pod.pop_field()?.as_u32()?,
+                size: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 
     /// Set a parameter on the Node
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct SetParam {
         /// The param id to set.
-        pub id: pod::utils::Id,
+        pub id: u32, // TODO: is this SpaParamType?
         /// Extra flags
         pub flags: u32,
         /// The param object to set
-        pub param: pod::Value,
+        pub param: OwnedPod,
     }
 
-    impl HasOpCode for SetParam {
+    impl EventDeserialize for SetParam {
         const OPCODE: u8 = 1;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_id()?,
+                flags: pod.pop_field()?.as_u32()?,
+                param: pod.pop_field()?.to_owned(),
+            })
+        }
     }
 
     /// Set an IO area on the node.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct SetIo {
         /// The io area id to set.
-        pub id: pod::utils::Id,
+        pub id: u32,
         /// Memid to use, this is signaled with Core::AddMem
         pub memid: u32,
         /// The start offset in the memory area
@@ -280,77 +316,147 @@ pub mod events {
         pub size: u32,
     }
 
-    impl HasOpCode for SetIo {
+    impl EventDeserialize for SetIo {
         const OPCODE: u8 = 2;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                id: pod.pop_field()?.as_id()?,
+                memid: pod.pop_field()?.as_u32()?,
+                offset: pod.pop_field()?.as_u32()?,
+                size: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 
     /// Emit an event on the node.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct Event {
         /// The event to emit. See enum spa_node_event.
-        pub event: pod::Value,
+        pub event: OwnedPod,
     }
 
-    impl HasOpCode for Event {
+    impl EventDeserialize for Event {
         const OPCODE: u8 = 3;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                event: pod.pop_field()?.to_owned(),
+            })
+        }
     }
 
     /// Send a command on the node.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct Command {
         /// The command to send. See enum spa_node_command.
-        pub command: pod::Value,
+        pub command: OwnedPod,
     }
 
-    impl HasOpCode for Command {
+    impl EventDeserialize for Command {
         const OPCODE: u8 = 4;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                command: pod.pop_field()?.to_owned(),
+            })
+        }
     }
 
     /// Add a new port to the node
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct AddPort {
         /// The direction of the new port
-        pub direction: SpaDirection,
+        pub direction: SpaEnum<SpaDirection>,
         /// The port id of the new port
         pub port_id: u32,
         /// Optional extra properties for the port
-        pub props: pod::dictionary::Dictionary,
+        pub props: HashMap<String, String>,
     }
 
-    impl HasOpCode for AddPort {
+    impl EventDeserialize for AddPort {
         const OPCODE: u8 = 5;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
+                port_id: pod.pop_field()?.as_u32()?,
+                props: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+            })
+        }
     }
 
     /// Remove a port from the node
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct RemovePort {
         /// The direction of the port to remove
-        pub direction: SpaDirection,
+        pub direction: SpaEnum<SpaDirection>,
         /// The port id of the port to remove
         pub port_id: u32,
     }
 
-    impl HasOpCode for RemovePort {
+    impl EventDeserialize for RemovePort {
         const OPCODE: u8 = 6;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
+                port_id: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 
     /// Set a parameter on the Port of the node.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct PortSetParam {
         /// The direction of the port
-        pub direction: SpaDirection,
+        pub direction: SpaEnum<SpaDirection>,
         /// The port id of the port
         pub port_id: u32,
         /// The param id to set.
-        pub id: pod::utils::Id,
+        pub id: u32, // TODO: Is this SpaParamType?
         /// Extra flags
         pub flags: u32,
         /// The param object to set
-        pub param: pod::Value,
+        pub param: OwnedPod,
     }
 
-    impl HasOpCode for PortSetParam {
+    impl EventDeserialize for PortSetParam {
         const OPCODE: u8 = 7;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
+                port_id: pod.pop_field()?.as_u32()?,
+                id: pod.pop_field()?.as_id()?,
+                flags: pod.pop_field()?.as_u32()?,
+                param: pod.pop_field()?.to_owned(),
+            })
+        }
     }
 
     // Not an event
@@ -359,7 +465,7 @@ pub mod events {
         /// The data type, this can be:
         /// - SPA_DATA_MemId to reference a memfd from Core:AddMem
         /// - SPA_DATA_MemPtr to reference this buffer memid
-        pub type_: pod::utils::Id,
+        pub type_: u32, // TODO: Enum
         /// Contains the memid or offset in the memid
         pub data: u32,
         /// Extra flags for the data
@@ -371,25 +477,15 @@ pub mod events {
     }
 
     impl PortBufferData {
-        fn visit<'de>(
-            struct_deserializer: &mut pod::deserialize::StructPodDeserializer<'de>,
-        ) -> Result<Self, pod::deserialize::DeserializeError<&'de [u8]>> {
+        fn deserialize(
+            pod: &mut pod_v2::deserialize::PodStructDeserializer,
+        ) -> pod_v2::deserialize::Result<Self> {
             Ok(Self {
-                type_: struct_deserializer
-                    .deserialize_field()?
-                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
-                data: struct_deserializer
-                    .deserialize_field()?
-                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
-                flags: struct_deserializer
-                    .deserialize_field()?
-                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
-                mapoffset: struct_deserializer
-                    .deserialize_field()?
-                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
-                maxsize: struct_deserializer
-                    .deserialize_field()?
-                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?,
+                type_: pod.pop_field()?.as_id()?,
+                data: pod.pop_field()?.as_u32()?,
+                flags: pod.pop_field()?.as_u32()?,
+                mapoffset: pod.pop_field()?.as_u32()?,
+                maxsize: pod.pop_field()?.as_u32()?,
             })
         }
     }
@@ -404,55 +500,37 @@ pub mod events {
         /// The size of the buffer metadata or data
         pub size: u32,
         /// Number of metadata. The buffer memory first contains this number of metadata parts of the given type and size
-        pub metas: Vec<(pod::utils::Id, u32)>,
+        pub metas: Vec<(u32, u32)>,
         /// Datablocks
-        pub datas: Vec<PortBufferData>,
+        pub data_blocks: Vec<PortBufferData>,
     }
 
     impl PortBuffer {
-        fn visit<'de>(
-            struct_deserializer: &mut pod::deserialize::StructPodDeserializer<'de>,
-        ) -> Result<Self, pod::deserialize::DeserializeError<&'de [u8]>> {
-            let mem_id = struct_deserializer
-                .deserialize_field()?
-                .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-            let offset = struct_deserializer
-                .deserialize_field()?
-                .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-            let size = struct_deserializer
-                .deserialize_field()?
-                .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-            let n_metas: i32 = struct_deserializer
-                .deserialize_field()?
-                .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-
-            let mut metas = Vec::new();
-
-            for _ in 0..n_metas.max(0) {
-                let type_ = struct_deserializer
-                    .deserialize_field()?
-                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-                let size = struct_deserializer
-                    .deserialize_field()?
-                    .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-                metas.push((type_, size));
-            }
-
-            let n_datas: i32 = struct_deserializer
-                .deserialize_field()?
-                .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-
-            let mut datas = Vec::new();
-            for _ in 0..n_datas.max(0) {
-                datas.push(PortBufferData::visit(struct_deserializer)?);
-            }
-
-            Ok(PortBuffer {
-                mem_id,
-                offset,
-                size,
-                metas,
-                datas,
+        fn deserialize(
+            pod: &mut pod_v2::deserialize::PodStructDeserializer,
+        ) -> pod_v2::deserialize::Result<Self> {
+            Ok(Self {
+                mem_id: pod.pop_field()?.as_u32()?,
+                offset: pod.pop_field()?.as_u32()?,
+                size: pod.pop_field()?.as_u32()?,
+                metas: {
+                    let n_metas = pod.pop_field()?.as_u32()? as usize;
+                    let mut metas = Vec::with_capacity(n_metas);
+                    for _ in 0..n_metas {
+                        let id = pod.pop_field()?.as_u32()?;
+                        let size = pod.pop_field()?.as_u32()?;
+                        metas.push((id, size));
+                    }
+                    metas
+                },
+                data_blocks: {
+                    let n_blocks = pod.pop_field()?.as_u32()? as usize;
+                    let mut blocks = Vec::with_capacity(n_blocks);
+                    for _ in 0..n_blocks {
+                        blocks.push(PortBufferData::deserialize(pod)?);
+                    }
+                    blocks
+                },
             })
         }
     }
@@ -461,7 +539,7 @@ pub mod events {
     #[derive(Debug, Clone)]
     pub struct PortUseBuffers {
         /// The direction of the port
-        pub direction: SpaDirection,
+        pub direction: SpaEnum<SpaDirection>,
         /// The port id of the port
         pub port_id: u32,
         /// The mixer id of the port
@@ -471,80 +549,42 @@ pub mod events {
         pub buffers: Vec<PortBuffer>,
     }
 
-    impl PortUseBuffers {
-        pub(super) fn load_fds(&mut self, _fds: &[RawFd]) {}
-    }
+    impl EventDeserialize for PortUseBuffers {
+        const OPCODE: u8 = 8;
 
-    impl<'de> pod::deserialize::PodDeserialize<'de> for PortUseBuffers {
         fn deserialize(
-            deserializer: pod::deserialize::PodDeserializer<'de>,
-        ) -> Result<
-            (Self, pod::deserialize::DeserializeSuccess<'de>),
-            pod::deserialize::DeserializeError<&'de [u8]>,
-        >
-        where
-            Self: Sized,
-        {
-            struct TestVisitor;
-            impl<'de> pod::deserialize::Visitor<'de> for TestVisitor {
-                type Value = PortUseBuffers;
-                type ArrayElem = std::convert::Infallible;
-
-                fn visit_struct(
-                    &self,
-                    struct_deserializer: &mut pod::deserialize::StructPodDeserializer<'de>,
-                ) -> Result<Self::Value, pod::deserialize::DeserializeError<&'de [u8]>>
-                {
-                    let direction = struct_deserializer
-                        .deserialize_field()?
-                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-                    let port_id = struct_deserializer
-                        .deserialize_field()?
-                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-                    let mix_id = struct_deserializer
-                        .deserialize_field()?
-                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-                    let flags = struct_deserializer
-                        .deserialize_field()?
-                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-                    let n_buffers: i32 = struct_deserializer
-                        .deserialize_field()?
-                        .ok_or(pod::deserialize::DeserializeError::PropertyMissing)?;
-
-                    let mut buffers = Vec::new();
-                    for _ in 0..n_buffers.max(0) {
-                        buffers.push(PortBuffer::visit(struct_deserializer)?);
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
+                port_id: pod.pop_field()?.as_u32()?,
+                mix_id: pod.pop_field()?.as_u32()?,
+                flags: pod.pop_field()?.as_u32()?,
+                buffers: {
+                    let n_buffers = pod.pop_field()?.as_u32()? as usize;
+                    let mut buffers = Vec::with_capacity(n_buffers);
+                    for _ in 0..n_buffers {
+                        buffers.push(PortBuffer::deserialize(&mut pod)?);
                     }
-
-                    Ok(Self::Value {
-                        direction,
-                        port_id,
-                        mix_id,
-                        flags,
-                        buffers,
-                    })
-                }
-            }
-
-            deserializer.deserialize_struct(TestVisitor)
+                    buffers
+                },
+            })
         }
     }
 
-    impl HasOpCode for PortUseBuffers {
-        const OPCODE: u8 = 8;
-    }
-
     /// Set an IO area on a mixer port.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct PortSetIo {
         /// The direction of the port
-        pub direction: SpaDirection,
+        pub direction: SpaEnum<SpaDirection>,
         /// The port id of the port
         pub port_id: u32,
         /// The mix id of the port
         pub mix_id: u32,
         /// The IO area to set. See enum spa_io_type
-        pub id: pod::utils::Id,
+        pub id: u32, // TODO: enum
         /// The memid of the io area, added with Core::AddMem
         pub memid: u32,
         /// The offset in the memid
@@ -553,18 +593,33 @@ pub mod events {
         pub size: u32,
     }
 
-    impl HasOpCode for PortSetIo {
+    impl EventDeserialize for PortSetIo {
         const OPCODE: u8 = 9;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
+                port_id: pod.pop_field()?.as_u32()?,
+                mix_id: pod.pop_field()?.as_u32()?,
+                id: pod.pop_field()?.as_id()?,
+                memid: pod.pop_field()?.as_u32()?,
+                offset: pod.pop_field()?.as_u32()?,
+                size: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 
     /// Notify the client of the activation record of a peer node.
     /// This activation record should be triggered when this node finishes processing.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct SetActivation {
         /// The node_id of the peer node
         pub node_id: u32,
         /// The eventfd of the peer node
-        #[fd]
         pub signalfd: pod::utils::Fd,
         /// The memid of the activation record of the peer from Core:AddMem
         pub memid: u32,
@@ -574,16 +629,36 @@ pub mod events {
         pub size: u32,
     }
 
-    impl HasOpCode for SetActivation {
+    impl EventDeserialize for SetActivation {
         const OPCODE: u8 = 10;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                node_id: pod.pop_field()?.as_u32()?,
+                signalfd: {
+                    let id = pod.pop_field()?.as_fd()?;
+                    pod::utils::Fd {
+                        id,
+                        fd: usize::try_from(id).ok().and_then(|id| fds.get(id)).copied(),
+                    }
+                },
+                memid: pod.pop_field()?.as_u32()?,
+                offset: pod.pop_field()?.as_u32()?,
+                size: pod.pop_field()?.as_u32()?,
+            })
+        }
     }
 
     /// Notify the node of the peer of a mixer port.
     /// This can be used to track the peer ports of a node.
-    #[derive(Debug, Clone, pod_derive::PodDeserialize)]
+    #[derive(Debug, Clone)]
     pub struct PortSetMixInfo {
         /// The direction of the port
-        pub direction: SpaDirection,
+        pub direction: SpaEnum<SpaDirection>,
         /// The port id of the port
         pub port_id: u32,
         /// The mix id of the port
@@ -591,11 +666,25 @@ pub mod events {
         /// The id of the peer port
         pub peer_id: u32,
         /// Optional properties
-        pub props: pod::dictionary::Dictionary,
+        pub props: HashMap<String, String>,
     }
 
-    impl HasOpCode for PortSetMixInfo {
+    impl EventDeserialize for PortSetMixInfo {
         const OPCODE: u8 = 11;
+
+        fn deserialize(
+            pod: &mut PodDeserializer,
+            fds: &[RawFd],
+        ) -> pod_v2::deserialize::Result<Self> {
+            let mut pod = pod.as_struct()?;
+            Ok(Self {
+                direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
+                port_id: pod.pop_field()?.as_u32()?,
+                mix_id: pod.pop_field()?.as_u32()?,
+                peer_id: pod.pop_field()?.as_u32()?,
+                props: parse_dict(&mut pod.pop_field()?.as_struct()?)?,
+            })
+        }
     }
 }
 
@@ -613,4 +702,8 @@ pub enum Event {
     PortSetIo(events::PortSetIo),
     SetActivation(events::SetActivation),
     PortSetMixInfo(events::PortSetMixInfo),
+}
+
+impl HasInterface for Event {
+    const INTERFACE: &'static str = "ClientNode";
 }

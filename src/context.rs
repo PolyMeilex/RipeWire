@@ -106,7 +106,9 @@ impl<D> Context<D> {
                 self.dispatch_event_inner(state, client, event);
             }
             ObjectType::ClientNode => {
-                let event = pw_client_node::Event::from(msg.header.opcode, &msg.body, fds).unwrap();
+                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let event =
+                    pw_client_node::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
                 let client_node = PwClientNode::from_id(id);
                 self.dispatch_event_inner(state, client_node, event);
             }

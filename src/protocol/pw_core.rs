@@ -389,7 +389,7 @@ pub mod events {
     }
 }
 
-#[derive(Debug, Clone, pod_derive::EventDeserialize2)]
+#[derive(Debug, Clone, pod_derive::EventDeserialize)]
 pub enum Event {
     /// This event is emitted when first bound to the core or when the hello method is called.
     Info(events::Info),

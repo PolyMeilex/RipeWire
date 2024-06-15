@@ -228,6 +228,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
         match interface {
             ObjectType::Core => inspect_core_event(msg.header.opcode, msg, fds),
             ObjectType::Client => inspect_client_event(msg.header.opcode, msg, fds),
+            ObjectType::ClientNode => inspect_client_node_event(msg.header.opcode, msg, fds),
             ObjectType::Device => inspect_device_event(msg.header.opcode, msg, fds),
             ObjectType::Factory => inspect_factory_event(msg.header.opcode, msg, fds),
             ObjectType::Link => inspect_link_event(msg.header.opcode, msg, fds),
@@ -273,6 +274,25 @@ fn inspect_client_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Permissions(v) => println!("{v:#?}"),
+    }
+}
+
+fn inspect_client_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+    use ripewire::protocol::pw_client_node::Event;
+    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+        Event::Transport(v) => println!("{v:#?}"),
+        Event::SetParam(v) => println!("{v:#?}"),
+        Event::SetIo(v) => println!("{v:#?}"),
+        Event::Event(v) => println!("{v:#?}"),
+        Event::Command(v) => println!("{v:#?}"),
+        Event::AddPort(v) => println!("{v:#?}"),
+        Event::RemovePort(v) => println!("{v:#?}"),
+        Event::PortSetParam(v) => println!("{v:#?}"),
+        Event::PortUseBuffers(v) => println!("{v:#?}"),
+        Event::PortSetIo(v) => println!("{v:#?}"),
+        Event::SetActivation(v) => println!("{v:#?}"),
+        Event::PortSetMixInfo(v) => println!("{v:#?}"),
     }
 }
 

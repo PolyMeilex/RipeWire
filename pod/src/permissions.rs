@@ -5,7 +5,7 @@ use crate::{
 };
 
 bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy, pod_derive::PodBitflagDeserialize)]
+    #[derive(Debug, Clone, Copy)]
     pub struct PermissionFlags: u32 {
         /// object can be seen and events can be received
         const R = 0o400;
