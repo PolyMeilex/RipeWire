@@ -7,7 +7,6 @@
 //! The entire serialization and deserialization approach is inspired by and similar to the excellent `serde` crate,
 //! but is much more specialized to fit the SPA pod format.
 
-pub mod deserialize;
 pub mod serialize;
 
 use std::{
@@ -31,17 +30,10 @@ use nom::{
     IResult,
 };
 
-use deserialize::{BoolVisitor, NoneVisitor, PodDeserialize, PodDeserializer};
 use serialize::{PodSerialize, PodSerializer};
+use spa_sys::SpaChoiceType;
 
-use crate::utils::{Choice, Fd, Id, SpaFraction, SpaRectangle};
-
-use self::deserialize::{
-    ChoiceDoubleVisitor, ChoiceFdVisitor, ChoiceFloatVisitor, ChoiceFractionVisitor,
-    ChoiceIdVisitor, ChoiceIntVisitor, ChoiceLongVisitor, ChoiceRectangleVisitor, DoubleVisitor,
-    FdVisitor, FloatVisitor, FractionVisitor, IdVisitor, IntVisitor, LongVisitor, PointerVisitor,
-    RectangleVisitor,
-};
+use crate::utils::{Choice, ChoiceEnum, ChoiceFlags, Fd, Id, SpaFraction, SpaRectangle};
 
 /// Implementors of this trait are the canonical representation of a specific type of fixed sized SPA pod.
 ///
@@ -328,286 +320,6 @@ impl<T: FixedSizedPod> PodSerialize for T {
     }
 }
 
-impl<'de> PodDeserialize<'de> for () {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_none(NoneVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for bool {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_bool(BoolVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for i32 {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_int(IntVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for i64 {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_long(LongVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for f32 {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_float(FloatVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for f64 {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_double(DoubleVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for SpaRectangle {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_rectangle(RectangleVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for SpaFraction {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_fraction(FractionVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Id {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_id(IdVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Fd {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_fd(FdVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<i32> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceIntVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<i64> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceLongVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<f32> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceFloatVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<f64> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceDoubleVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<Id> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceIdVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<SpaRectangle> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceRectangleVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<SpaFraction> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceFractionVisitor)
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Choice<Fd> {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_choice(ChoiceFdVisitor)
-    }
-}
-
-impl<'de, T> PodDeserialize<'de> for (spa_sys::SpaPointerType, *const T) {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_pointer(PointerVisitor::<T>::default())
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Value {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer.deserialize_any()
-    }
-}
-
 /// A typed pod value.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -647,6 +359,45 @@ pub enum Value {
     Pointer(spa_sys::SpaPointerType, *const c_void),
 }
 
+impl Value {
+    pub fn deserialize_v2(deserializer: &mut pod_v2::PodDeserializer) -> Self {
+        match deserializer.kind() {
+            pod_v2::PodDeserializerKind::None => Self::None,
+            pod_v2::PodDeserializerKind::Bool(v) => Self::Bool(v),
+            pod_v2::PodDeserializerKind::Id(v) => Self::Id(Id(v)),
+            pod_v2::PodDeserializerKind::Int(v) => Self::Int(v),
+            pod_v2::PodDeserializerKind::Long(v) => Self::Long(v),
+            pod_v2::PodDeserializerKind::Float(v) => Self::Float(v),
+            pod_v2::PodDeserializerKind::Double(v) => Self::Double(v),
+            pod_v2::PodDeserializerKind::String(v) => Self::String(v.to_string()),
+            pod_v2::PodDeserializerKind::Bytes(v) => Self::Bytes(v.to_vec()),
+            pod_v2::PodDeserializerKind::Rectangle(v) => Self::Rectangle(v),
+            pod_v2::PodDeserializerKind::Fraction(v) => Self::Fraction(v),
+            pod_v2::PodDeserializerKind::Bitmap(_) => todo!("bitmap value"),
+            pod_v2::PodDeserializerKind::Array(mut pod) => {
+                Self::ValueArray(ValueArray::deserialize_v2(&mut pod))
+            }
+            pod_v2::PodDeserializerKind::Struct(v) => Self::Struct(
+                v.into_iter()
+                    .map(|mut v| Self::deserialize_v2(&mut v))
+                    .collect(),
+            ),
+            pod_v2::PodDeserializerKind::Object(mut v) => {
+                Self::Object(Object::deserialize_v2(&mut v))
+            }
+            pod_v2::PodDeserializerKind::Sequence(_) => todo!("sequence value"),
+            pod_v2::PodDeserializerKind::Pointer { ty, ptr } => {
+                Self::Pointer(spa_sys::SpaPointerType::from_raw(ty.as_raw()).unwrap(), ptr)
+            }
+            pod_v2::PodDeserializerKind::Fd(v) => Self::Fd(Fd::new(v)),
+            pod_v2::PodDeserializerKind::Choice(mut pod) => {
+                Self::Choice(ChoiceValue::deserialize_v2(&mut pod))
+            }
+            pod_v2::PodDeserializerKind::Unknown(_) => todo!("unknown value"),
+        }
+    }
+}
+
 /// an array of same type objects.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ValueArray {
@@ -672,6 +423,57 @@ pub enum ValueArray {
     Fd(Vec<Fd>),
 }
 
+impl ValueArray {
+    pub fn deserialize_v2(deserializer: &mut pod_v2::deserialize::PodArrayDeserializer) -> Self {
+        match deserializer.child_ty().unwrap() {
+            spa_sys::SpaType::None => Self::None(Self::deserialize_inner(deserializer, |pod| {
+                assert!(pod.is_none());
+            })),
+            spa_sys::SpaType::Bool => Self::Bool(Self::deserialize_inner(deserializer, |pod| {
+                pod.as_bool().unwrap()
+            })),
+            spa_sys::SpaType::Id => Self::Id(Self::deserialize_inner(deserializer, |pod| {
+                Id(pod.as_id().unwrap())
+            })),
+            spa_sys::SpaType::Int => Self::Int(Self::deserialize_inner(deserializer, |pod| {
+                pod.as_i32().unwrap()
+            })),
+            spa_sys::SpaType::Long => Self::Long(Self::deserialize_inner(deserializer, |pod| {
+                pod.as_i64().unwrap()
+            })),
+            spa_sys::SpaType::Float => Self::Float(Self::deserialize_inner(deserializer, |pod| {
+                pod.as_f32().unwrap()
+            })),
+            spa_sys::SpaType::Double => {
+                Self::Double(Self::deserialize_inner(deserializer, |pod| {
+                    pod.as_f64().unwrap()
+                }))
+            }
+            spa_sys::SpaType::Rectangle => {
+                Self::Rectangle(Self::deserialize_inner(deserializer, |pod| {
+                    pod.as_rectangle().unwrap()
+                }))
+            }
+            spa_sys::SpaType::Fraction => {
+                Self::Fraction(Self::deserialize_inner(deserializer, |pod| {
+                    pod.as_fraction().unwrap()
+                }))
+            }
+            spa_sys::SpaType::Fd => Self::Fd(Self::deserialize_inner(deserializer, |pod| {
+                Fd::new(pod.as_fd().unwrap())
+            })),
+            v => todo!("{v:?}"),
+        }
+    }
+
+    fn deserialize_inner<T: CanonicalFixedSizedPod>(
+        deserializer: &mut pod_v2::deserialize::PodArrayDeserializer,
+        get: impl Fn(pod_v2::PodDeserializer) -> T,
+    ) -> Vec<T> {
+        deserializer.into_iter().map(get).collect()
+    }
+}
+
 /// A typed choice.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ChoiceValue {
@@ -695,6 +497,92 @@ pub enum ChoiceValue {
     Fd(Choice<Fd>),
 }
 
+impl ChoiceValue {
+    pub fn deserialize_v2(deserializer: &mut pod_v2::deserialize::PodChoiceDeserializer) -> Self {
+        match deserializer.child_ty().unwrap() {
+            spa_sys::SpaType::Bool => {
+                let choices = Self::deserialize_inner(deserializer, |pod| pod.as_bool().unwrap());
+                Self::Bool(choices)
+            }
+            spa_sys::SpaType::Int => {
+                let choices = Self::deserialize_inner(deserializer, |pod| pod.as_i32().unwrap());
+                Self::Int(choices)
+            }
+            spa_sys::SpaType::Long => {
+                let choices = Self::deserialize_inner(deserializer, |pod| pod.as_i64().unwrap());
+                Self::Long(choices)
+            }
+            spa_sys::SpaType::Float => {
+                let choices = Self::deserialize_inner(deserializer, |pod| pod.as_f32().unwrap());
+                Self::Float(choices)
+            }
+            spa_sys::SpaType::Double => {
+                let choices = Self::deserialize_inner(deserializer, |pod| pod.as_f64().unwrap());
+                Self::Double(choices)
+            }
+            spa_sys::SpaType::Id => {
+                let choices = Self::deserialize_inner(deserializer, |pod| Id(pod.as_id().unwrap()));
+                Self::Id(choices)
+            }
+            spa_sys::SpaType::Rectangle => {
+                let choices =
+                    Self::deserialize_inner(deserializer, |pod| pod.as_rectangle().unwrap());
+                Self::Rectangle(choices)
+            }
+            spa_sys::SpaType::Fraction => {
+                let choices =
+                    Self::deserialize_inner(deserializer, |pod| pod.as_fraction().unwrap());
+                Self::Fraction(choices)
+            }
+            spa_sys::SpaType::Fd => {
+                let choices =
+                    Self::deserialize_inner(deserializer, |pod| Fd::new(pod.as_fd().unwrap()));
+                Self::Fd(choices)
+            }
+            v => todo!("{v:?}"),
+        }
+    }
+
+    fn deserialize_inner<T: CanonicalFixedSizedPod>(
+        deserializer: &mut pod_v2::deserialize::PodChoiceDeserializer,
+        get: impl Fn(pod_v2::PodDeserializer) -> T,
+    ) -> Choice<T> {
+        let choice_ty = deserializer.choice_ty().unwrap();
+        let choices = deserializer.into_iter().map(get);
+        Self::deserialize_choice(choices, choice_ty)
+    }
+
+    fn deserialize_choice<T: CanonicalFixedSizedPod>(
+        mut array: impl Iterator<Item = T>,
+        kind: SpaChoiceType,
+    ) -> Choice<T> {
+        let choice = match kind {
+            SpaChoiceType::None => ChoiceEnum::None(array.next().unwrap()),
+            SpaChoiceType::Range => ChoiceEnum::Range {
+                default: array.next().unwrap(),
+                min: array.next().unwrap(),
+                max: array.next().unwrap(),
+            },
+            SpaChoiceType::Step => ChoiceEnum::Step {
+                default: array.next().unwrap(),
+                min: array.next().unwrap(),
+                max: array.next().unwrap(),
+                step: array.next().unwrap(),
+            },
+            SpaChoiceType::Enum => ChoiceEnum::Enum {
+                default: array.next().unwrap(),
+                alternatives: array.collect(),
+            },
+            SpaChoiceType::Flags => ChoiceEnum::Flags {
+                default: array.next().unwrap(),
+                flags: array.collect(),
+            },
+        };
+
+        Choice(ChoiceFlags::empty(), choice)
+    }
+}
+
 /// An object from a pod.
 #[derive(Clone, PartialEq)]
 pub struct Object {
@@ -716,6 +604,19 @@ impl std::fmt::Debug for Object {
     }
 }
 
+impl Object {
+    pub fn deserialize_v2(deserializer: &mut pod_v2::deserialize::PodObjectDeserializer) -> Self {
+        Self {
+            type_: deserializer.object_ty().unwrap(),
+            id: deserializer.object_id(),
+            properties: deserializer
+                .into_iter()
+                .map(|mut pod| Property::deserialize_v2(&mut pod))
+                .collect(),
+        }
+    }
+}
+
 /// An object property.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Property {
@@ -725,6 +626,18 @@ pub struct Property {
     pub flags: PropertyFlags,
     /// value of the property.
     pub value: Value,
+}
+
+impl Property {
+    pub fn deserialize_v2(
+        deserializer: &mut pod_v2::deserialize::PobObjectPropertyDeserializer,
+    ) -> Self {
+        Self {
+            key: deserializer.key,
+            flags: PropertyFlags::from_bits_retain(deserializer.flags),
+            value: Value::deserialize_v2(&mut deserializer.pod),
+        }
+    }
 }
 
 bitflags! {
@@ -753,22 +666,6 @@ bitflags! {
 
 use crate::serialize::SerializeSuccess;
 
-impl<'de> PodDeserialize<'de> for u32 {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer
-            .deserialize_int(IntVisitor)
-            .map(|(v, res)| (v as u32, res))
-    }
-}
-
 impl PodSerialize for u32 {
     fn serialize<O: Write + Seek>(
         &self,
@@ -776,22 +673,6 @@ impl PodSerialize for u32 {
         _flatten: bool,
     ) -> Result<SerializeSuccess<O>, GenError> {
         serializer.serialized_fixed_sized_pod(&(*self as i32))
-    }
-}
-
-impl<'de> PodDeserialize<'de> for u64 {
-    fn deserialize(
-        deserializer: PodDeserializer<'de>,
-    ) -> Result<
-        (Self, deserialize::DeserializeSuccess<'de>),
-        deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        deserializer
-            .deserialize_long(LongVisitor)
-            .map(|(v, res)| (v as u64, res))
     }
 }
 

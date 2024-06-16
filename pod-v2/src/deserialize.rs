@@ -217,6 +217,38 @@ impl<'a> PodDeserializer<'a> {
         Ok(self.as_i64()? as u64)
     }
 
+    pub fn as_f32(&self) -> Result<f32> {
+        if let PodDeserializerKind::Float(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Float))
+        }
+    }
+
+    pub fn as_f64(&self) -> Result<f64> {
+        if let PodDeserializerKind::Double(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Double))
+        }
+    }
+
+    pub fn as_rectangle(&self) -> Result<SpaRectangle> {
+        if let PodDeserializerKind::Rectangle(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Rectangle))
+        }
+    }
+
+    pub fn as_fraction(&self) -> Result<SpaFraction> {
+        if let PodDeserializerKind::Fraction(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Fraction))
+        }
+    }
+
     pub fn is_none(&self) -> bool {
         matches!(self.kind(), PodDeserializerKind::None)
     }
@@ -284,6 +316,14 @@ impl<'a> PodDeserializer<'a> {
             Err(self.unexpected_type(SpaType::Fd))
         }
     }
+
+    pub fn as_bool(&self) -> Result<bool> {
+        if let PodDeserializerKind::Bool(v) = self.kind() {
+            Ok(v)
+        } else {
+            Err(self.unexpected_type(SpaType::Bool))
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -331,6 +371,10 @@ impl<'a> PodArrayDeserializer<'a> {
             child_ty,
             body,
         }
+    }
+
+    pub fn child_ty(&self) -> SpaEnum<SpaType> {
+        self.child_ty
     }
 
     pub fn pop_element(&mut self) -> Result<PodDeserializer<'a>> {
@@ -477,6 +521,10 @@ impl<'a> PodChoiceDeserializer<'a> {
 
     pub fn flags(&self) -> u32 {
         self.flags
+    }
+
+    pub fn child_ty(&self) -> SpaEnum<SpaType> {
+        self.child_ty
     }
 
     pub fn pop_element(&mut self) -> Result<PodDeserializer<'a>> {

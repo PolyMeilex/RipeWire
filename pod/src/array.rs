@@ -1,7 +1,4 @@
-use crate::{
-    deserialize::PodDeserialize, pod, serialize::PodSerialize, CanonicalFixedSizedPod,
-    FixedSizedPod,
-};
+use crate::{pod, serialize::PodSerialize, CanonicalFixedSizedPod, FixedSizedPod};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Array<E>(pub Vec<E>)
@@ -22,23 +19,5 @@ where
             s.serialize_element(e)?;
         }
         s.end()
-    }
-}
-
-impl<'de, E: FixedSizedPod> PodDeserialize<'de> for Array<E>
-where
-    E: CanonicalFixedSizedPod + FixedSizedPod + std::marker::Copy,
-{
-    fn deserialize(
-        deserializer: pod::deserialize::PodDeserializer<'de>,
-    ) -> Result<
-        (Self, pod::deserialize::DeserializeSuccess<'de>),
-        pod::deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        let (items, succes) = deserializer.deserialize_array_vec::<E>()?;
-        Ok((Self(items), succes))
     }
 }

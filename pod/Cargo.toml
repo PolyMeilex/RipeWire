@@ -12,3 +12,4 @@ nom = "7"
 
 spa_sys = { package = "libspa-consts", version = "0", path = "../libspa-consts" }
 pod-derive = { path = "../pod-derive/" }
+pod-v2 = { path = "../pod-v2" }

@@ -352,9 +352,8 @@ pub mod methods {
                     if let Ok(n_params) = usize::try_from(n_params) {
                         let mut params = Vec::with_capacity(n_params);
                         for _ in 0..n_params {
-                            let pod = pod.pop_field()?.to_owned().to_raw();
-                            let (_, pod) =
-                                pod::deserialize::PodDeserializer::deserialize_from(&pod).unwrap();
+                            let mut pod = pod.pop_field()?;
+                            let pod = pod::Value::deserialize_v2(&mut pod);
                             params.push(pod);
                         }
                         params

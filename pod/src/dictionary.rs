@@ -1,10 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{
-    deserialize::{DeserializeError, PodDeserialize, StructPodDeserializer, Visitor},
-    pod,
-    serialize::PodSerialize,
-};
+use crate::{pod, serialize::PodSerialize};
 
 #[derive(Clone, Default)]
 pub struct Dictionary(pub HashMap<String, String>);
@@ -45,44 +41,5 @@ impl PodSerialize for Dictionary {
         }
 
         s.end()
-    }
-}
-
-impl<'de> PodDeserialize<'de> for Dictionary {
-    fn deserialize(
-        deserializer: pod::deserialize::PodDeserializer<'de>,
-    ) -> Result<
-        (Self, pod::deserialize::DeserializeSuccess<'de>),
-        pod::deserialize::DeserializeError<&'de [u8]>,
-    >
-    where
-        Self: Sized,
-    {
-        struct TestVisitor;
-
-        impl<'de> Visitor<'de> for TestVisitor {
-            type Value = Dictionary;
-            type ArrayElem = std::convert::Infallible;
-
-            fn visit_struct(
-                &self,
-                struct_deserializer: &mut StructPodDeserializer<'de>,
-            ) -> Result<Self::Value, DeserializeError<&'de [u8]>> {
-                let mut map = HashMap::new();
-
-                let len: u32 = struct_deserializer.deserialize_field()?.unwrap();
-
-                for _ in 0..len {
-                    let key: String = struct_deserializer.deserialize_field()?.unwrap();
-                    let val: String = struct_deserializer.deserialize_field()?.unwrap();
-
-                    map.insert(key, val);
-                }
-
-                Ok(Dictionary(map))
-            }
-        }
-
-        deserializer.deserialize_struct(TestVisitor)
     }
 }

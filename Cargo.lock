@@ -437,6 +437,7 @@ dependencies = [
  "libspa-consts",
  "nom",
  "pod-derive",
+ "pod-v2",
 ]
 
 [[package]]
