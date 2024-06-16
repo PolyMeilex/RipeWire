@@ -151,23 +151,18 @@ async fn main() {
         let fd = fd.readable().await.unwrap();
 
         if fd.ready().is_readable() {
-            buffer.clear();
-            let (messages, fds) = match state.ctx.rcv_msg(&mut buffer) {
-                Ok(res) => res,
-                Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
-                    continue;
-                }
-                Err(err) => {
-                    panic!("{err}");
-                }
-            };
+            loop {
+                let msg = match state.ctx.rcv_msg(&mut buffer) {
+                    Ok(res) => res,
+                    Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
+                        break;
+                    }
+                    Err(err) => {
+                        panic!("{err}");
+                    }
+                };
 
-            if !fds.is_empty() {
-                todo!();
-            }
-
-            for msg in messages {
-                state.ctx.dispatch_event(&mut state.state, msg, &fds);
+                state.ctx.dispatch_event(&mut state.state, msg);
             }
         }
     }

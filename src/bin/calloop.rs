@@ -1,3 +1,4 @@
+use std::io;
 use std::os::fd::AsRawFd;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
@@ -90,10 +91,18 @@ pub fn run_rust() {
         .insert_source(
             Generic::new(fd, Interest::READ, Mode::Level),
             move |_, _, state| {
-                buffer.clear();
-                let (messages, fds) = state.ctx.rcv_msg(&mut buffer).unwrap();
-                for msg in messages {
-                    state.ctx.dispatch_event(&mut state.state, msg, &fds);
+                loop {
+                    let msg = state.ctx.rcv_msg(&mut buffer);
+
+                    if let Err(err) = &msg {
+                        if err.kind() == io::ErrorKind::WouldBlock {
+                            break;
+                        }
+                    }
+
+                    let msg = msg.unwrap();
+
+                    state.ctx.dispatch_event(&mut state.state, msg);
                 }
 
                 Ok(PostAction::Continue)

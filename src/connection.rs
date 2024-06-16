@@ -1,4 +1,5 @@
 use std::{
+    collections::VecDeque,
     io::{self, IoSlice, IoSliceMut},
     mem,
     os::{
@@ -27,7 +28,7 @@ impl Header {
         let object_id = bytes[0];
 
         // opc -> message opcode
-        // len -> message lenght
+        // len -> message length
         //
         // Stored in u32 like so:
         // opc: 11111111000000000000000000000000
@@ -64,11 +65,16 @@ pub struct Message<'a> {
     pub header: Header,
     pub body: PodDeserializer<'a>,
     pub footer: Option<PodDeserializer<'a>>,
+    pub fds: Vec<RawFd>,
 }
 
-// TODO: Placeholder for real buffer, probably a ring buffer?
 pub struct MessageBuffer {
     buffer: Vec<u8>,
+    fds: VecDeque<RawFd>,
+    start: usize,
+    end: usize,
+
+    staging_buffer: Vec<u8>,
 }
 
 impl Default for MessageBuffer {
@@ -80,12 +86,16 @@ impl Default for MessageBuffer {
 impl MessageBuffer {
     pub fn new() -> Self {
         Self {
-            buffer: vec![0u8; 500000],
+            buffer: vec![0u8; 4096],
+            fds: VecDeque::new(),
+            start: 0,
+            end: 0,
+            staging_buffer: Vec::new(),
         }
     }
 
-    pub fn clear(&mut self) {
-        self.buffer.fill(0)
+    fn len(&self) -> usize {
+        self.end - self.start
     }
 }
 
@@ -106,10 +116,7 @@ impl Connection {
         send_msg(&self.stream, bytes, fds)
     }
 
-    pub fn rcv_msg<'a>(
-        &mut self,
-        buffer: &'a mut MessageBuffer,
-    ) -> io::Result<(Vec<Message<'a>>, Vec<RawFd>)> {
+    pub fn rcv_msg<'a>(&mut self, buffer: &'a mut MessageBuffer) -> io::Result<Message<'a>> {
         rcv_msg(&self.stream, buffer)
     }
 }
@@ -120,7 +127,7 @@ impl AsRawFd for Connection {
     }
 }
 
-pub fn read_msg(buff: &[u8]) -> Option<(&[u8], Message)> {
+pub fn read_header(buff: &[u8]) -> Option<(&[u8], Header)> {
     const HDR_SIZE: usize = 16;
     if buff.len() < 4 * mem::size_of::<u32>() && buff.len() < HDR_SIZE {
         return None;
@@ -151,10 +158,18 @@ pub fn read_msg(buff: &[u8]) -> Option<(&[u8], Message)> {
     };
 
     let buff = &buff[HDR_SIZE..];
+    Some((buff, header))
+}
+
+fn read_body_and_footer<'a>(
+    buff: &'a [u8],
+    header: &Header,
+) -> Option<(&'a [u8], PodDeserializer<'a>, Option<PodDeserializer<'a>>)> {
+    debug_assert_eq!(buff.len(), header.len as usize);
 
     let len = header.len as usize;
-    let (body, footer) = if len > 0 {
-        let body = &buff[..len];
+    let (body, footer) = {
+        let body = &buff[..header.len as usize];
 
         let (body, footer) = pod_v2::PodDeserializer::new(body);
         let footer = if footer.is_empty() {
@@ -165,17 +180,35 @@ pub fn read_msg(buff: &[u8]) -> Option<(&[u8], Message)> {
             Some(footer)
         };
 
-        Some((body, footer))
-    } else {
-        None
-    }?;
+        (body, footer)
+    };
 
     let buff = &buff[len..];
+
+    Some((buff, body, footer))
+}
+
+fn read_fds(fds: &mut VecDeque<RawFd>, header: &Header) -> Vec<RawFd> {
+    let mut msg_fds = Vec::with_capacity(header.n_fds as usize);
+    for _ in 0..header.n_fds {
+        match fds.pop_front() {
+            Some(fd) => msg_fds.push(fd),
+            None => todo!("missing fds"),
+        }
+    }
+    msg_fds
+}
+
+pub fn read_msg<'a>(buff: &'a [u8], fds: &mut VecDeque<RawFd>) -> Option<(&'a [u8], Message<'a>)> {
+    let (buff, header) = read_header(buff)?;
+    let (buff, body, footer) = read_body_and_footer(buff, &header)?;
+    let fds = read_fds(fds, &header);
 
     let msg = Message {
         header,
         body,
         footer,
+        fds,
     };
 
     Some((buff, msg))
@@ -206,39 +239,64 @@ fn send_msg(stream: &UnixStream, bytes: &[u8], fds: &[RawFd]) -> io::Result<usiz
     }
 }
 
-fn rcv_msg<'a>(
-    stream: &UnixStream,
-    buffer: &'a mut MessageBuffer,
-) -> io::Result<(Vec<Message<'a>>, Vec<RawFd>)> {
-    let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_OUT]);
+fn fill_buf(stream: &UnixStream, buffer: &mut MessageBuffer, mut needed: usize) -> io::Result<()> {
+    while needed > 0 {
+        if buffer.start == buffer.end {
+            buffer.start = 0;
+            buffer.end = 0;
 
-    let mut iov = [IoSliceMut::new(&mut buffer.buffer)];
+            let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_OUT]);
+            let mut iov = [IoSliceMut::new(&mut buffer.buffer)];
 
-    let msg = nix::sys::socket::recvmsg::<()>(
-        stream.as_raw_fd(),
-        &mut iov,
-        Some(&mut cmsg),
-        MsgFlags::MSG_CMSG_CLOEXEC | socket::MsgFlags::MSG_NOSIGNAL,
-    )?;
+            let msg = nix::sys::socket::recvmsg::<()>(
+                stream.as_raw_fd(),
+                &mut iov,
+                Some(&mut cmsg),
+                MsgFlags::MSG_CMSG_CLOEXEC | socket::MsgFlags::MSG_NOSIGNAL,
+            )?;
 
-    let received_fds: Vec<RawFd> = msg
-        .cmsgs()
-        .flat_map(|cmsg| match cmsg {
-            socket::ControlMessageOwned::ScmRights(s) => s,
-            _ => Vec::new(),
-        })
-        .collect();
+            for fd in msg.cmsgs().flat_map(|cmsg| match cmsg {
+                socket::ControlMessageOwned::ScmRights(s) => s,
+                _ => Vec::new(),
+            }) {
+                buffer.fds.push_back(fd);
+            }
 
-    let bytes = msg.bytes;
+            buffer.end = msg.bytes;
 
-    let mut buff = &buffer.buffer[..bytes];
+            if buffer.start == buffer.end {
+                todo!("end of buffer");
+            }
+        }
 
-    let mut messages = Vec::new();
-
-    while let Some((b, msg)) = read_msg(buff) {
-        buff = b;
-        messages.push(msg);
+        let read = needed.min(buffer.len());
+        let start = buffer.start;
+        buffer
+            .staging_buffer
+            .extend_from_slice(&buffer.buffer[start..start + read]);
+        needed -= read;
+        buffer.start += read;
     }
 
-    Ok((messages, received_fds))
+    Ok(())
+}
+
+fn rcv_msg<'a>(stream: &UnixStream, buffer: &'a mut MessageBuffer) -> io::Result<Message<'a>> {
+    buffer.staging_buffer.clear();
+    fill_buf(stream, buffer, 16)?;
+    let (_, header) = read_header(&buffer.staging_buffer).unwrap();
+
+    buffer.staging_buffer.clear();
+    fill_buf(stream, buffer, header.len as usize)?;
+
+    let (_, body, footer) = read_body_and_footer(&buffer.staging_buffer, &header).unwrap();
+
+    let fds = read_fds(&mut buffer.fds, &header);
+
+    Ok(Message {
+        header,
+        body,
+        footer,
+        fds,
+    })
 }

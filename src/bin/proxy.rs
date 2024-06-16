@@ -3,7 +3,7 @@
 #![allow(clippy::single_match)]
 
 use std::{
-    collections::HashMap,
+    collections::{HashMap, VecDeque},
     io::{IoSlice, IoSliceMut},
     os::{
         fd::{AsRawFd, RawFd},
@@ -21,7 +21,10 @@ pub const MAX_BUFFER_SIZE: usize = 500000;
 pub const MAX_FDS: usize = 1024;
 pub const MAX_FDS_MSG: usize = 28;
 
-fn recvmsg<'a>(stream: &UnixStream, buffer: &'a mut [u8]) -> (&'a [u8], Vec<ControlMessageOwned>) {
+fn recvmsg<'a>(
+    stream: &UnixStream,
+    buffer: &'a mut [u8],
+) -> (&'a [u8], Vec<ControlMessageOwned>, VecDeque<RawFd>) {
     let (len, cmsgs) = {
         let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_MSG]);
         let mut iov = [IoSliceMut::new(buffer)];
@@ -38,7 +41,15 @@ fn recvmsg<'a>(stream: &UnixStream, buffer: &'a mut [u8]) -> (&'a [u8], Vec<Cont
         (msg.bytes, cmsgs)
     };
 
-    (&buffer[..len], cmsgs)
+    let mut fds = VecDeque::new();
+    for fd in cmsgs.iter().flat_map(|cmsg| match cmsg {
+        socket::ControlMessageOwned::ScmRights(s) => s.as_slice(),
+        _ => &[],
+    }) {
+        fds.push_back(*fd);
+    }
+
+    (&buffer[..len], cmsgs, fds)
 }
 
 fn sendmsg(stream: &UnixStream, bytes: &[u8], cmsgs: &[ControlMessageOwned]) {
@@ -78,21 +89,13 @@ fn main() {
         let objects = objects.clone();
         let interfaces = interfaces();
         move || loop {
-            buffer.clear();
-            let (bytes, cmsgs) = recvmsg(&client, &mut buffer);
-
-            let fds: Vec<RawFd> = cmsgs
-                .iter()
-                .flat_map(|cmsg| match cmsg {
-                    socket::ControlMessageOwned::ScmRights(s) => s.clone(),
-                    _ => Vec::new(),
-                })
-                .collect();
+            buffer.fill(0);
+            let (bytes, cmsgs, mut fds) = recvmsg(&client, &mut buffer);
 
             let mut reader = bytes;
-            while let Some((rest, msg)) = ripewire::connection::read_msg(reader) {
+            while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
                 reader = rest;
-                inspect_method(&objects, &interfaces, &msg, &fds);
+                inspect_method(&objects, &interfaces, &msg);
                 // pod_v2::dbg_print::dbg_print(&msg.body);
             }
 
@@ -107,21 +110,13 @@ fn main() {
         let objects = objects.clone();
         let interfaces = interfaces();
         move || loop {
-            buffer.clear();
-            let (bytes, cmsgs) = recvmsg(&server, &mut buffer);
-
-            let fds: Vec<RawFd> = cmsgs
-                .iter()
-                .flat_map(|cmsg| match cmsg {
-                    socket::ControlMessageOwned::ScmRights(s) => s.clone(),
-                    _ => Vec::new(),
-                })
-                .collect();
+            buffer.fill(0);
+            let (bytes, cmsgs, mut fds) = recvmsg(&server, &mut buffer);
 
             let mut reader = bytes;
-            while let Some((rest, msg)) = ripewire::connection::read_msg(reader) {
+            while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
                 reader = rest;
-                inspect_event(&objects, &interfaces, &msg, &fds);
+                inspect_event(&objects, &interfaces, &msg);
                 // pod_v2::dbg_print::dbg_print(&msg.body);
             }
 
@@ -133,7 +128,7 @@ fn main() {
     server_in.join().unwrap();
 }
 
-fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message, fds: &[RawFd]) {
+fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
     let mut objects = objects.lock().unwrap();
     if let Some(interface) = objects.get(&msg.header.object_id) {
         print!("{:?}@{}.", interface, msg.header.object_id);
@@ -206,7 +201,7 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
                 },
                 ObjectType::ClientNode => {
                     print!(" ");
-                    inspect_client_node_method(msg.header.opcode, msg, fds);
+                    inspect_client_node_method(msg.header.opcode, msg);
                 }
                 _ => {}
             }
@@ -219,7 +214,7 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
     }
 }
 
-fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message, fds: &[RawFd]) {
+fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
     let objects = objects.lock().unwrap();
 
     print!("-> ");
@@ -227,16 +222,16 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
         print!("{:?}@{}.", interface, msg.header.object_id);
 
         match interface {
-            ObjectType::Core => inspect_core_event(msg.header.opcode, msg, fds),
-            ObjectType::Client => inspect_client_event(msg.header.opcode, msg, fds),
-            ObjectType::ClientNode => inspect_client_node_event(msg.header.opcode, msg, fds),
-            ObjectType::Device => inspect_device_event(msg.header.opcode, msg, fds),
-            ObjectType::Factory => inspect_factory_event(msg.header.opcode, msg, fds),
-            ObjectType::Link => inspect_link_event(msg.header.opcode, msg, fds),
-            ObjectType::Module => inspect_module_event(msg.header.opcode, msg, fds),
-            ObjectType::Node => inspect_node_event(msg.header.opcode, msg, fds),
-            ObjectType::Port => inspect_port_event(msg.header.opcode, msg, fds),
-            ObjectType::Registry => inspect_registry_event(msg.header.opcode, msg, fds),
+            ObjectType::Core => inspect_core_event(msg.header.opcode, msg),
+            ObjectType::Client => inspect_client_event(msg.header.opcode, msg),
+            ObjectType::ClientNode => inspect_client_node_event(msg.header.opcode, msg),
+            ObjectType::Device => inspect_device_event(msg.header.opcode, msg),
+            ObjectType::Factory => inspect_factory_event(msg.header.opcode, msg),
+            ObjectType::Link => inspect_link_event(msg.header.opcode, msg),
+            ObjectType::Module => inspect_module_event(msg.header.opcode, msg),
+            ObjectType::Node => inspect_node_event(msg.header.opcode, msg),
+            ObjectType::Port => inspect_port_event(msg.header.opcode, msg),
+            ObjectType::Registry => inspect_registry_event(msg.header.opcode, msg),
             _ => {
                 if let Some(event) = interfaces
                     .get(interface)
@@ -253,10 +248,10 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
     }
 }
 
-fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_core_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_core::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Done(v) => println!("{v:?}"),
         Event::Ping(v) => println!("{v:?}"),
@@ -269,19 +264,19 @@ fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     }
 }
 
-fn inspect_client_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_client_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_client::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Permissions(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_client_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_client_node_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_client_node::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Transport(v) => println!("{v:#?}"),
         Event::SetParam(v) => println!("{v:#?}"),
         Event::SetIo(v) => println!("{v:#?}"),
@@ -297,67 +292,67 @@ fn inspect_client_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     }
 }
 
-fn inspect_device_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_device_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_device::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_factory_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_factory_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_factory::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_link_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_link_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_link::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_module_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_module_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_module::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_node_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_node::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_port_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_port_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_port::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
     }
 }
 
-fn inspect_registry_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
+fn inspect_registry_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_registry::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
         Event::Global(v) => println!("{v:#?}"),
         Event::GlobalRemove(v) => println!("{v:?}"),
     }
 }
 
-fn inspect_client_node_method(opcode: u8, msg: &Message, _fds: &[RawFd]) {
+fn inspect_client_node_method(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_client_node::methods;
     let mut pod = msg.body.clone();
     match opcode {

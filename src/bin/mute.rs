@@ -51,11 +51,8 @@ fn main() {
 
     let mut buffer = MessageBuffer::new();
     loop {
-        buffer.clear();
-        let (messages, fds) = ctx.rcv_msg(&mut buffer).unwrap();
-        for msg in messages {
-            ctx.dispatch_event(&mut state, msg, &fds);
-        }
+        let msg = ctx.rcv_msg(&mut buffer).unwrap();
+        ctx.dispatch_event(&mut state, msg);
 
         if state.is_done {
             break;
