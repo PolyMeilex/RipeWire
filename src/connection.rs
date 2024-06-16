@@ -8,7 +8,11 @@ use std::{
     path::Path,
 };
 
-use nix::sys::socket::{self, ControlMessage, MsgFlags};
+use nix::{
+    sys::socket::{self, ControlMessage, MsgFlags},
+    NixPath,
+};
+use pod_v2::deserialize::OwnedPod;
 
 pub const MAX_FDS_OUT: usize = 28;
 
@@ -46,10 +50,7 @@ impl Header {
     }
 
     pub fn serialize(&self) -> [u8; 16] {
-        let header_buffer = [0; 16];
-        let buffer =
-            unsafe { ::std::slice::from_raw_parts_mut(header_buffer.as_ptr() as *mut u32, 4) };
-
+        let mut buffer = [0; 16 / mem::size_of::<u32>()];
         let opcode = self.opcode as u32;
 
         buffer[0] = self.object_id;
@@ -57,14 +58,15 @@ impl Header {
         buffer[2] = self.seq;
         buffer[3] = self.n_fds;
 
-        header_buffer
+        unsafe { mem::transmute(buffer) }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Message {
     pub header: Header,
-    pub body: Vec<u8>,
+    pub body: OwnedPod,
+    pub footer: Option<OwnedPod>,
 }
 
 pub struct Connection {
@@ -128,16 +130,30 @@ pub fn read_msg(buff: &[u8]) -> Option<(&[u8], Message)> {
     let buff = &buff[HDR_SIZE..];
 
     let len = header.len as usize;
-    let body = if len > 0 {
-        let buff = buff[..len].to_vec();
-        Some(buff)
+    let (body, footer) = if len > 0 {
+        let body = &buff[..len];
+
+        let (body, footer) = pod_v2::PodDeserializer::new(body);
+        let footer = if footer.is_empty() {
+            None
+        } else {
+            let (footer, rest) = pod_v2::PodDeserializer::new(footer);
+            debug_assert!(rest.is_empty());
+            Some(footer.to_owned())
+        };
+
+        Some((body.to_owned(), footer))
     } else {
         None
     }?;
 
     let buff = &buff[len..];
 
-    let msg = Message { header, body };
+    let msg = Message {
+        header,
+        body,
+        footer,
+    };
 
     Some((buff, msg))
 }

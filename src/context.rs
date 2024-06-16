@@ -84,7 +84,7 @@ impl<D> Context<D> {
 
         match self.object_type(&id).unwrap() {
             ObjectType::Core => {
-                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let mut pod = msg.body.as_deserializer();
                 let event = pw_core::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
 
                 if let pw_core::Event::RemoveId(ref event) = event {
@@ -95,7 +95,7 @@ impl<D> Context<D> {
                 self.dispatch_event_inner(state, core, event);
             }
             ObjectType::Client => {
-                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let mut pod = msg.body.as_deserializer();
                 let event =
                     pw_client::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
 
@@ -103,14 +103,14 @@ impl<D> Context<D> {
                 self.dispatch_event_inner(state, client, event);
             }
             ObjectType::ClientNode => {
-                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let mut pod = msg.body.as_deserializer();
                 let event =
                     pw_client_node::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
                 let client_node = PwClientNode::from_id(id);
                 self.dispatch_event_inner(state, client_node, event);
             }
             ObjectType::Registry => {
-                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let mut pod = msg.body.as_deserializer();
                 let event =
                     pw_registry::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
 
@@ -118,7 +118,7 @@ impl<D> Context<D> {
                 self.dispatch_event_inner(state, registry, event);
             }
             ObjectType::Device => {
-                let (mut pod, _) = pod_v2::PodDeserializer::new(&msg.body);
+                let mut pod = msg.body.as_deserializer();
                 let event =
                     pw_device::Event::deserialize(msg.header.opcode, &mut pod, fds).unwrap();
 

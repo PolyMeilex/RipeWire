@@ -13,7 +13,7 @@ use std::{
 };
 
 use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
-use pod_v2::{deserialize::PodDeserializerKind, PodDeserializer};
+use pod_v2::deserialize::PodDeserializerKind;
 use ripewire::{connection::Message, object_map::ObjectType};
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
@@ -143,7 +143,7 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
             match interface {
                 ObjectType::Core => match *method {
                     "GetRegistry" => {
-                        let (pod, _) = PodDeserializer::new(&msg.body);
+                        let pod = msg.body.as_deserializer();
                         let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
                             unreachable!("Non struct method call");
                         };
@@ -157,7 +157,7 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
                         objects.insert(new_id as u32, ObjectType::Registry);
                     }
                     "CreateObject" => {
-                        let (pod, _) = PodDeserializer::new(&msg.body);
+                        let pod = msg.body.as_deserializer();
                         let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
                             unreachable!("Non struct method call");
                         };
@@ -180,7 +180,7 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
                 },
                 ObjectType::Registry => match *method {
                     "Bind" => {
-                        let (pod, _) = PodDeserializer::new(&msg.body);
+                        let pod = msg.body.as_deserializer();
                         let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
                             unreachable!("Non struct method call");
                         };
@@ -253,7 +253,7 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
 
 fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_core::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Done(v) => println!("{v:?}"),
@@ -269,7 +269,7 @@ fn inspect_core_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_client_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_client::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Permissions(v) => println!("{v:#?}"),
@@ -278,7 +278,7 @@ fn inspect_client_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_client_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_client_node::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Transport(v) => println!("{v:#?}"),
         Event::SetParam(v) => println!("{v:#?}"),
@@ -297,7 +297,7 @@ fn inspect_client_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_device_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_device::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
@@ -306,7 +306,7 @@ fn inspect_device_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_factory_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_factory::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
@@ -314,7 +314,7 @@ fn inspect_factory_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_link_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_link::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
@@ -322,7 +322,7 @@ fn inspect_link_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_module_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_module::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
@@ -330,7 +330,7 @@ fn inspect_module_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_node::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
@@ -339,7 +339,7 @@ fn inspect_node_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_port_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_port::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
@@ -348,7 +348,7 @@ fn inspect_port_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_registry_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
     use ripewire::protocol::pw_registry::Event;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match Event::deserialize(opcode, &mut pod, fds).unwrap() {
         Event::Global(v) => println!("{v:#?}"),
         Event::GlobalRemove(v) => println!("{v:?}"),
@@ -357,7 +357,7 @@ fn inspect_registry_event(opcode: u8, msg: &Message, fds: &[RawFd]) {
 
 fn inspect_client_node_method(opcode: u8, msg: &Message, _fds: &[RawFd]) {
     use ripewire::protocol::pw_client_node::methods;
-    let (mut pod, _) = PodDeserializer::new(&msg.body);
+    let mut pod = msg.body.as_deserializer();
     match opcode {
         2 => {
             let msg = methods::Update::deserialize(&mut pod).unwrap();
