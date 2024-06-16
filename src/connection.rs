@@ -165,11 +165,10 @@ fn read_body_and_footer<'a>(
     buff: &'a [u8],
     header: &Header,
 ) -> Option<(&'a [u8], PodDeserializer<'a>, Option<PodDeserializer<'a>>)> {
-    debug_assert_eq!(buff.len(), header.len as usize);
-
     let len = header.len as usize;
     let (body, footer) = {
         let body = &buff[..header.len as usize];
+        debug_assert_eq!(body.len(), header.len as usize);
 
         let (body, footer) = pod_v2::PodDeserializer::new(body);
         let footer = if footer.is_empty() {
