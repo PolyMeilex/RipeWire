@@ -8,7 +8,7 @@ use ripewire::{
 
 struct State {
     globals: GlobalList,
-    should_exit: bool,
+    is_done: bool,
 }
 
 fn main() {
@@ -33,42 +33,15 @@ fn main() {
 
     let mut state = State {
         globals: GlobalList::default(),
-        should_exit: false,
+        is_done: false,
     };
 
     ctx.set_object_callback(&registry, |state, _ctx, _registry, event| {
         state.globals.handle_event(&event);
     });
-    ctx.set_object_callback(&core, move |state, ctx, core, event| match event {
+    ctx.set_object_callback(&core, |state, ctx, core, event| match event {
         pw_core::Event::Done(done) if done.id == Some(0) && done.seq == 0 => {
-            let device = state
-                .globals
-                .iter()
-                .filter(|g| g.interface == ObjectType::Device)
-                .find(|g| {
-                    g.properties.get("device.name").map(String::as_str)
-                        == Some("alsa_card.pci-0000_0b_00.6")
-                });
-
-            if let Some(global) = device {
-                let device: PwDevice = registry.bind(ctx, global);
-
-                device.set_param(
-                    ctx,
-                    pod::params::RouteParamBuilder::route()
-                        .index(4)
-                        .device(4)
-                        .props(
-                            pod::props::PropsBuilder::new()
-                                .mute(false)
-                                .volume(0.5)
-                                .build(),
-                        )
-                        .build(),
-                );
-
-                state.should_exit = true;
-            }
+            state.is_done = true;
         }
         pw_core::Event::Ping(ping) => {
             core.pong(ctx, ping.id, ping.seq);
@@ -82,8 +55,37 @@ fn main() {
             ctx.dispatch_event(&mut state, msg, &fds);
         }
 
-        if state.should_exit {
+        if state.is_done {
             break;
         }
+    }
+
+    let device = state
+        .globals
+        .iter()
+        .filter(|g| g.interface == ObjectType::Device)
+        .find(|g| {
+            g.properties.get("device.name").map(String::as_str)
+                == Some("alsa_card.pci-0000_0b_00.6")
+        });
+
+    if let Some(global) = device {
+        let device: PwDevice = registry.bind(&mut ctx, global);
+
+        device.set_param(
+            &mut ctx,
+            pod::params::RouteParamBuilder::route()
+                .index(4)
+                .device(4)
+                .props(
+                    pod::props::PropsBuilder::new()
+                        .mute(false)
+                        .volume(0.5)
+                        .build(),
+                )
+                .build(),
+        );
+
+        state.is_done = true;
     }
 }
