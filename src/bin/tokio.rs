@@ -1,4 +1,5 @@
 use pod::dictionary::Dictionary;
+use ripewire::connection::MessageBuffer;
 use ripewire::memory_registry::MemoryRegistry;
 use ripewire::object_map::ObjectType;
 use std::io;
@@ -145,11 +146,13 @@ async fn main() {
         },
     };
 
+    let mut buffer = MessageBuffer::new();
     loop {
         let fd = fd.readable().await.unwrap();
 
         if fd.ready().is_readable() {
-            let (messages, fds) = match state.ctx.rcv_msg() {
+            buffer.clear();
+            let (messages, fds) = match state.ctx.rcv_msg(&mut buffer) {
                 Ok(res) => res,
                 Err(err) if err.kind() == io::ErrorKind::WouldBlock => {
                     continue;

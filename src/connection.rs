@@ -8,11 +8,8 @@ use std::{
     path::Path,
 };
 
-use nix::{
-    sys::socket::{self, ControlMessage, MsgFlags},
-    NixPath,
-};
-use pod_v2::deserialize::OwnedPod;
+use nix::sys::socket::{self, ControlMessage, MsgFlags};
+use pod_v2::PodDeserializer;
 
 pub const MAX_FDS_OUT: usize = 28;
 
@@ -63,10 +60,33 @@ impl Header {
 }
 
 #[derive(Debug, Clone)]
-pub struct Message {
+pub struct Message<'a> {
     pub header: Header,
-    pub body: OwnedPod,
-    pub footer: Option<OwnedPod>,
+    pub body: PodDeserializer<'a>,
+    pub footer: Option<PodDeserializer<'a>>,
+}
+
+// TODO: Placeholder for real buffer, probably a ring buffer?
+pub struct MessageBuffer {
+    buffer: Vec<u8>,
+}
+
+impl Default for MessageBuffer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl MessageBuffer {
+    pub fn new() -> Self {
+        Self {
+            buffer: vec![0u8; 500000],
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.buffer.fill(0)
+    }
 }
 
 pub struct Connection {
@@ -86,8 +106,11 @@ impl Connection {
         send_msg(&self.stream, bytes, fds)
     }
 
-    pub fn rcv_msg(&mut self) -> io::Result<(Vec<Message>, Vec<RawFd>)> {
-        rcv_msg(&self.stream)
+    pub fn rcv_msg<'a>(
+        &mut self,
+        buffer: &'a mut MessageBuffer,
+    ) -> io::Result<(Vec<Message<'a>>, Vec<RawFd>)> {
+        rcv_msg(&self.stream, buffer)
     }
 }
 
@@ -139,10 +162,10 @@ pub fn read_msg(buff: &[u8]) -> Option<(&[u8], Message)> {
         } else {
             let (footer, rest) = pod_v2::PodDeserializer::new(footer);
             debug_assert!(rest.is_empty());
-            Some(footer.to_owned())
+            Some(footer)
         };
 
-        Some((body.to_owned(), footer))
+        Some((body, footer))
     } else {
         None
     }?;
@@ -183,11 +206,13 @@ fn send_msg(stream: &UnixStream, bytes: &[u8], fds: &[RawFd]) -> io::Result<usiz
     }
 }
 
-fn rcv_msg(stream: &UnixStream) -> io::Result<(Vec<Message>, Vec<RawFd>)> {
-    let mut buffer = vec![0u8; 500000];
+fn rcv_msg<'a>(
+    stream: &UnixStream,
+    buffer: &'a mut MessageBuffer,
+) -> io::Result<(Vec<Message<'a>>, Vec<RawFd>)> {
     let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_OUT]);
 
-    let mut iov = [IoSliceMut::new(&mut buffer)];
+    let mut iov = [IoSliceMut::new(&mut buffer.buffer)];
 
     let msg = nix::sys::socket::recvmsg::<()>(
         stream.as_raw_fd(),
@@ -206,7 +231,7 @@ fn rcv_msg(stream: &UnixStream) -> io::Result<(Vec<Message>, Vec<RawFd>)> {
 
     let bytes = msg.bytes;
 
-    let mut buff = &buffer[..bytes];
+    let mut buff = &buffer.buffer[..bytes];
 
     let mut messages = Vec::new();
 

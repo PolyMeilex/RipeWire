@@ -4,6 +4,7 @@ use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
 use libspa_consts::{SpaDirection, SpaEnum, SpaParamType};
 use pod::{dictionary::Dictionary, Value};
 
+use ripewire::connection::MessageBuffer;
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
 use ripewire::memory_registry::MemoryRegistry;
@@ -84,11 +85,13 @@ pub fn run_rust() {
         },
     };
 
+    let mut buffer = MessageBuffer::new();
     ev.handle()
         .insert_source(
             Generic::new(fd, Interest::READ, Mode::Level),
-            |_, _, state| {
-                let (messages, fds) = state.ctx.rcv_msg().unwrap();
+            move |_, _, state| {
+                buffer.clear();
+                let (messages, fds) = state.ctx.rcv_msg(&mut buffer).unwrap();
                 for msg in messages {
                     state.ctx.dispatch_event(&mut state.state, msg, &fds);
                 }

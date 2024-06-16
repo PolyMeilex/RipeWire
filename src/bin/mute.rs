@@ -2,8 +2,8 @@ use pod::dictionary::Dictionary;
 use std::os::fd::AsRawFd;
 
 use ripewire::{
-    context::Context, global_list::GlobalList, object_map::ObjectType, protocol::pw_core,
-    proxy::PwDevice,
+    connection::MessageBuffer, context::Context, global_list::GlobalList, object_map::ObjectType,
+    protocol::pw_core, proxy::PwDevice,
 };
 
 struct State {
@@ -49,8 +49,10 @@ fn main() {
         _ => {}
     });
 
+    let mut buffer = MessageBuffer::new();
     loop {
-        let (messages, fds) = ctx.rcv_msg().unwrap();
+        buffer.clear();
+        let (messages, fds) = ctx.rcv_msg(&mut buffer).unwrap();
         for msg in messages {
             ctx.dispatch_event(&mut state, msg, &fds);
         }
