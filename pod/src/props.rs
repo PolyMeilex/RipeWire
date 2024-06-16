@@ -3,21 +3,25 @@ use spa_sys::{SpaParamType, SpaProp, SpaType};
 use crate::{Object, Property, PropertyFlags, Value};
 
 #[derive(Debug)]
-pub struct PropsBuilder {
-    id: SpaParamType,
-    properties: Vec<Property>,
+pub struct PropsBuilder(Object);
+
+impl Default for PropsBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PropsBuilder {
     pub fn new() -> Self {
-        Self {
-            id: SpaParamType::Invalid,
+        Self(Object {
+            type_: SpaType::ObjectProps,
+            id: SpaParamType::Invalid as u32,
             properties: vec![],
-        }
+        })
     }
 
     fn push(mut self, key: SpaProp, value: Value) -> Self {
-        self.properties.push(Property {
+        self.0.properties.push(Property {
             key: key as u32,
             flags: PropertyFlags::empty(),
             value,
@@ -38,10 +42,6 @@ impl PropsBuilder {
     }
 
     pub fn build(self) -> Object {
-        Object {
-            type_: SpaType::ObjectProps,
-            id: self.id as u32,
-            properties: self.properties,
-        }
+        self.0
     }
 }

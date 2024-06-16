@@ -6,28 +6,27 @@ use spa_sys::{
 use crate::{pod, utils::Id, Object, Property, PropertyFlags, Value};
 
 #[derive(Debug)]
-pub struct FormatParamBuilder {
-    id: SpaParamType,
-    properties: Vec<Property>,
-}
+pub struct FormatParamBuilder(Object);
 
 impl FormatParamBuilder {
     pub fn format() -> Self {
-        Self {
-            id: SpaParamType::Format,
+        Self(Object {
+            type_: SpaType::ObjectFormat,
+            id: SpaParamType::Format as u32,
             properties: vec![],
-        }
+        })
     }
 
     pub fn enum_format() -> Self {
-        Self {
-            id: SpaParamType::EnumFormat,
+        Self(Object {
+            type_: SpaType::ObjectFormat,
+            id: SpaParamType::EnumFormat as u32,
             properties: vec![],
-        }
+        })
     }
 
     fn push(mut self, key: SpaFormat, value: Value) -> Self {
-        self.properties.push(Property {
+        self.0.properties.push(Property {
             key: key as u32,
             flags: PropertyFlags::empty(),
             value,
@@ -44,30 +43,24 @@ impl FormatParamBuilder {
     }
 
     pub fn build(self) -> Object {
-        Object {
-            type_: SpaType::ObjectFormat,
-            id: self.id as u32,
-            properties: self.properties,
-        }
+        self.0
     }
 }
 
 #[derive(Debug)]
-pub struct IoParamBuilder {
-    id: SpaParamType,
-    properties: Vec<Property>,
-}
+pub struct IoParamBuilder(Object);
 
 impl IoParamBuilder {
     pub fn io() -> Self {
-        Self {
-            id: SpaParamType::Io,
+        Self(Object {
+            type_: SpaType::ObjectParamIo,
+            id: SpaParamType::Io as u32,
             properties: vec![],
-        }
+        })
     }
 
     fn push(mut self, key: SpaParamIo, value: Value) -> Self {
-        self.properties.push(Property {
+        self.0.properties.push(Property {
             key: key as u32,
             flags: PropertyFlags::empty(),
             value,
@@ -84,38 +77,33 @@ impl IoParamBuilder {
     }
 
     pub fn build(self) -> Object {
-        Object {
-            type_: SpaType::ObjectParamIo,
-            id: self.id as u32,
-            properties: self.properties,
-        }
+        self.0
     }
 }
 
 #[derive(Debug)]
-pub struct RouteParamBuilder {
-    id: SpaParamType,
-    properties: Vec<Property>,
-}
+pub struct RouteParamBuilder(Object);
 
 // https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/spa/include/spa/param/route-types.h#L25
 impl RouteParamBuilder {
     pub fn enum_route() -> Self {
-        Self {
-            id: SpaParamType::EnumRoute,
+        Self(Object {
+            type_: SpaType::ObjectParamRoute,
+            id: SpaParamType::EnumRoute as u32,
             properties: vec![],
-        }
+        })
     }
 
     pub fn route() -> Self {
-        Self {
-            id: SpaParamType::Route,
+        Self(Object {
+            type_: SpaType::ObjectParamRoute,
+            id: SpaParamType::Route as u32,
             properties: vec![],
-        }
+        })
     }
 
     fn push(mut self, key: SpaParamRoute, value: Value) -> Self {
-        self.properties.push(Property {
+        self.0.properties.push(Property {
             key: key as u32,
             flags: PropertyFlags::empty(),
             value,
@@ -163,7 +151,7 @@ impl RouteParamBuilder {
     }
 
     pub fn props(self, mut props: pod::Object) -> Self {
-        props.id = self.id as u32;
+        props.id = self.0.id;
         self.push(SpaParamRoute::Props, Value::Object(props))
     }
 
@@ -180,10 +168,6 @@ impl RouteParamBuilder {
     }
 
     pub fn build(self) -> Object {
-        Object {
-            type_: SpaType::ObjectParamRoute,
-            id: self.id as u32,
-            properties: self.properties,
-        }
+        self.0
     }
 }
