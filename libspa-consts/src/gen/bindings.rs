@@ -170,7 +170,9 @@ pub enum SpaParamType {
     Tag = 17,
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpaParamAvailability {
     #[doc = "< unknown availability"]
     Unknown = 0,
@@ -181,7 +183,9 @@ pub enum SpaParamAvailability {
 }
 #[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamIO"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpaParamIo {
     Start = 0,
     #[doc = "< type ID, uniquely identifies the io area (Id enum spa_io_type)"]
@@ -298,7 +302,9 @@ pub enum SpaProp {
 }
 #[repr(u32)]
 #[doc = " media type for SPA_TYPE_OBJECT_Format"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpaMediaType {
     Unknown = 0,
     Audio = 1,
@@ -310,7 +316,9 @@ pub enum SpaMediaType {
 }
 #[repr(u32)]
 #[doc = " media subtype for SPA_TYPE_OBJECT_Format"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpaMediaSubtype {
     Unknown = 0,
     Raw = 1,
