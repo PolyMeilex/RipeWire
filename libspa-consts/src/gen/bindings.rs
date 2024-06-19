@@ -176,6 +176,38 @@ pub enum SpaParamAvailability {
     Yes = 2,
 }
 #[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_ParamBuffers"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamBuffers {
+    Start = 0,
+    #[doc = "< number of buffers (Int)"]
+    Buffers = 1,
+    #[doc = "< number of data blocks per buffer (Int)"]
+    Blocks = 2,
+    #[doc = "< size of a data block memory (Int)"]
+    Size = 3,
+    #[doc = "< stride of data block memory (Int)"]
+    Stride = 4,
+    #[doc = "< alignment of data block memory (Int)"]
+    Align = 5,
+    #[doc = "< possible memory types (Int, mask of enum spa_data_type)"]
+    DataType = 6,
+}
+#[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_ParamMeta"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamMeta {
+    Start = 0,
+    #[doc = "< the metadata, one of enum spa_meta_type (Id enum spa_meta_type)"]
+    Type = 1,
+    #[doc = "< the expected maximum size the meta (Int)"]
+    Size = 2,
+}
+#[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamIO"]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
@@ -186,6 +218,48 @@ pub enum SpaParamIo {
     Id = 1,
     #[doc = "< size of the io area (Int)"]
     Size = 2,
+}
+#[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_ParamProfile"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamProfile {
+    Start = 0,
+    #[doc = "< profile index (Int)"]
+    Index = 1,
+    #[doc = "< profile name (String)"]
+    Name = 2,
+    #[doc = "< profile description (String)"]
+    Description = 3,
+    #[doc = "< profile priority (Int)"]
+    Priority = 4,
+    #[doc = "< availability of the profile\n  (Id enum spa_param_availability)"]
+    Available = 5,
+    #[doc = "< info (Struct(\n\t\t  Int : n_items,\n\t\t  (String : key,\n\t\t   String : value)*))"]
+    Info = 6,
+    #[doc = "< node classes provided by this profile\n  (Struct(\n\t   Int : number of items following\n        Struct(\n           String : class name (eg. \"Audio/Source\"),\n           Int : number of nodes\n           String : property (eg. \"card.profile.devices\"),\n           Array of Int: device indexes\n         )*))"]
+    Classes = 7,
+    #[doc = "< If profile should be saved (Bool)"]
+    Save = 8,
+}
+#[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_ParamPortConfig"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamPortConfig {
+    Start = 0,
+    #[doc = "< (Id enum spa_direction) direction"]
+    Direction = 1,
+    #[doc = "< (Id enum spa_param_port_config_mode) mode"]
+    Mode = 2,
+    #[doc = "< (Bool) enable monitor output ports on input ports"]
+    Monitor = 3,
+    #[doc = "< (Bool) enable control ports"]
+    Control = 4,
+    #[doc = "< (Object) format filter"]
+    Format = 5,
 }
 #[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamRoute"]
@@ -499,6 +573,75 @@ pub enum SpaFormat {
     StartBinary = 262144,
     StartStream = 327680,
     StartApplication = 393216,
+}
+#[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_ParamLatency"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamLatency {
+    Start = 0,
+    #[doc = "< direction, input/output (Id enum spa_direction)"]
+    Direction = 1,
+    #[doc = "< min latency relative to quantum (Float)"]
+    MinQuantum = 2,
+    #[doc = "< max latency relative to quantum (Float)"]
+    MaxQuantum = 3,
+    #[doc = "< min latency (Int) relative to rate"]
+    MinRate = 4,
+    #[doc = "< max latency (Int) relative to rate"]
+    MaxRate = 5,
+    #[doc = "< min latency (Long) in nanoseconds"]
+    MinNs = 6,
+    #[doc = "< max latency (Long) in nanoseconds"]
+    MaxNs = 7,
+}
+#[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_ParamProcessLatency"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamProcessLatency {
+    Start = 0,
+    #[doc = "< latency relative to quantum (Float)"]
+    Quantum = 1,
+    #[doc = "< latency (Int) relative to rate"]
+    Rate = 2,
+    #[doc = "< latency (Long) in nanoseconds"]
+    Ns = 3,
+}
+#[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_Profiler"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaProfiler {
+    Start = 0,
+    #[doc = "< driver related profiler properties"]
+    StartDriver = 65536,
+    #[doc = "< Generic info, counter and CPU load,\n (Struct(\n      Long : counter,\n      Float : cpu_load fast,\n      Float : cpu_load medium,\n      Float : cpu_load slow),\n      Int : xrun-count))"]
+    Info = 65537,
+    #[doc = "< clock information\n  (Struct(\n      Int : clock flags,\n      Int : clock id,\n      String: clock name,\n      Long : clock nsec,\n      Fraction : clock rate,\n      Long : clock position,\n      Long : clock duration,\n      Long : clock delay,\n      Double : clock rate_diff,\n      Long : clock next_nsec))"]
+    Clock = 65538,
+    #[doc = "< generic driver info block\n  (Struct(\n      Int : driver_id,\n      String : name,\n      Long : driver prev_signal,\n      Long : driver signal,\n      Long : driver awake,\n      Long : driver finish,\n      Int : driver status),\n      Fraction : latency))"]
+    DriverBlock = 65539,
+    #[doc = "< follower related profiler properties"]
+    StartFollower = 131072,
+    #[doc = "< generic follower info block\n  (Struct(\n      Int : id,\n      String : name,\n      Long : prev_signal,\n      Long : signal,\n      Long : awake,\n      Long : finish,\n      Int : status,\n      Fraction : latency))"]
+    FollowerBlock = 131073,
+    StartCustom = 16777216,
+}
+#[repr(u32)]
+#[doc = " properties for SPA_TYPE_OBJECT_ParamTag"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamTag {
+    Start = 0,
+    #[doc = "< direction, input/output (Id enum spa_direction)"]
+    Direction = 1,
+    #[doc = "< Struct(\n      Int: n_items\n      (String: key\n       String: value)*\n  )"]
+    Info = 2,
 }
 #[repr(i32)]
 #[doc = " \\enum pw_link_state The different link states"]

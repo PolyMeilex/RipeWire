@@ -3,8 +3,9 @@ use std::{fmt, io::Write, mem, os::raw::c_void};
 use super::pad_to_8;
 use bstr::BStr;
 use libspa_consts::{
-    SpaChoiceType, SpaControlType, SpaEnum, SpaFraction, SpaParamRoute, SpaProp, SpaPropInfo,
-    SpaRectangle, SpaType,
+    SpaChoiceType, SpaControlType, SpaEnum, SpaFormat, SpaFraction, SpaParamBuffers, SpaParamIo,
+    SpaParamLatency, SpaParamMeta, SpaParamPortConfig, SpaParamProcessLatency, SpaParamProfile,
+    SpaParamRoute, SpaParamTag, SpaProfiler, SpaProp, SpaPropInfo, SpaRectangle, SpaType,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -663,8 +664,6 @@ impl<'a> fmt::Debug for PobObjectPropertyDeserializer<'a> {
 
 impl<'a> fmt::Debug for PodObjectDeserializer<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        struct ObjectProps<'a, 'b>(&'b PodObjectDeserializer<'a>);
-
         struct DbgKey {
             key: u32,
             object_ty: SpaEnum<SpaType>,
@@ -679,24 +678,45 @@ impl<'a> fmt::Debug for PodObjectDeserializer<'a> {
                     SpaEnum::Value(SpaType::ObjectProps) => {
                         SpaEnum::<SpaProp>::from_raw(self.key).fmt(f)
                     }
-                    // SpaEnum::Value(SpaType::ObjectFormat) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamBuffers) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamMeta) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamIo) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamProfile) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamPortConfig) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectProfiler) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamLatency) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamProcessLatency) => todo!(),
-                    // SpaEnum::Value(SpaType::ObjectParamParamTag) => todo!(),
+                    SpaEnum::Value(SpaType::ObjectFormat) => {
+                        SpaEnum::<SpaFormat>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamBuffers) => {
+                        SpaEnum::<SpaParamBuffers>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamMeta) => {
+                        SpaEnum::<SpaParamMeta>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamIo) => {
+                        SpaEnum::<SpaParamIo>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamProfile) => {
+                        SpaEnum::<SpaParamProfile>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamPortConfig) => {
+                        SpaEnum::<SpaParamPortConfig>::from_raw(self.key).fmt(f)
+                    }
                     SpaEnum::Value(SpaType::ObjectParamRoute) => {
                         SpaEnum::<SpaParamRoute>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectProfiler) => {
+                        SpaEnum::<SpaProfiler>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamLatency) => {
+                        SpaEnum::<SpaParamLatency>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamProcessLatency) => {
+                        SpaEnum::<SpaParamProcessLatency>::from_raw(self.key).fmt(f)
+                    }
+                    SpaEnum::Value(SpaType::ObjectParamParamTag) => {
+                        SpaEnum::<SpaParamTag>::from_raw(self.key).fmt(f)
                     }
                     _ => self.key.fmt(f),
                 }
             }
         }
 
+        struct ObjectProps<'a, 'b>(&'b PodObjectDeserializer<'a>);
         impl<'a, 'b> fmt::Debug for ObjectProps<'a, 'b> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 let mut map = f.debug_map();
