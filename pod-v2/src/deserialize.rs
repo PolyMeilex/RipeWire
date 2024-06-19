@@ -2,7 +2,10 @@ use std::{fmt, io::Write, mem, os::raw::c_void};
 
 use super::pad_to_8;
 use bstr::BStr;
-use libspa_consts::{SpaChoiceType, SpaControlType, SpaEnum, SpaFraction, SpaRectangle, SpaType};
+use libspa_consts::{
+    SpaChoiceType, SpaControlType, SpaEnum, SpaFraction, SpaParamRoute, SpaProp, SpaRectangle,
+    SpaType,
+};
 
 #[derive(Debug, thiserror::Error)]
 pub enum DeserializeError {
@@ -269,6 +272,14 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
+    pub fn as_object(&self) -> Result<PodObjectDeserializer<'a>> {
+        if let PodDeserializerKind::Object(pod) = self.kind() {
+            Ok(pod)
+        } else {
+            Err(self.unexpected_type(SpaType::Struct))
+        }
+    }
+
     pub fn as_bytes(&self) -> Result<&'a [u8]> {
         if let PodDeserializerKind::Bytes(pod) = self.kind() {
             Ok(pod)
@@ -464,11 +475,11 @@ impl<'a> PodObjectDeserializer<'a> {
 
         let (key, remaining) = eat_raw::<u32>(remaining);
         let (flags, remaining) = eat_raw::<u32>(remaining);
-        let (pod, remaining) = PodDeserializer::new(remaining);
+        let (value, remaining) = PodDeserializer::new(remaining);
 
         self.body = remaining;
 
-        Ok(PobObjectPropertyDeserializer { key, flags, pod })
+        Ok(PobObjectPropertyDeserializer { key, flags, value })
     }
 }
 
@@ -483,7 +494,7 @@ impl<'a> Iterator for PodObjectDeserializer<'a> {
 pub struct PobObjectPropertyDeserializer<'a> {
     pub key: u32,
     pub flags: u32,
-    pub pod: PodDeserializer<'a>,
+    pub value: PodDeserializer<'a>,
 }
 
 #[derive(Clone)]
@@ -645,14 +656,64 @@ impl<'a> fmt::Debug for PobObjectPropertyDeserializer<'a> {
         f.debug_struct("Property")
             .field("key", &self.key)
             .field("flags", &self.flags)
-            .field("value", &self.pod)
+            .field("value", &self.value)
             .finish()
     }
 }
 
 impl<'a> fmt::Debug for PodObjectDeserializer<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        list_tuple(f, "Object", self.clone())
+        struct ObjectProps<'a, 'b>(&'b PodObjectDeserializer<'a>);
+
+        struct DbgKey {
+            key: u32,
+            object_ty: SpaEnum<SpaType>,
+        }
+
+        impl fmt::Debug for DbgKey {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self.object_ty {
+                    // SpaEnum::Value(SpaType::ObjectPropInfo) => todo!(),
+                    SpaEnum::Value(SpaType::ObjectProps) => {
+                        SpaEnum::<SpaProp>::from_raw(self.key).fmt(f)
+                    }
+                    // SpaEnum::Value(SpaType::ObjectFormat) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamBuffers) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamMeta) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamIo) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamProfile) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamPortConfig) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectProfiler) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamLatency) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamProcessLatency) => todo!(),
+                    // SpaEnum::Value(SpaType::ObjectParamParamTag) => todo!(),
+                    SpaEnum::Value(SpaType::ObjectParamRoute) => {
+                        SpaEnum::<SpaParamRoute>::from_raw(self.key).fmt(f)
+                    }
+                    _ => self.key.fmt(f),
+                }
+            }
+        }
+
+        impl<'a, 'b> fmt::Debug for ObjectProps<'a, 'b> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                let mut map = f.debug_map();
+                for prop in self.0.clone() {
+                    map.key(&DbgKey {
+                        key: prop.key,
+                        object_ty: self.0.object_ty,
+                    });
+                    map.value(&prop.value);
+                }
+                map.finish()
+            }
+        }
+
+        f.debug_struct("Object")
+            .field("object_ty", &self.object_ty)
+            .field("object_id", &self.object_id)
+            .field("properties", &ObjectProps(self))
+            .finish()
     }
 }
 
@@ -685,7 +746,7 @@ impl<'a> fmt::Debug for PodDeserializer<'a> {
             PodDeserializerKind::Bytes(v) => list_tuple(f, "Bytes", v.iter()),
             PodDeserializerKind::Array(v) => list_tuple(f, "Array", v.clone()),
             PodDeserializerKind::Struct(v) => list_tuple(f, "Struct", v.clone()),
-            PodDeserializerKind::Object(v) => list_tuple(f, "Object", v.clone()),
+            PodDeserializerKind::Object(v) => v.fmt(f),
             PodDeserializerKind::Choice(v) => v.fmt(f),
             PodDeserializerKind::Unknown(pod) => f
                 .debug_struct("UnknownPod")

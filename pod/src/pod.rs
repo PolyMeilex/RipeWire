@@ -635,7 +635,7 @@ impl Property {
         Self {
             key: deserializer.key,
             flags: PropertyFlags::from_bits_retain(deserializer.flags),
-            value: Value::deserialize_v2(&mut deserializer.pod),
+            value: Value::deserialize_v2(&mut deserializer.value),
         }
     }
 }

@@ -11,10 +11,19 @@ mod bindings {
 pub use bindings::*;
 
 /// Wrapper type for enums that handles unknown variants gracefully
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SpaEnum<T, RAW = u32> {
     Value(T),
     Unknown(RAW),
+}
+
+impl<T: std::fmt::Debug, RAW: std::fmt::Debug> std::fmt::Debug for SpaEnum<T, RAW> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SpaEnum::Value(v) => v.fmt(f),
+            SpaEnum::Unknown(v) => f.debug_tuple("Unknown").field(v).finish(),
+        }
+    }
 }
 
 impl<T, RAW: std::fmt::Debug> SpaEnum<T, RAW> {

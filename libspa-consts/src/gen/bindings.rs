@@ -191,7 +191,9 @@ pub enum SpaParamIo {
 }
 #[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamRoute"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpaParamRoute {
     Start = 0,
     #[doc = "< index of the routing destination (Int)"]
@@ -223,7 +225,9 @@ pub enum SpaParamRoute {
 }
 #[repr(u32)]
 #[doc = " predefined properties for SPA_TYPE_OBJECT_Props"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpaProp {
     #[doc = "< an unknown property"]
     Unknown = 1,
