@@ -222,6 +222,27 @@ pub enum SpaParamRoute {
     Save = 13,
 }
 #[repr(u32)]
+#[doc = " properties of SPA_TYPE_OBJECT_PropInfo"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaPropInfo {
+    #[doc = "< associated id of the property"]
+    Id = 1,
+    #[doc = "< name of the property"]
+    Name = 2,
+    #[doc = "< type and range/enums of property"]
+    Type = 3,
+    #[doc = "< labels of property if any, this is a\n  struct with pairs of values, the first one\n  is of the type of the property, the second\n  one is a string with a user readable label\n  for the value."]
+    Labels = 4,
+    #[doc = "< type of container if any (Id)"]
+    Container = 5,
+    #[doc = "< is part of params property (Bool)"]
+    Params = 6,
+    #[doc = "< User readable description"]
+    Description = 7,
+}
+#[repr(u32)]
 #[doc = " predefined properties for SPA_TYPE_OBJECT_Props"]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,

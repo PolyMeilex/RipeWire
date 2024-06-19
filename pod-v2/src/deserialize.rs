@@ -3,8 +3,8 @@ use std::{fmt, io::Write, mem, os::raw::c_void};
 use super::pad_to_8;
 use bstr::BStr;
 use libspa_consts::{
-    SpaChoiceType, SpaControlType, SpaEnum, SpaFraction, SpaParamRoute, SpaProp, SpaRectangle,
-    SpaType,
+    SpaChoiceType, SpaControlType, SpaEnum, SpaFraction, SpaParamRoute, SpaProp, SpaPropInfo,
+    SpaRectangle, SpaType,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -673,7 +673,9 @@ impl<'a> fmt::Debug for PodObjectDeserializer<'a> {
         impl fmt::Debug for DbgKey {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 match self.object_ty {
-                    // SpaEnum::Value(SpaType::ObjectPropInfo) => todo!(),
+                    SpaEnum::Value(SpaType::ObjectPropInfo) => {
+                        SpaEnum::<SpaPropInfo>::from_raw(self.key).fmt(f)
+                    }
                     SpaEnum::Value(SpaType::ObjectProps) => {
                         SpaEnum::<SpaProp>::from_raw(self.key).fmt(f)
                     }

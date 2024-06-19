@@ -59,6 +59,7 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
         let prefix = match enum_name? {
             "enum spa_choice_type" => "SPA_CHOICE_",
             "enum spa_prop" => "SPA_PROP_",
+            "enum spa_prop_info" => "SPA_PROP_INFO_",
             "enum spa_data_type" => "SPA_DATA_",
             "enum spa_param_route" => "SPA_PARAM_ROUTE_",
             "enum spa_param_type" => "SPA_PARAM_",
@@ -109,6 +110,7 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_choice_type",
         "spa_format",
         "spa_prop",
+        "spa_prop_info",
         "spa_data_type",
         "spa_param_route",
         "spa_param_type",
