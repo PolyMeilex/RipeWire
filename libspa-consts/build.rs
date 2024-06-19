@@ -19,33 +19,7 @@ struct ParseCallbacks;
 
 impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
     fn item_name(&self, original_item_name: &str) -> Option<String> {
-        let rename = [
-            "spa_pod",
-            "spa_choice_type",
-            "spa_prop",
-            "spa_data_type",
-            "spa_param_route",
-            "spa_param_type",
-            "spa_io_type",
-            "spa_param_io",
-            "spa_media_type",
-            "spa_media_subtype",
-            "spa_format",
-            "spa_rectangle",
-            "spa_fraction",
-            "spa_direction",
-            "spa_param_availability",
-            "spa_control_type",
-            "spa_meta_type",
-            "pw_link_state",
-            "pw_node_state",
-        ];
-
-        if rename.contains(&original_item_name) {
-            Some(original_item_name.to_case(Case::UpperCamel))
-        } else {
-            None
-        }
+        Some(original_item_name.to_case(Case::UpperCamel))
     }
 
     fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
@@ -118,14 +92,13 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         .header("wrapper.h")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .parse_callbacks(Box::new(ParseCallbacks))
         // Use `usize` for `size_t`. This behavior of bindgen changed because it is not
         // *technically* correct, but is the case in all architectures supported by Rust.
         .size_t_is_usize(true)
         .ignore_functions()
         .ignore_methods()
-        .allowlist_type("spa_pod")
         .allowlist_type("spa_rectangle")
         .allowlist_type("spa_fraction")
         .prepend_enum_name(false)

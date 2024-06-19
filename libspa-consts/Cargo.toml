@@ -18,7 +18,7 @@ num-traits = "0.2"
 num-derive = "0.4"
 
 [build-dependencies]
-bindgen = { version = "0.64", default-features = false }
+bindgen = { version = "0.69", default-features = false }
 cc = "1.0"
 system-deps = "6"
 convert_case = "0.6"
