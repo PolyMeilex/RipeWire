@@ -101,12 +101,18 @@ impl<D> Context<D> {
                 let event =
                     pw_core::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
 
-                if let pw_core::Event::RemoveId(ref event) = event {
-                    self.map.remove(event.id);
-                }
+                let remove_id = if let pw_core::Event::RemoveId(ref event) = event {
+                    Some(event.id)
+                } else {
+                    None
+                };
 
                 let core = PwCore::from_id(id);
                 self.dispatch_event_inner(state, core, event);
+
+                if let Some(remove_id) = remove_id {
+                    self.map.remove(remove_id);
+                }
             }
             ObjectType::Client => {
                 let mut pod = msg.body;
