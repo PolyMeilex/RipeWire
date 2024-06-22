@@ -55,7 +55,7 @@ impl<D> Context<D> {
     }
 
     pub fn new_object(&mut self, kind: ObjectType) -> ObjectId {
-        let new_id = self.map.client_insert_new(Object {
+        let new_id = self.map.insert_new(Object {
             interface: kind,
             version: 3,
             data: None,

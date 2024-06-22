@@ -86,41 +86,43 @@ pub struct Object<Data> {
     pub data: Data,
 }
 
-/// A holder for the object store of a connection
-///
-/// Keeps track of which object id is associated to which
-/// interface object, and which is currently unused.
-#[derive(Debug)]
-pub struct ObjectMap<Data> {
-    objects: Vec<Option<Object<Data>>>,
+#[derive(Debug, Default)]
+pub struct SlotMap<T> {
+    slots: Vec<Option<T>>,
 }
 
-impl<Data> ObjectMap<Data> {
-    /// Create a new empty object map
+impl<T> SlotMap<T> {
     pub fn new() -> Self {
-        Self {
-            objects: Vec::new(),
+        Self { slots: Vec::new() }
+    }
+
+    pub fn get(&self, id: u32) -> Option<&T> {
+        self.slots.get(id as usize).and_then(|obj| obj.as_ref())
+    }
+
+    pub fn get_mut(&mut self, id: u32) -> Option<&mut T> {
+        self.slots.get_mut(id as usize).and_then(|obj| obj.as_mut())
+    }
+
+    pub fn remove(&mut self, id: u32) {
+        if let Some(place) = self.slots.get_mut(id as usize) {
+            *place = None;
         }
     }
 
-    /// Find an object in the store
-    pub fn find(&self, id: u32) -> Option<&Object<Data>> {
-        self.objects.get(id as usize).and_then(|obj| obj.as_ref())
-    }
-
-    /// Find an object in the store
-    pub fn find_mut(&mut self, id: u32) -> Option<&mut Object<Data>> {
-        self.objects
-            .get_mut(id as usize)
-            .and_then(|obj| obj.as_mut())
-    }
-
-    /// Remove an object from the store
-    ///
-    /// Does nothing if the object didn't previously exists
-    pub fn remove(&mut self, id: u32) {
-        if let Some(place) = self.objects.get_mut(id as usize) {
-            *place = None;
+    pub fn replace(&mut self, id: u32, value: T) {
+        let id = id as usize;
+        match id.cmp(&self.slots.len()) {
+            Ordering::Less => {
+                self.slots[id] = Some(value);
+            }
+            Ordering::Equal => {
+                self.slots.push(Some(value));
+            }
+            Ordering::Greater => {
+                self.slots.resize_with(id + 1, || None);
+                self.slots[id] = Some(value);
+            }
         }
     }
 
@@ -128,65 +130,87 @@ impl<Data> ObjectMap<Data> {
     ///
     /// Can fail if the requested id is not the next free id of this store.
     /// (In which case this is a protocol error)
-    pub fn insert_at(&mut self, id: u32, object: Object<Data>) -> Result<(), ()> {
-        insert_in_at(&mut self.objects, id as usize, object)
-    }
-
-    /// Allocate a new id for an object in the client namespace
-    pub fn client_insert_new(&mut self, object: Object<Data>) -> u32 {
-        insert_in(&mut self.objects, object)
-    }
-
-    /// Mutably access an object of the map
-    pub fn with<T, F: FnOnce(&mut Object<Data>) -> T>(&mut self, id: u32, f: F) -> Result<T, ()> {
-        if let Some(&mut Some(ref mut obj)) = self.objects.get_mut(id as usize) {
-            Ok(f(obj))
-        } else {
-            Err(())
+    pub fn insert_at(&mut self, id: u32, value: T) -> Result<(), ()> {
+        let id = id as usize;
+        match id.cmp(&self.slots.len()) {
+            Ordering::Greater => Err(()),
+            Ordering::Equal => {
+                self.slots.push(Some(value));
+                Ok(())
+            }
+            Ordering::Less => {
+                let previous = &mut self.slots[id];
+                if !previous.is_none() {
+                    return Err(());
+                }
+                *previous = Some(value);
+                Ok(())
+            }
         }
     }
 
-    pub fn all_objects(&self) -> impl Iterator<Item = (u32, &Object<Data>)> {
-        self.objects
+    /// Allocate a new id for an object in the client namespace
+    pub fn insert_new(&mut self, value: T) -> u32 {
+        match self.slots.iter().position(Option::is_none) {
+            Some(id) => {
+                self.slots[id] = Some(value);
+                id as u32
+            }
+            None => {
+                self.slots.push(Some(value));
+                (self.slots.len() - 1) as u32
+            }
+        }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (u32, &T)> {
+        self.slots
             .iter()
             .enumerate()
             .flat_map(|(idx, obj)| obj.as_ref().map(|obj| (idx as u32, obj)))
     }
 }
 
-// insert a new object in a store at the first free place
-fn insert_in<Data>(store: &mut Vec<Option<Object<Data>>>, object: Object<Data>) -> u32 {
-    match store.iter().position(Option::is_none) {
-        Some(id) => {
-            store[id] = Some(object);
-            id as u32
-        }
-        None => {
-            store.push(Some(object));
-            (store.len() - 1) as u32
-        }
-    }
+/// A holder for the object store of a connection
+///
+/// Keeps track of which object id is associated to which
+/// interface object, and which is currently unused.
+#[derive(Debug)]
+pub struct ObjectMap<Data> {
+    objects: SlotMap<Object<Data>>,
 }
 
-// insert an object at a given place in a store
-fn insert_in_at<Data>(
-    store: &mut Vec<Option<Object<Data>>>,
-    id: usize,
-    object: Object<Data>,
-) -> Result<(), ()> {
-    match id.cmp(&store.len()) {
-        Ordering::Greater => Err(()),
-        Ordering::Equal => {
-            store.push(Some(object));
-            Ok(())
+impl<Data> ObjectMap<Data> {
+    /// Create a new empty object map
+    pub fn new() -> Self {
+        Self {
+            objects: SlotMap::new(),
         }
-        Ordering::Less => {
-            let previous = &mut store[id];
-            if !previous.is_none() {
-                return Err(());
-            }
-            *previous = Some(object);
-            Ok(())
-        }
+    }
+
+    /// Find an object in the store
+    pub fn find(&self, id: u32) -> Option<&Object<Data>> {
+        self.objects.get(id)
+    }
+
+    /// Find an object in the store
+    pub fn find_mut(&mut self, id: u32) -> Option<&mut Object<Data>> {
+        self.objects.get_mut(id)
+    }
+
+    /// Remove an object from the store
+    ///
+    /// Does nothing if the object didn't previously exists
+    pub fn remove(&mut self, id: u32) {
+        self.objects.remove(id)
+    }
+
+    /// Allocate a new id for an object in the client namespace
+    pub fn insert_new(&mut self, object: Object<Data>) -> u32 {
+        self.objects.insert_new(object)
+    }
+
+    pub fn all_objects(&self) -> impl Iterator<Item = (u32, &Object<Data>)> {
+        self.objects.iter()
     }
 }
