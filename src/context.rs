@@ -20,42 +20,27 @@ struct CallbackArgs<'a, D> {
     event: Box<dyn Any>,
 }
 
-struct CallbackState<D> {
+struct ObjectState<D> {
     cb: Box<dyn FnMut(CallbackArgs<D>)>,
     data: Box<dyn Any>,
 }
 
-struct ObjectData<D> {
-    cb: Option<CallbackState<D>>,
-}
-
 pub struct Context<D = ()> {
     conn: Connection,
-    map: ObjectMap<ObjectData<D>>,
+    map: ObjectMap<Option<ObjectState<D>>>,
 }
 
 impl<D> Context<D> {
     pub fn connect<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-        let conn = Connection::connect(path)?;
-
         let mut this = Self {
-            conn,
+            conn: Connection::connect(path)?,
             map: ObjectMap::new(),
         };
 
-        let core_id = this.map.client_insert_new(Object {
-            interface: ObjectType::Core,
-            version: 3,
-            data: ObjectData { cb: None },
-        });
-
-        let client_id = this.map.client_insert_new(Object {
-            interface: ObjectType::Client,
-            version: 3,
-            data: ObjectData { cb: None },
-        });
-
+        let core_id = this.new_object(ObjectType::Core).protocol_id();
         assert_eq!(core_id, 0);
+
+        let client_id = this.new_object(ObjectType::Client).protocol_id();
         assert_eq!(client_id, 1);
 
         Ok(this)
@@ -73,7 +58,7 @@ impl<D> Context<D> {
         let new_id = self.map.client_insert_new(Object {
             interface: kind,
             version: 3,
-            data: ObjectData { cb: None },
+            data: None,
         });
 
         ObjectId::new(new_id)
@@ -159,7 +144,7 @@ impl<D> Context<D> {
             let Some(obj) = self.map.find_mut(object.id().protocol_id()) else {
                 return;
             };
-            obj.data.cb.take()
+            obj.data.take()
         };
 
         if let Some(cb) = cb.as_mut() {
@@ -176,18 +161,18 @@ impl<D> Context<D> {
             return;
         };
 
-        obj.data.cb = cb;
+        obj.data = cb;
     }
 
     pub fn object_data<T: Any>(&self, id: ObjectId) -> Option<&T> {
         let obj = self.map.find(id.protocol_id())?;
-        let cb = obj.data.cb.as_ref()?;
+        let cb = obj.data.as_ref()?;
         cb.data.downcast_ref()
     }
 
     pub fn object_data_mut<T: Any>(&mut self, id: ObjectId) -> Option<&mut T> {
         let obj = self.map.find_mut(id.protocol_id())?;
-        let cb = obj.data.cb.as_mut()?;
+        let cb = obj.data.as_mut()?;
         cb.data.downcast_mut()
     }
 
@@ -202,7 +187,7 @@ impl<D> Context<D> {
             return;
         };
 
-        obj.data.cb = Some(CallbackState {
+        obj.data = Some(ObjectState {
             data: Box::new(data),
             cb: Box::new(
                 move |CallbackArgs {
@@ -226,25 +211,9 @@ impl<D> Context<D> {
         P::Event: 'static,
         F: FnMut(&mut D, &mut Self, P, P::Event) + 'static,
     {
-        let Some(obj) = self.map.find_mut(proxy.id().protocol_id()) else {
-            return;
-        };
-
-        obj.data.cb = Some(CallbackState {
-            data: Box::new(()),
-            cb: Box::new(
-                move |CallbackArgs {
-                          ctx,
-                          state,
-                          object_id,
-                          object_data: _,
-                          event,
-                      }: CallbackArgs<D>| {
-                    let event: Box<P::Event> = event.downcast().unwrap();
-                    cb(state, ctx, P::from_id(object_id), *event);
-                },
-            ),
-        });
+        self.set_object_callback_with_data(proxy, (), move |state, ctx, _, proxy, event| {
+            cb(state, ctx, proxy, event)
+        })
     }
 }
 
