@@ -1,3 +1,4 @@
+use libspa_consts::SpaParamType;
 use pod::{Object, Value};
 
 use crate::{
@@ -221,6 +222,19 @@ impl Proxy for PwDevice {
 impl PwDevice {
     pub fn id(&self) -> ObjectId {
         self.object_id.clone()
+    }
+
+    pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
+        let msg = pw_device::methods::EnumParams {
+            seq: 0,
+            id: pod::utils::Id(id as u32),
+            index: 0,
+            num: 0,
+            filter: pod::Value::None,
+        };
+
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        context.send_msg(&msg, &[]).unwrap();
     }
 
     pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {

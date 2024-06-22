@@ -1,5 +1,6 @@
+use libspa_consts::SpaParamType;
 use pod::dictionary::Dictionary;
-use std::os::fd::AsRawFd;
+use std::{io::Write as _, os::fd::AsRawFd};
 
 use ripewire::{
     connection::MessageBuffer, context::Context, global_list::GlobalList, object_map::ObjectType,
@@ -59,17 +60,70 @@ fn main() {
         }
     }
 
-    let device = state
+    let devices: Vec<_> = state
         .globals
         .iter()
         .filter(|g| g.interface == ObjectType::Device)
-        .find(|g| {
-            g.properties.get("device.name").map(String::as_str)
-                == Some("alsa_card.pci-0000_0b_00.6")
-        });
+        .collect();
+
+    let device = {
+        println!("\nAvailable devices:");
+        for (i, device) in devices.iter().enumerate() {
+            println!(
+                "{}: {} - {}",
+                i,
+                device
+                    .properties
+                    .get("device.name")
+                    .map(String::as_str)
+                    .unwrap_or("-"),
+                device
+                    .properties
+                    .get("device.description")
+                    .map(String::as_str)
+                    .unwrap_or("-")
+            );
+        }
+        print!("Please select input port: ");
+        std::io::stdout().flush().unwrap();
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
+        Some(
+            devices
+                .get(input.trim().parse::<usize>().unwrap())
+                .ok_or("invalid input port selected")
+                .unwrap(),
+        )
+    };
+
+    // let device = state
+    //     .globals
+    //     .iter()
+    //     .filter(|g| g.interface == ObjectType::Device)
+    //     .find(|g| {
+    //         g.properties.get("device.name").map(String::as_str)
+    //             == Some("alsa_card.pci-0000_0b_00.6")
+    //     });
 
     if let Some(global) = device {
         let device: PwDevice = registry.bind(&mut ctx, global);
+
+        // device.e
+        ctx.set_object_callback(&device, |_state, _ctx, _device, event| {
+            dbg!(event);
+        });
+
+        // device.enum_param(&mut ctx, SpaParamType::Route);
+        //
+        // state.is_done = false;
+        // loop {
+        //     let msg = ctx.rcv_msg(&mut buffer).unwrap();
+        //     ctx.dispatch_event(&mut state, msg);
+        //
+        //     if state.is_done {
+        //         break;
+        //     }
+        // }
 
         device.set_param(
             &mut ctx,
