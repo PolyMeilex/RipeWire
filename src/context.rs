@@ -12,8 +12,21 @@ use crate::{
     proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwRegistry},
 };
 
+struct CallbackArgs<'a, D> {
+    ctx: &'a mut Context<D>,
+    state: &'a mut D,
+    object_id: ObjectId,
+    object_data: &'a mut Box<dyn Any>,
+    event: Box<dyn Any>,
+}
+
+struct CallbackState<D> {
+    cb: Box<dyn FnMut(CallbackArgs<D>)>,
+    data: Box<dyn Any>,
+}
+
 struct ObjectData<D> {
-    cb: Option<Box<dyn FnMut(&mut Context<D>, &mut D, ObjectId, Box<dyn Any>)>>,
+    cb: Option<CallbackState<D>>,
 }
 
 pub struct Context<D = ()> {
@@ -144,13 +157,61 @@ impl<D> Context<D> {
         };
 
         if let Some(cb) = cb.as_mut() {
-            (cb)(self, state, object.id(), Box::new(event));
+            (cb.cb)(CallbackArgs {
+                ctx: self,
+                state,
+                object_id: object.id(),
+                object_data: &mut cb.data,
+                event: Box::new(event),
+            });
         }
 
         let Some(obj) = self.map.find_mut(object.id().protocol_id()) else {
             return;
         };
+
         obj.data.cb = cb;
+    }
+
+    pub fn object_data<T: Any>(&self, id: ObjectId) -> Option<&T> {
+        let obj = self.map.find(id.protocol_id())?;
+        let cb = obj.data.cb.as_ref()?;
+        cb.data.downcast_ref()
+    }
+
+    pub fn object_data_mut<T: Any>(&mut self, id: ObjectId) -> Option<&mut T> {
+        let obj = self.map.find_mut(id.protocol_id())?;
+        let cb = obj.data.cb.as_mut()?;
+        cb.data.downcast_mut()
+    }
+
+    pub fn set_object_callback_with_data<P, T, F>(&mut self, proxy: &P, data: T, mut cb: F)
+    where
+        P: Proxy,
+        P::Event: 'static,
+        F: FnMut(&mut D, &mut Self, &mut T, P, P::Event) + 'static,
+        T: 'static,
+    {
+        let Some(obj) = self.map.find_mut(proxy.id().protocol_id()) else {
+            return;
+        };
+
+        obj.data.cb = Some(CallbackState {
+            data: Box::new(data),
+            cb: Box::new(
+                move |CallbackArgs {
+                          ctx,
+                          state,
+                          object_id,
+                          object_data,
+                          event,
+                      }: CallbackArgs<D>| {
+                    let event: Box<P::Event> = event.downcast().unwrap();
+                    let data: &mut T = object_data.downcast_mut().unwrap();
+                    cb(state, ctx, data, P::from_id(object_id), *event);
+                },
+            ),
+        });
     }
 
     pub fn set_object_callback<P, F>(&mut self, proxy: &P, mut cb: F)
@@ -163,10 +224,21 @@ impl<D> Context<D> {
             return;
         };
 
-        obj.data.cb = Some(Box::new(move |context, state, object_id, event| {
-            let event: Box<P::Event> = event.downcast().unwrap();
-            cb(state, context, P::from_id(object_id), *event);
-        }));
+        obj.data.cb = Some(CallbackState {
+            data: Box::new(()),
+            cb: Box::new(
+                move |CallbackArgs {
+                          ctx,
+                          state,
+                          object_id,
+                          object_data: _,
+                          event,
+                      }: CallbackArgs<D>| {
+                    let event: Box<P::Event> = event.downcast().unwrap();
+                    cb(state, ctx, P::from_id(object_id), *event);
+                },
+            ),
+        });
     }
 }
 
