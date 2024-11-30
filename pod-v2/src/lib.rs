@@ -6,6 +6,8 @@ pub mod deserialize;
 pub use deserialize::{DeserializeError, PodDeserializer, PodDeserializerKind};
 
 pub use libspa_consts;
+#[allow(unused)]
+mod obj_gen;
 
 fn pad_to_8(size: u32) -> u32 {
     if size % 8 == 0 {
