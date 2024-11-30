@@ -1,5 +1,8 @@
-use std::io;
-use std::os::fd::AsRawFd;
+#![allow(clippy::single_match)]
+
+use std::io::{self, Read};
+use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
+use std::sync::atomic::{AtomicI32, AtomicU32};
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
 use libspa_consts::{SpaDirection, SpaEnum, SpaParamType};
@@ -170,6 +173,29 @@ impl PipewireState {
         client_node_event: pw_client_node::Event,
     ) {
         dbg!(&client_node_event);
+
+        match client_node_event {
+            pw_client_node::Event::Transport(msg) => {
+                let mem = self.mems.get(&msg.memid).unwrap();
+
+                if false {
+                    let mut buf = vec![0; msg.size as usize];
+
+                    unsafe {
+                        let mut file = std::fs::File::from_raw_fd(mem.fd().as_raw_fd());
+                        file.read_exact(&mut buf).unwrap();
+                        let _ = file.into_raw_fd();
+                    }
+
+                    use libspa_consts::abi_unstable::PwNodeActivation;
+
+                    assert_eq!(msg.size as usize, std::mem::size_of::<PwNodeActivation>());
+                    let v = unsafe { &*(buf.as_ptr() as *const PwNodeActivation) };
+                    dbg!(v);
+                }
+            }
+            _ => {}
+        }
     }
 
     pub fn registry_event(

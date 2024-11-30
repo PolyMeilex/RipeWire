@@ -9,12 +9,19 @@ use crate::protocol::pw_core;
 
 pub type MemId = u32;
 
+#[allow(unused)]
 #[derive(Debug)]
 pub struct Mem {
     id: u32,
     mem_type: SpaEnum<SpaDataType>,
     flags: pw_core::MemblockFlags,
     fd: OwnedFd,
+}
+
+impl Mem {
+    pub fn fd(&self) -> &OwnedFd {
+        &self.fd
+    }
 }
 
 #[derive(Debug, Default)]
@@ -43,6 +50,10 @@ impl MemoryRegistry {
                 fd: unsafe { OwnedFd::from_raw_fd(fd) },
             },
         );
+    }
+
+    pub fn get(&self, id: &MemId) -> Option<&Mem> {
+        self.map.get(id)
     }
 
     pub fn remove_mem(&mut self, remove_mem: &pw_core::events::RemoveMem) {
