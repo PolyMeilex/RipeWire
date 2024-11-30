@@ -59,8 +59,10 @@ pub enum SpaMetaType {
     Busy = 7,
     #[doc = "< struct spa_meta_transform"]
     VideoTransform = 8,
+    #[doc = "< struct spa_meta_sync_timeline"]
+    SyncTimeline = 9,
     #[doc = "< not part of ABI/API"]
-    _SPA_META_LAST = 9,
+    _SPA_META_LAST = 10,
 }
 #[repr(u32)]
 #[doc = " \\addtogroup spa_buffer\n \\{"]
@@ -71,12 +73,14 @@ pub enum SpaDataType {
     Invalid = 0,
     #[doc = "< pointer to memory, the data field in\n  struct spa_data is set."]
     MemPtr = 1,
-    #[doc = "< generic fd, mmap to get to memory"]
+    #[doc = "< memfd, mmap to get to memory."]
     MemFd = 2,
-    #[doc = "< fd to dmabuf memory"]
+    #[doc = "< fd to dmabuf memory. This might not be readily\n  mappable (unless the MAPPABLE flag is set) and should\n  normally be handled with DMABUF apis."]
     DmaBuf = 3,
-    #[doc = "< memory is identified with an id"]
+    #[doc = "< memory is identified with an id. The actual memory\n  can be obtained in some other way and can be identified\n  with this id."]
     MemId = 4,
+    #[doc = "< a syncobj, usually requires a spa_meta_sync_timeline metadata\n  with timeline points."]
+    SyncObj = 5,
 }
 #[repr(u32)]
 #[doc = " Different Control types"]
@@ -103,11 +107,11 @@ pub enum SpaIoType {
     Invalid = 0,
     #[doc = "< area to exchange buffers, struct spa_io_buffers"]
     Buffers = 1,
-    #[doc = "< expected byte range, struct spa_io_range"]
+    #[doc = "< expected byte range, struct spa_io_range (currently not used in PipeWire)"]
     Range = 2,
     #[doc = "< area to update clock information, struct spa_io_clock"]
     Clock = 3,
-    #[doc = "< latency reporting, struct spa_io_latency"]
+    #[doc = "< latency reporting, struct spa_io_latency (currently not used in\n PipeWire). \\see spa_param_latency"]
     Latency = 4,
     #[doc = "< area for control messages, struct spa_io_sequence"]
     Control = 5,
@@ -117,8 +121,10 @@ pub enum SpaIoType {
     Position = 7,
     #[doc = "< rate matching between nodes, struct spa_io_rate_match"]
     RateMatch = 8,
-    #[doc = "< memory pointer, struct spa_io_memory"]
+    #[doc = "< memory pointer, struct spa_io_memory (currently not used in PipeWire)"]
     Memory = 9,
+    #[doc = "< async area to exchange buffers, struct spa_io_async_buffers"]
+    AsyncBuffers = 10,
 }
 #[repr(u32)]
 #[doc = " different parameter types that can be queried"]
@@ -192,8 +198,10 @@ pub enum SpaParamBuffers {
     Stride = 4,
     #[doc = "< alignment of data block memory (Int)"]
     Align = 5,
-    #[doc = "< possible memory types (Int, mask of enum spa_data_type)"]
+    #[doc = "< possible memory types (flags choice Int, mask of enum spa_data_type)"]
     DataType = 6,
+    #[doc = "< required meta data types (Int, mask of enum spa_meta_type)"]
+    MetaType = 7,
 }
 #[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamMeta"]
@@ -575,7 +583,7 @@ pub enum SpaFormat {
     StartApplication = 393216,
 }
 #[repr(u32)]
-#[doc = " properties for SPA_TYPE_OBJECT_ParamLatency"]
+#[doc = " Properties for SPA_TYPE_OBJECT_ParamLatency\n\n The latency indicates:\n\n - for playback: time delay between start of a graph cycle, and the rendering of\n   the first sample of that cycle in audio output.\n\n - for capture: time delay between start of a graph cycle, and the first sample\n   of that cycle having occurred in audio input.\n\n For physical output/input, the latency is intended to correspond to the\n rendering/capture of physical audio, including hardware internal rendering delay.\n\n The latency values are adjusted by \\ref SPA_PROP_latencyOffsetNsec or\n SPA_PARAM_ProcessLatency, if present. (e.g. for ALSA this is used to adjust for\n the internal hardware latency)."]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -587,9 +595,9 @@ pub enum SpaParamLatency {
     MinQuantum = 2,
     #[doc = "< max latency relative to quantum (Float)"]
     MaxQuantum = 3,
-    #[doc = "< min latency (Int) relative to rate"]
+    #[doc = "< min latency (Int) relative to graph rate"]
     MinRate = 4,
-    #[doc = "< max latency (Int) relative to rate"]
+    #[doc = "< max latency (Int) relative to graph rate"]
     MaxRate = 5,
     #[doc = "< min latency (Long) in nanoseconds"]
     MinNs = 6,
@@ -597,7 +605,7 @@ pub enum SpaParamLatency {
     MaxNs = 7,
 }
 #[repr(u32)]
-#[doc = " properties for SPA_TYPE_OBJECT_ParamProcessLatency"]
+#[doc = " Properties for SPA_TYPE_OBJECT_ParamProcessLatency\n\n The processing latency indicates logical time delay between a sample in an input port,\n and a corresponding sample in an output port, relative to the graph time."]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -605,7 +613,7 @@ pub enum SpaParamProcessLatency {
     Start = 0,
     #[doc = "< latency relative to quantum (Float)"]
     Quantum = 1,
-    #[doc = "< latency (Int) relative to rate"]
+    #[doc = "< latency (Int) relative to graph rate"]
     Rate = 2,
     #[doc = "< latency (Long) in nanoseconds"]
     Ns = 3,
@@ -621,13 +629,13 @@ pub enum SpaProfiler {
     StartDriver = 65536,
     #[doc = "< Generic info, counter and CPU load,\n (Struct(\n      Long : counter,\n      Float : cpu_load fast,\n      Float : cpu_load medium,\n      Float : cpu_load slow),\n      Int : xrun-count))"]
     Info = 65537,
-    #[doc = "< clock information\n  (Struct(\n      Int : clock flags,\n      Int : clock id,\n      String: clock name,\n      Long : clock nsec,\n      Fraction : clock rate,\n      Long : clock position,\n      Long : clock duration,\n      Long : clock delay,\n      Double : clock rate_diff,\n      Long : clock next_nsec))"]
+    #[doc = "< clock information\n  (Struct(\n      Int : clock flags,\n      Int : clock id,\n      String: clock name,\n      Long : clock nsec,\n      Fraction : clock rate,\n      Long : clock position,\n      Long : clock duration,\n      Long : clock delay,\n      Double : clock rate_diff,\n      Long : clock next_nsec,\n      Int : transport_state))"]
     Clock = 65538,
-    #[doc = "< generic driver info block\n  (Struct(\n      Int : driver_id,\n      String : name,\n      Long : driver prev_signal,\n      Long : driver signal,\n      Long : driver awake,\n      Long : driver finish,\n      Int : driver status),\n      Fraction : latency))"]
+    #[doc = "< generic driver info block\n  (Struct(\n      Int : driver_id,\n      String : name,\n      Long : driver prev_signal,\n      Long : driver signal,\n      Long : driver awake,\n      Long : driver finish,\n      Int : driver status,\n      Fraction : latency,\n      Int : xrun_count))"]
     DriverBlock = 65539,
     #[doc = "< follower related profiler properties"]
     StartFollower = 131072,
-    #[doc = "< generic follower info block\n  (Struct(\n      Int : id,\n      String : name,\n      Long : prev_signal,\n      Long : signal,\n      Long : awake,\n      Long : finish,\n      Int : status,\n      Fraction : latency))"]
+    #[doc = "< generic follower info block\n  (Struct(\n      Int : id,\n      String : name,\n      Long : prev_signal,\n      Long : signal,\n      Long : awake,\n      Long : finish,\n      Int : status,\n      Fraction : latency,\n      Int : xrun_count))"]
     FollowerBlock = 131073,
     StartCustom = 16777216,
 }
