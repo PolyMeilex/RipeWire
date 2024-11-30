@@ -110,6 +110,12 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         .ignore_methods()
         .allowlist_type("spa_rectangle")
         .allowlist_type("spa_fraction")
+        .allowlist_type("spa_io_video_size")
+        .allowlist_type("spa_io_clock")
+        .allowlist_type("spa_io_segment_bar")
+        .allowlist_type("spa_io_segment_video")
+        .allowlist_type("spa_io_segment")
+        .allowlist_type("spa_io_position")
         .prepend_enum_name(false)
         .layout_tests(false)
         .derive_eq(true);

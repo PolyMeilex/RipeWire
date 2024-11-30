@@ -232,3 +232,49 @@ bitflags! {
         const DONT_FIXATE = 16;
     }
 }
+
+/// Well this is private API/ABI, I'm not sure how libpipewire makes sure this does not blow up acrros ABI braking updates
+pub mod abi_unstable {
+    use super::*;
+
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct PwNodeActivationState {
+        pub status: std::ffi::c_int,
+        pub required: i32,
+        pub pending: i32,
+    }
+
+    #[repr(C)]
+    #[derive(Debug)]
+    pub struct PwNodeActivation {
+        pub status: u32,
+
+        pub flags: std::ffi::c_uint,
+
+        pub state: [PwNodeActivationState; 2],
+
+        pub signal_time: u64,
+        pub awake_time: u64,
+        pub finish_time: u64,
+        pub prev_signal_time: u64,
+
+        pub reposition: SpaIoSegment,
+        pub segment: SpaIoSegment,
+
+        pub segment_owner: [u32; 32],
+        pub position: SpaIoPosition,
+
+        pub sync_timeout: u64,
+        pub sync_left: u64,
+
+        pub cpu_load: [f32; 3],
+        pub xrun_count: u32,
+        pub xrun_time: u64,
+        pub xrun_delay: u64,
+        pub max_delay: u64,
+
+        pub command: u32,
+        pub reposition_owner: u32,
+    }
+}
