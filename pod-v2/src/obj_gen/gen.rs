@@ -1,5 +1,6 @@
 use super::*;
 
+/// Spa:Pod:Object:Param:PropInfo
 struct PropInfo;
 impl PropInfo {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -43,6 +44,7 @@ impl PropInfo {
     }
 }
 
+/// Spa:Pod:Object:Param:Props
 struct Props;
 impl Props {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -286,184 +288,186 @@ impl Props {
     }
 }
 
-// struct Format;
-// impl Format {
-//     fn get(&self, id: u32) -> Option<PodDeserializer> {
-//         todo!("{id}")
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:mediaType
-//     fn media_type(&self) -> Option<u32> {
-//         self.get(1)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:mediaSubtype
-//     fn media_subtype(&self) -> Option<u32> {
-//         self.get(2)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:format
-//     fn format(&self) -> Option<u32> {
-//         self.get(65537)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:flags
-//     fn flags(&self) -> Option<u32> {
-//         self.get(65538)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:rate
-//     fn rate(&self) -> Option<i32> {
-//         self.get(65539)?.as_i32().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:channels
-//     fn channels(&self) -> Option<i32> {
-//         self.get(65540)?.as_i32().ok()
-//     }
-//
-//     /// TODO: returns: Spa:Array
-//     /// Spa:Pod:Object:Param:Format:Audio:position
-//     fn position(&self) -> Option<OwnedPod> {
-//         Some(self.get(65541)?.to_owned())
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:iec958Codec
-//     fn iec958_codec(&self) -> Option<u32> {
-//         self.get(65542)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:bitorder
-//     fn bitorder(&self) -> Option<u32> {
-//         self.get(65543)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:interleave
-//     fn interleave(&self) -> Option<i32> {
-//         self.get(65544)?.as_i32().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:bitrate
-//     fn bitrate(&self) -> Option<i32> {
-//         self.get(65545)?.as_i32().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:blockAlign
-//     fn block_align(&self) -> Option<i32> {
-//         self.get(65546)?.as_i32().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
-//     fn stream_format(&self) -> Option<u32> {
-//         self.get(65547)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:WMA:profile
-//     fn profile(&self) -> Option<u32> {
-//         self.get(65548)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
-//     fn band_mode(&self) -> Option<u32> {
-//         self.get(65549)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:format
-//     fn format(&self) -> Option<u32> {
-//         self.get(131073)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:modifier
-//     fn modifier(&self) -> Option<i64> {
-//         self.get(131074)?.as_i64().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:size
-//     fn size(&self) -> Option<SpaRectangle> {
-//         self.get(131075)?.as_rectangle().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:framerate
-//     fn framerate(&self) -> Option<SpaFraction> {
-//         self.get(131076)?.as_fraction().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:maxFramerate
-//     fn max_framerate(&self) -> Option<SpaFraction> {
-//         self.get(131077)?.as_fraction().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:views
-//     fn views(&self) -> Option<i32> {
-//         self.get(131078)?.as_i32().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:interlaceMode
-//     fn interlace_mode(&self) -> Option<u32> {
-//         self.get(131079)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:pixelAspectRatio
-//     fn pixel_aspect_ratio(&self) -> Option<SpaFraction> {
-//         self.get(131080)?.as_fraction().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:multiviewMode
-//     fn multiview_mode(&self) -> Option<u32> {
-//         self.get(131081)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:multiviewFlags
-//     fn multiview_flags(&self) -> Option<u32> {
-//         self.get(131082)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:chromaSite
-//     fn chroma_site(&self) -> Option<u32> {
-//         self.get(131083)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:colorRange
-//     fn color_range(&self) -> Option<u32> {
-//         self.get(131084)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:colorMatrix
-//     fn color_matrix(&self) -> Option<u32> {
-//         self.get(131085)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:transferFunction
-//     fn transfer_function(&self) -> Option<u32> {
-//         self.get(131086)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:colorPrimaries
-//     fn color_primaries(&self) -> Option<u32> {
-//         self.get(131087)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:profile
-//     fn profile(&self) -> Option<i32> {
-//         self.get(131088)?.as_i32().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:level
-//     fn level(&self) -> Option<i32> {
-//         self.get(131089)?.as_i32().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:H264:streamFormat
-//     fn stream_format(&self) -> Option<u32> {
-//         self.get(131090)?.as_id().ok()
-//     }
-//
-//     /// Spa:Pod:Object:Param:Format:Video:H264:alignment
-//     fn alignment(&self) -> Option<u32> {
-//         self.get(131091)?.as_id().ok()
-//     }
-// }
+/// Spa:Pod:Object:Param:Format
+struct Format;
+impl Format {
+    fn get(&self, id: u32) -> Option<PodDeserializer> {
+        todo!("{id}")
+    }
 
+    /// Spa:Pod:Object:Param:Format:mediaType
+    fn media_type(&self) -> Option<u32> {
+        self.get(1)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:mediaSubtype
+    fn media_subtype(&self) -> Option<u32> {
+        self.get(2)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:format
+    fn audio_format(&self) -> Option<u32> {
+        self.get(65537)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:flags
+    fn audio_flags(&self) -> Option<u32> {
+        self.get(65538)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:rate
+    fn audio_rate(&self) -> Option<i32> {
+        self.get(65539)?.as_i32().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:channels
+    fn audio_channels(&self) -> Option<i32> {
+        self.get(65540)?.as_i32().ok()
+    }
+
+    /// TODO: returns: Spa:Array
+    /// Spa:Pod:Object:Param:Format:Audio:position
+    fn audio_position(&self) -> Option<OwnedPod> {
+        Some(self.get(65541)?.to_owned())
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:iec958Codec
+    fn audio_iec958_codec(&self) -> Option<u32> {
+        self.get(65542)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:bitorder
+    fn audio_bitorder(&self) -> Option<u32> {
+        self.get(65543)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:interleave
+    fn audio_interleave(&self) -> Option<i32> {
+        self.get(65544)?.as_i32().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:bitrate
+    fn audio_bitrate(&self) -> Option<i32> {
+        self.get(65545)?.as_i32().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:blockAlign
+    fn audio_block_align(&self) -> Option<i32> {
+        self.get(65546)?.as_i32().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
+    fn audio_aAC_stream_format(&self) -> Option<u32> {
+        self.get(65547)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:WMA:profile
+    fn audio_wMA_profile(&self) -> Option<u32> {
+        self.get(65548)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
+    fn audio_aMR_band_mode(&self) -> Option<u32> {
+        self.get(65549)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:format
+    fn video_format(&self) -> Option<u32> {
+        self.get(131073)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:modifier
+    fn video_modifier(&self) -> Option<i64> {
+        self.get(131074)?.as_i64().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:size
+    fn video_size(&self) -> Option<SpaRectangle> {
+        self.get(131075)?.as_rectangle().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:framerate
+    fn video_framerate(&self) -> Option<SpaFraction> {
+        self.get(131076)?.as_fraction().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:maxFramerate
+    fn video_max_framerate(&self) -> Option<SpaFraction> {
+        self.get(131077)?.as_fraction().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:views
+    fn video_views(&self) -> Option<i32> {
+        self.get(131078)?.as_i32().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:interlaceMode
+    fn video_interlace_mode(&self) -> Option<u32> {
+        self.get(131079)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:pixelAspectRatio
+    fn video_pixel_aspect_ratio(&self) -> Option<SpaFraction> {
+        self.get(131080)?.as_fraction().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:multiviewMode
+    fn video_multiview_mode(&self) -> Option<u32> {
+        self.get(131081)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:multiviewFlags
+    fn video_multiview_flags(&self) -> Option<u32> {
+        self.get(131082)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:chromaSite
+    fn video_chroma_site(&self) -> Option<u32> {
+        self.get(131083)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:colorRange
+    fn video_color_range(&self) -> Option<u32> {
+        self.get(131084)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:colorMatrix
+    fn video_color_matrix(&self) -> Option<u32> {
+        self.get(131085)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:transferFunction
+    fn video_transfer_function(&self) -> Option<u32> {
+        self.get(131086)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:colorPrimaries
+    fn video_color_primaries(&self) -> Option<u32> {
+        self.get(131087)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:profile
+    fn video_profile(&self) -> Option<i32> {
+        self.get(131088)?.as_i32().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:level
+    fn video_level(&self) -> Option<i32> {
+        self.get(131089)?.as_i32().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:H264:streamFormat
+    fn video_h264_stream_format(&self) -> Option<u32> {
+        self.get(131090)?.as_id().ok()
+    }
+
+    /// Spa:Pod:Object:Param:Format:Video:H264:alignment
+    fn video_h264_alignment(&self) -> Option<u32> {
+        self.get(131091)?.as_id().ok()
+    }
+}
+
+/// Spa:Pod:Object:Param:Buffers
 struct Buffers;
 impl Buffers {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -481,31 +485,32 @@ impl Buffers {
     }
 
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:size
-    fn size(&self) -> Option<i32> {
+    fn block_info_size(&self) -> Option<i32> {
         self.get(3)?.as_i32().ok()
     }
 
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:stride
-    fn stride(&self) -> Option<i32> {
+    fn block_info_stride(&self) -> Option<i32> {
         self.get(4)?.as_i32().ok()
     }
 
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:align
-    fn align(&self) -> Option<i32> {
+    fn block_info_align(&self) -> Option<i32> {
         self.get(5)?.as_i32().ok()
     }
 
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:dataType
-    fn data_type(&self) -> Option<i32> {
+    fn block_info_data_type(&self) -> Option<i32> {
         self.get(6)?.as_i32().ok()
     }
 
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:metaType
-    fn meta_type(&self) -> Option<i32> {
+    fn block_info_meta_type(&self) -> Option<i32> {
         self.get(7)?.as_i32().ok()
     }
 }
 
+/// Spa:Pod:Object:Param:Meta
 struct Meta;
 impl Meta {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -523,6 +528,7 @@ impl Meta {
     }
 }
 
+/// Spa:Pod:Object:Param:IO
 struct IO;
 impl IO {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -540,6 +546,7 @@ impl IO {
     }
 }
 
+/// Spa:Pod:Object:Param:Profile
 struct Profile;
 impl Profile {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -589,6 +596,7 @@ impl Profile {
     }
 }
 
+/// Spa:Pod:Object:Param:PortConfig
 struct PortConfig;
 impl PortConfig {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -622,6 +630,7 @@ impl PortConfig {
     }
 }
 
+/// Spa:Pod:Object:Param:Route
 struct Route;
 impl Route {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -696,6 +705,7 @@ impl Route {
     }
 }
 
+/// Spa:Pod:Object:Profiler
 struct Profiler;
 impl Profiler {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -727,6 +737,7 @@ impl Profiler {
     }
 }
 
+/// Spa:Pod:Object:Param:Latency
 struct Latency;
 impl Latency {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -769,6 +780,7 @@ impl Latency {
     }
 }
 
+/// Spa:Pod:Object:Param:ProcessLatency
 struct ProcessLatency;
 impl ProcessLatency {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
@@ -791,6 +803,7 @@ impl ProcessLatency {
     }
 }
 
+/// Spa:Pod:Object:Param:Tag
 struct Tag;
 impl Tag {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
