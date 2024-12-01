@@ -5,58 +5,9 @@ impl<'a> PropInfo<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
     }
-    /** Spa:Pod:Object:Param:PropInfo:id
-        value-0: "Spa:Pod:Object:Param:Props:"
-        value-1: "Spa:Pod:Object:Param:Props:unknown"
-        value-257: "Spa:Pod:Object:Param:Props:device"
-        value-258: "Spa:Pod:Object:Param:Props:deviceName"
-        value-259: "Spa:Pod:Object:Param:Props:deviceFd"
-        value-260: "Spa:Pod:Object:Param:Props:card"
-        value-261: "Spa:Pod:Object:Param:Props:cardName"
-        value-262: "Spa:Pod:Object:Param:Props:minLatency"
-        value-263: "Spa:Pod:Object:Param:Props:maxLatency"
-        value-264: "Spa:Pod:Object:Param:Props:periods"
-        value-265: "Spa:Pod:Object:Param:Props:periodSize"
-        value-266: "Spa:Pod:Object:Param:Props:periodEvent"
-        value-267: "Spa:Pod:Object:Param:Props:live"
-        value-268: "Spa:Pod:Object:Param:Props:rate"
-        value-269: "Spa:Pod:Object:Param:Props:quality"
-        value-270: "Spa:Pod:Object:Param:Props:bluetoothAudioCodec"
-        value-271: "Spa:Pod:Object:Param:Props:bluetoothOffloadActive"
-        value-65537: "Spa:Pod:Object:Param:Props:waveType"
-        value-65538: "Spa:Pod:Object:Param:Props:frequency"
-        value-65539: "Spa:Pod:Object:Param:Props:volume"
-        value-65540: "Spa:Pod:Object:Param:Props:mute"
-        value-65541: "Spa:Pod:Object:Param:Props:patternType"
-        value-65542: "Spa:Pod:Object:Param:Props:ditherType"
-        value-65543: "Spa:Pod:Object:Param:Props:truncate"
-        value-65544: "Spa:Pod:Object:Param:Props:channelVolumes"
-        value-65545: "Spa:Pod:Object:Param:Props:volumeBase"
-        value-65546: "Spa:Pod:Object:Param:Props:volumeStep"
-        value-65547: "Spa:Pod:Object:Param:Props:channelMap"
-        value-65548: "Spa:Pod:Object:Param:Props:monitorMute"
-        value-65549: "Spa:Pod:Object:Param:Props:monitorVolumes"
-        value-65550: "Spa:Pod:Object:Param:Props:latencyOffsetNsec"
-        value-65551: "Spa:Pod:Object:Param:Props:softMute"
-        value-65552: "Spa:Pod:Object:Param:Props:softVolumes"
-        value-65553: "Spa:Pod:Object:Param:Props:iec958Codecs"
-        value-65554: "Spa:Pod:Object:Param:Props:volumeRampSamples"
-        value-65555: "Spa:Pod:Object:Param:Props:volumeRampStepSamples"
-        value-65556: "Spa:Pod:Object:Param:Props:volumeRampTime"
-        value-65557: "Spa:Pod:Object:Param:Props:volumeRampStepTime"
-        value-65558: "Spa:Pod:Object:Param:Props:volumeRampScale"
-        value-131073: "Spa:Pod:Object:Param:Props:brightness"
-        value-131074: "Spa:Pod:Object:Param:Props:contrast"
-        value-131075: "Spa:Pod:Object:Param:Props:saturation"
-        value-131076: "Spa:Pod:Object:Param:Props:hue"
-        value-131077: "Spa:Pod:Object:Param:Props:gamma"
-        value-131078: "Spa:Pod:Object:Param:Props:exposure"
-        value-131079: "Spa:Pod:Object:Param:Props:gain"
-        value-131080: "Spa:Pod:Object:Param:Props:sharpness"
-        value-524289: "Spa:Pod:Object:Param:Props:params"
-    */
-    fn id(&self) -> Option<u32> {
-        self.get(1u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:PropInfo:id
+    fn id(&self) -> Option<SpaEnum<SpaProp>> {
+        self.get(1u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:PropInfo:name
     fn name(&self) -> Option<&BStr> {
@@ -143,33 +94,9 @@ impl<'a> Props<'a> {
     fn quality(&self) -> Option<i32> {
         self.get(269u32)?.as_i32().ok()
     }
-    /** Spa:Pod:Object:Param:Props:bluetoothAudioCodec
-        value-1: "Spa:Enum:BluetoothAudioCodec:sbc"
-        value-2: "Spa:Enum:BluetoothAudioCodec:sbc_xq"
-        value-3: "Spa:Enum:BluetoothAudioCodec:mpeg"
-        value-4: "Spa:Enum:BluetoothAudioCodec:aac"
-        value-5: "Spa:Enum:BluetoothAudioCodec:aac_eld"
-        value-6: "Spa:Enum:BluetoothAudioCodec:aptx"
-        value-7: "Spa:Enum:BluetoothAudioCodec:aptx_hd"
-        value-8: "Spa:Enum:BluetoothAudioCodec:ldac"
-        value-9: "Spa:Enum:BluetoothAudioCodec:aptx_ll"
-        value-10: "Spa:Enum:BluetoothAudioCodec:aptx_ll_duplex"
-        value-11: "Spa:Enum:BluetoothAudioCodec:faststream"
-        value-12: "Spa:Enum:BluetoothAudioCodec:faststream_duplex"
-        value-13: "Spa:Enum:BluetoothAudioCodec:lc3plus_hr"
-        value-14: "Spa:Enum:BluetoothAudioCodec:opus_05"
-        value-15: "Spa:Enum:BluetoothAudioCodec:opus_05_51"
-        value-16: "Spa:Enum:BluetoothAudioCodec:opus_05_71"
-        value-17: "Spa:Enum:BluetoothAudioCodec:opus_05_duplex"
-        value-18: "Spa:Enum:BluetoothAudioCodec:opus_05_pro"
-        value-19: "Spa:Enum:BluetoothAudioCodec:opus_g"
-        value-256: "Spa:Enum:BluetoothAudioCodec:cvsd"
-        value-257: "Spa:Enum:BluetoothAudioCodec:msbc"
-        value-258: "Spa:Enum:BluetoothAudioCodec:lc3_swb"
-        value-512: "Spa:Enum:BluetoothAudioCodec:lc3"
-    */
-    fn bluetooth_audio_codec(&self) -> Option<u32> {
-        self.get(270u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Props:bluetoothAudioCodec
+    fn bluetooth_audio_codec(&self) -> Option<SpaEnum<SpaBluetoothAudioCodec>> {
+        self.get(270u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Props:bluetoothOffloadActive
     fn bluetooth_offload_active(&self) -> Option<bool> {
@@ -316,136 +243,20 @@ impl<'a> Format<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
     }
-    /** Spa:Pod:Object:Param:Format:mediaType
-        value-0: "Spa:Enum:MediaType:unknown"
-        value-1: "Spa:Enum:MediaType:audio"
-        value-2: "Spa:Enum:MediaType:video"
-        value-3: "Spa:Enum:MediaType:image"
-        value-4: "Spa:Enum:MediaType:binary"
-        value-5: "Spa:Enum:MediaType:stream"
-        value-6: "Spa:Enum:MediaType:application"
-    */
-    fn media_type(&self) -> Option<u32> {
-        self.get(1u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:mediaType
+    fn media_type(&self) -> Option<SpaEnum<SpaMediaType>> {
+        self.get(1u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
-    /** Spa:Pod:Object:Param:Format:mediaSubtype
-        value-0: "Spa:Enum:MediaSubtype:unknown"
-        value-1: "Spa:Enum:MediaSubtype:raw"
-        value-2: "Spa:Enum:MediaSubtype:dsp"
-        value-3: "Spa:Enum:MediaSubtype:iec958"
-        value-4: "Spa:Enum:MediaSubtype:dsd"
-        value-65537: "Spa:Enum:MediaSubtype:mp3"
-        value-65538: "Spa:Enum:MediaSubtype:aac"
-        value-65539: "Spa:Enum:MediaSubtype:vorbis"
-        value-65540: "Spa:Enum:MediaSubtype:wma"
-        value-65541: "Spa:Enum:MediaSubtype:ra"
-        value-65542: "Spa:Enum:MediaSubtype:sbc"
-        value-65543: "Spa:Enum:MediaSubtype:adpcm"
-        value-65544: "Spa:Enum:MediaSubtype:g723"
-        value-65545: "Spa:Enum:MediaSubtype:g726"
-        value-65546: "Spa:Enum:MediaSubtype:g729"
-        value-65547: "Spa:Enum:MediaSubtype:amr"
-        value-65548: "Spa:Enum:MediaSubtype:gsm"
-        value-65549: "Spa:Enum:MediaSubtype:alac"
-        value-65550: "Spa:Enum:MediaSubtype:flac"
-        value-65551: "Spa:Enum:MediaSubtype:ape"
-        value-65552: "Spa:Enum:MediaSubtype:opus"
-        value-131073: "Spa:Enum:MediaSubtype:h264"
-        value-131074: "Spa:Enum:MediaSubtype:mjpg"
-        value-131075: "Spa:Enum:MediaSubtype:dv"
-        value-131076: "Spa:Enum:MediaSubtype:mpegts"
-        value-131077: "Spa:Enum:MediaSubtype:h263"
-        value-131078: "Spa:Enum:MediaSubtype:mpeg1"
-        value-131079: "Spa:Enum:MediaSubtype:mpeg2"
-        value-131080: "Spa:Enum:MediaSubtype:mpeg4"
-        value-131081: "Spa:Enum:MediaSubtype:xvid"
-        value-131082: "Spa:Enum:MediaSubtype:vc1"
-        value-131083: "Spa:Enum:MediaSubtype:vp8"
-        value-131084: "Spa:Enum:MediaSubtype:vp9"
-        value-131085: "Spa:Enum:MediaSubtype:bayer"
-        value-196609: "Spa:Enum:MediaSubtype:jpeg"
-        value-327681: "Spa:Enum:MediaSubtype:midi"
-        value-393217: "Spa:Enum:MediaSubtype:control"
-    */
-    fn media_subtype(&self) -> Option<u32> {
-        self.get(2u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:mediaSubtype
+    fn media_subtype(&self) -> Option<SpaEnum<SpaMediaSubtype>> {
+        self.get(2u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:format
-        value-0: "Spa:Enum:AudioFormat:UNKNOWN"
-        value-1: "Spa:Enum:AudioFormat:ENCODED"
-        value-257: "Spa:Enum:AudioFormat:S8"
-        value-258: "Spa:Enum:AudioFormat:U8"
-        value-259: "Spa:Enum:AudioFormat:S16LE"
-        value-260: "Spa:Enum:AudioFormat:S16BE"
-        value-261: "Spa:Enum:AudioFormat:U16LE"
-        value-262: "Spa:Enum:AudioFormat:U16BE"
-        value-263: "Spa:Enum:AudioFormat:S24_32LE"
-        value-264: "Spa:Enum:AudioFormat:S24_32BE"
-        value-265: "Spa:Enum:AudioFormat:U24_32LE"
-        value-266: "Spa:Enum:AudioFormat:U24_32BE"
-        value-267: "Spa:Enum:AudioFormat:S32LE"
-        value-268: "Spa:Enum:AudioFormat:S32BE"
-        value-269: "Spa:Enum:AudioFormat:U32LE"
-        value-270: "Spa:Enum:AudioFormat:U32BE"
-        value-271: "Spa:Enum:AudioFormat:S24LE"
-        value-272: "Spa:Enum:AudioFormat:S24BE"
-        value-273: "Spa:Enum:AudioFormat:U24LE"
-        value-274: "Spa:Enum:AudioFormat:U24BE"
-        value-275: "Spa:Enum:AudioFormat:S20LE"
-        value-276: "Spa:Enum:AudioFormat:S20BE"
-        value-277: "Spa:Enum:AudioFormat:U20LE"
-        value-278: "Spa:Enum:AudioFormat:U20BE"
-        value-279: "Spa:Enum:AudioFormat:S18LE"
-        value-280: "Spa:Enum:AudioFormat:S18BE"
-        value-281: "Spa:Enum:AudioFormat:U18LE"
-        value-282: "Spa:Enum:AudioFormat:U18BE"
-        value-283: "Spa:Enum:AudioFormat:F32LE"
-        value-284: "Spa:Enum:AudioFormat:F32BE"
-        value-285: "Spa:Enum:AudioFormat:F64LE"
-        value-286: "Spa:Enum:AudioFormat:F64BE"
-        value-287: "Spa:Enum:AudioFormat:ULAW"
-        value-288: "Spa:Enum:AudioFormat:ALAW"
-        value-513: "Spa:Enum:AudioFormat:U8P"
-        value-514: "Spa:Enum:AudioFormat:S16P"
-        value-515: "Spa:Enum:AudioFormat:S24_32P"
-        value-516: "Spa:Enum:AudioFormat:S32P"
-        value-517: "Spa:Enum:AudioFormat:S24P"
-        value-518: "Spa:Enum:AudioFormat:F32P"
-        value-519: "Spa:Enum:AudioFormat:F64P"
-        value-520: "Spa:Enum:AudioFormat:S8P"
-        value-259: "Spa:Enum:AudioFormat:S16"
-        value-260: "Spa:Enum:AudioFormat:S16OE"
-        value-261: "Spa:Enum:AudioFormat:U16"
-        value-262: "Spa:Enum:AudioFormat:U16OE"
-        value-263: "Spa:Enum:AudioFormat:S24_32"
-        value-264: "Spa:Enum:AudioFormat:S24_32OE"
-        value-265: "Spa:Enum:AudioFormat:U24_32"
-        value-266: "Spa:Enum:AudioFormat:U24_32OE"
-        value-267: "Spa:Enum:AudioFormat:S32"
-        value-268: "Spa:Enum:AudioFormat:S32OE"
-        value-269: "Spa:Enum:AudioFormat:U32"
-        value-270: "Spa:Enum:AudioFormat:U32OE"
-        value-271: "Spa:Enum:AudioFormat:S24"
-        value-272: "Spa:Enum:AudioFormat:S24OE"
-        value-273: "Spa:Enum:AudioFormat:U24"
-        value-274: "Spa:Enum:AudioFormat:U24OE"
-        value-275: "Spa:Enum:AudioFormat:S20"
-        value-276: "Spa:Enum:AudioFormat:S20OE"
-        value-277: "Spa:Enum:AudioFormat:U20"
-        value-278: "Spa:Enum:AudioFormat:U20OE"
-        value-279: "Spa:Enum:AudioFormat:S18"
-        value-280: "Spa:Enum:AudioFormat:S18OE"
-        value-281: "Spa:Enum:AudioFormat:U18"
-        value-282: "Spa:Enum:AudioFormat:U18OE"
-        value-283: "Spa:Enum:AudioFormat:F32"
-        value-284: "Spa:Enum:AudioFormat:F32OE"
-        value-285: "Spa:Enum:AudioFormat:F64"
-        value-286: "Spa:Enum:AudioFormat:F64OE"
-    */
-    fn audio_format(&self) -> Option<u32> {
-        self.get(65537u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Audio:format
+    fn audio_format(&self) -> Option<SpaEnum<SpaAudioFormat>> {
+        self.get(65537u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /** Spa:Pod:Object:Param:Format:Audio:flags
+        enum: Spa:Flags:AudioFlags
         value-0: "Spa:Flags:AudioFlags:none"
         value-1: "Spa:Flags:AudioFlags:unpositioned"
     */
@@ -466,21 +277,12 @@ impl<'a> Format<'a> {
     fn audio_position(&self) -> Option<PodArrayDeserializer> {
         self.get(65541u32)?.as_array().ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:iec958Codec
-        value-0: "Spa:Enum:AudioIEC958Codec:UNKNOWN"
-        value-1: "Spa:Enum:AudioIEC958Codec:PCM"
-        value-2: "Spa:Enum:AudioIEC958Codec:DTS"
-        value-3: "Spa:Enum:AudioIEC958Codec:AC3"
-        value-4: "Spa:Enum:AudioIEC958Codec:MPEG"
-        value-5: "Spa:Enum:AudioIEC958Codec:MPEG2-AAC"
-        value-6: "Spa:Enum:AudioIEC958Codec:EAC3"
-        value-7: "Spa:Enum:AudioIEC958Codec:TrueHD"
-        value-8: "Spa:Enum:AudioIEC958Codec:DTS-HD"
-    */
-    fn audio_iec958_codec(&self) -> Option<u32> {
-        self.get(65542u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Audio:iec958Codec
+    fn audio_iec958_codec(&self) -> Option<SpaEnum<SpaAudioIec958Codec>> {
+        self.get(65542u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /** Spa:Pod:Object:Param:Format:Audio:bitorder
+        enum: Spa:Enum:ParamBitorder
         value-0: "Spa:Enum:ParamBitorder:unknown"
         value-1: "Spa:Enum:ParamBitorder:msb"
         value-2: "Spa:Enum:ParamBitorder:lsb"
@@ -501,6 +303,7 @@ impl<'a> Format<'a> {
         self.get(65546u32)?.as_i32().ok()
     }
     /** Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
+        enum: Spa:Enum:AudioAACStreamFormat
         value-0: "Spa:Enum:AudioAACStreamFormat:UNKNOWN"
         value-1: "Spa:Enum:AudioAACStreamFormat:RAW"
         value-2: "Spa:Enum:AudioAACStreamFormat:MP2ADTS"
@@ -514,6 +317,7 @@ impl<'a> Format<'a> {
         self.get(65547u32)?.as_id().ok()
     }
     /** Spa:Pod:Object:Param:Format:Audio:WMA:profile
+        enum: Spa:Enum:AudioWMAProfile
         value-0: "Spa:Enum:AudioWMAProfile:UNKNOWN"
         value-1: "Spa:Enum:AudioWMAProfile:WMA7"
         value-2: "Spa:Enum:AudioWMAProfile:WMA8"
@@ -527,6 +331,7 @@ impl<'a> Format<'a> {
         self.get(65548u32)?.as_id().ok()
     }
     /** Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
+        enum: Spa:Enum:AudioAMRBandMode
         value-0: "Spa:Enum:AudioAMRBandMode:UNKNOWN"
         value-1: "Spa:Enum:AudioAMRBandMode:NB"
         value-2: "Spa:Enum:AudioAMRBandMode:WB"
@@ -534,97 +339,9 @@ impl<'a> Format<'a> {
     fn audio_amr_band_mode(&self) -> Option<u32> {
         self.get(65549u32)?.as_id().ok()
     }
-    /** Spa:Pod:Object:Param:Format:Video:format
-        value-1: "Spa:Enum:VideoFormat:encoded"
-        value-2: "Spa:Enum:VideoFormat:I420"
-        value-3: "Spa:Enum:VideoFormat:YV12"
-        value-4: "Spa:Enum:VideoFormat:YUY2"
-        value-5: "Spa:Enum:VideoFormat:UYVY"
-        value-6: "Spa:Enum:VideoFormat:AYUV"
-        value-7: "Spa:Enum:VideoFormat:RGBx"
-        value-8: "Spa:Enum:VideoFormat:BGRx"
-        value-9: "Spa:Enum:VideoFormat:xRGB"
-        value-10: "Spa:Enum:VideoFormat:xBGR"
-        value-11: "Spa:Enum:VideoFormat:RGBA"
-        value-12: "Spa:Enum:VideoFormat:BGRA"
-        value-13: "Spa:Enum:VideoFormat:ARGB"
-        value-14: "Spa:Enum:VideoFormat:ABGR"
-        value-15: "Spa:Enum:VideoFormat:RGB"
-        value-16: "Spa:Enum:VideoFormat:BGR"
-        value-17: "Spa:Enum:VideoFormat:Y41B"
-        value-18: "Spa:Enum:VideoFormat:Y42B"
-        value-19: "Spa:Enum:VideoFormat:YVYU"
-        value-20: "Spa:Enum:VideoFormat:Y444"
-        value-21: "Spa:Enum:VideoFormat:v210"
-        value-22: "Spa:Enum:VideoFormat:v216"
-        value-23: "Spa:Enum:VideoFormat:NV12"
-        value-24: "Spa:Enum:VideoFormat:NV21"
-        value-25: "Spa:Enum:VideoFormat:GRAY8"
-        value-26: "Spa:Enum:VideoFormat:GRAY16_BE"
-        value-27: "Spa:Enum:VideoFormat:GRAY16_LE"
-        value-28: "Spa:Enum:VideoFormat:v308"
-        value-29: "Spa:Enum:VideoFormat:RGB16"
-        value-30: "Spa:Enum:VideoFormat:BGR16"
-        value-31: "Spa:Enum:VideoFormat:RGB15"
-        value-32: "Spa:Enum:VideoFormat:BGR15"
-        value-33: "Spa:Enum:VideoFormat:UYVP"
-        value-34: "Spa:Enum:VideoFormat:A420"
-        value-35: "Spa:Enum:VideoFormat:RGB8P"
-        value-36: "Spa:Enum:VideoFormat:YUV9"
-        value-37: "Spa:Enum:VideoFormat:YVU9"
-        value-38: "Spa:Enum:VideoFormat:IYU1"
-        value-39: "Spa:Enum:VideoFormat:ARGB64"
-        value-40: "Spa:Enum:VideoFormat:AYUV64"
-        value-41: "Spa:Enum:VideoFormat:r210"
-        value-42: "Spa:Enum:VideoFormat:I420_10BE"
-        value-43: "Spa:Enum:VideoFormat:I420_10LE"
-        value-44: "Spa:Enum:VideoFormat:I422_10BE"
-        value-45: "Spa:Enum:VideoFormat:I422_10LE"
-        value-46: "Spa:Enum:VideoFormat:Y444_10BE"
-        value-47: "Spa:Enum:VideoFormat:Y444_10LE"
-        value-48: "Spa:Enum:VideoFormat:GBR"
-        value-49: "Spa:Enum:VideoFormat:GBR_10BE"
-        value-50: "Spa:Enum:VideoFormat:GBR_10LE"
-        value-51: "Spa:Enum:VideoFormat:NV16"
-        value-52: "Spa:Enum:VideoFormat:NV24"
-        value-53: "Spa:Enum:VideoFormat:NV12_64Z32"
-        value-54: "Spa:Enum:VideoFormat:A420_10BE"
-        value-55: "Spa:Enum:VideoFormat:A420_10LE"
-        value-56: "Spa:Enum:VideoFormat:A422_10BE"
-        value-57: "Spa:Enum:VideoFormat:A422_10LE"
-        value-58: "Spa:Enum:VideoFormat:A444_10BE"
-        value-59: "Spa:Enum:VideoFormat:A444_10LE"
-        value-60: "Spa:Enum:VideoFormat:NV61"
-        value-61: "Spa:Enum:VideoFormat:P010_10BE"
-        value-62: "Spa:Enum:VideoFormat:P010_10LE"
-        value-63: "Spa:Enum:VideoFormat:IYU2"
-        value-64: "Spa:Enum:VideoFormat:VYUY"
-        value-65: "Spa:Enum:VideoFormat:GBRA"
-        value-66: "Spa:Enum:VideoFormat:GBRA_10BE"
-        value-67: "Spa:Enum:VideoFormat:GBRA_10LE"
-        value-68: "Spa:Enum:VideoFormat:GBR_12BE"
-        value-69: "Spa:Enum:VideoFormat:GBR_12LE"
-        value-70: "Spa:Enum:VideoFormat:GBRA_12BE"
-        value-71: "Spa:Enum:VideoFormat:GBRA_12LE"
-        value-72: "Spa:Enum:VideoFormat:I420_12BE"
-        value-73: "Spa:Enum:VideoFormat:I420_12LE"
-        value-74: "Spa:Enum:VideoFormat:I422_12BE"
-        value-75: "Spa:Enum:VideoFormat:I422_12LE"
-        value-76: "Spa:Enum:VideoFormat:Y444_12BE"
-        value-77: "Spa:Enum:VideoFormat:Y444_12LE"
-        value-78: "Spa:Enum:VideoFormat:RGBA_F16"
-        value-79: "Spa:Enum:VideoFormat:RGBA_F32"
-        value-80: "Spa:Enum:VideoFormat:xRGB_210LE"
-        value-81: "Spa:Enum:VideoFormat:xBGR_210LE"
-        value-82: "Spa:Enum:VideoFormat:RGBx_102LE"
-        value-83: "Spa:Enum:VideoFormat:BGRx_102LE"
-        value-84: "Spa:Enum:VideoFormat:ARGB_210LE"
-        value-85: "Spa:Enum:VideoFormat:ABGR_210LE"
-        value-86: "Spa:Enum:VideoFormat:RGBA_102LE"
-        value-87: "Spa:Enum:VideoFormat:BGRA_102LE"
-    */
-    fn video_format(&self) -> Option<u32> {
-        self.get(131073u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Video:format
+    fn video_format(&self) -> Option<SpaEnum<SpaVideoFormat>> {
+        self.get(131073u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:modifier
     fn video_modifier(&self) -> Option<i64> {
@@ -647,6 +364,7 @@ impl<'a> Format<'a> {
         self.get(131078u32)?.as_i32().ok()
     }
     /** Spa:Pod:Object:Param:Format:Video:interlaceMode
+        enum: Spa:Enum:VideoInterlaceMode
         value-0: "Spa:Enum:VideoInterlaceMode:progressive"
         value-1: "Spa:Enum:VideoInterlaceMode:interleaved"
         value-2: "Spa:Enum:VideoInterlaceMode:mixed"
@@ -746,6 +464,7 @@ impl<'a> Meta<'a> {
         todo!("{id}")
     }
     /** Spa:Pod:Object:Param:Meta:type
+        enum: Spa:Pointer:Meta
         value-0: "Spa:Pointer:Meta:Invalid"
         value-1: "Spa:Pointer:Meta:Header"
         value-2: "Spa:Pointer:Meta:Region:VideoCrop"
@@ -772,6 +491,7 @@ impl<'a> Io<'a> {
         todo!("{id}")
     }
     /** Spa:Pod:Object:Param:IO:id
+        enum: Spa:Enum:IO
         value-0: "Spa:Enum:IO:Invalid"
         value-1: "Spa:Enum:IO:Buffers"
         value-2: "Spa:Enum:IO:Range"
@@ -815,6 +535,7 @@ impl<'a> Profile<'a> {
         self.get(4u32)?.as_i32().ok()
     }
     /** Spa:Pod:Object:Param:Profile:available
+        enum: Spa:Enum:ParamAvailability
         value-0: "Spa:Enum:ParamAvailability:unknown"
         value-1: "Spa:Enum:ParamAvailability:no"
         value-2: "Spa:Enum:ParamAvailability:yes"
@@ -841,21 +562,13 @@ impl<'a> PortConfig<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
     }
-    /** Spa:Pod:Object:Param:PortConfig:direction
-        value-0: "Spa:Enum:Direction:Input"
-        value-1: "Spa:Enum:Direction:Output"
-    */
-    fn direction(&self) -> Option<u32> {
-        self.get(1u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:PortConfig:direction
+    fn direction(&self) -> Option<SpaEnum<SpaDirection>> {
+        self.get(1u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
-    /** Spa:Pod:Object:Param:PortConfig:mode
-        value-0: "Spa:Enum:ParamPortConfigMode:none"
-        value-1: "Spa:Enum:ParamPortConfigMode:passthrough"
-        value-2: "Spa:Enum:ParamPortConfigMode:convert"
-        value-3: "Spa:Enum:ParamPortConfigMode:dsp"
-    */
-    fn mode(&self) -> Option<u32> {
-        self.get(2u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:PortConfig:mode
+    fn mode(&self) -> Option<SpaEnum<SpaParamPortConfigMode>> {
+        self.get(2u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:PortConfig:monitor
     fn monitor(&self) -> Option<bool> {
@@ -880,12 +593,9 @@ impl<'a> Route<'a> {
     fn index(&self) -> Option<i32> {
         self.get(1u32)?.as_i32().ok()
     }
-    /** Spa:Pod:Object:Param:Route:direction
-        value-0: "Spa:Enum:Direction:Input"
-        value-1: "Spa:Enum:Direction:Output"
-    */
-    fn direction(&self) -> Option<u32> {
-        self.get(2u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Route:direction
+    fn direction(&self) -> Option<SpaEnum<SpaDirection>> {
+        self.get(2u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Route:device
     fn device(&self) -> Option<i32> {
@@ -904,6 +614,7 @@ impl<'a> Route<'a> {
         self.get(6u32)?.as_i32().ok()
     }
     /** Spa:Pod:Object:Param:Route:available
+        enum: Spa:Enum:ParamAvailability
         value-0: "Spa:Enum:ParamAvailability:unknown"
         value-1: "Spa:Enum:ParamAvailability:no"
         value-2: "Spa:Enum:ParamAvailability:yes"
@@ -965,12 +676,9 @@ impl<'a> Latency<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
     }
-    /** Spa:Pod:Object:Param:Latency:direction
-        value-0: "Spa:Enum:Direction:Input"
-        value-1: "Spa:Enum:Direction:Output"
-    */
-    fn direction(&self) -> Option<u32> {
-        self.get(1u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Latency:direction
+    fn direction(&self) -> Option<SpaEnum<SpaDirection>> {
+        self.get(1u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Latency:minQuantum
     fn min_quantum(&self) -> Option<f32> {
@@ -1022,12 +730,9 @@ impl<'a> Tag<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
     }
-    /** Spa:Pod:Object:Param:Tag:direction
-        value-0: "Spa:Enum:Direction:Input"
-        value-1: "Spa:Enum:Direction:Output"
-    */
-    fn direction(&self) -> Option<u32> {
-        self.get(1u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Tag:direction
+    fn direction(&self) -> Option<SpaEnum<SpaDirection>> {
+        self.get(1u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Tag:info
     fn info(&self) -> Option<PodStructDeserializer> {

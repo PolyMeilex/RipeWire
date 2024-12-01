@@ -4,6 +4,18 @@ use libspa_consts::SpaType;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
+static ID_TO_ENUM_MAP: &[(&str, &str)] = &[
+    ("Spa:Pod:Object:Param:Props", "SpaProp"),
+    ("Spa:Enum:Direction", "SpaDirection"),
+    ("Spa:Enum:ParamPortConfigMode", "SpaParamPortConfigMode"),
+    ("Spa:Enum:BluetoothAudioCodec", "SpaBluetoothAudioCodec"),
+    ("Spa:Enum:MediaType", "SpaMediaType"),
+    ("Spa:Enum:MediaSubtype", "SpaMediaSubtype"),
+    ("Spa:Enum:AudioFormat", "SpaAudioFormat"),
+    ("Spa:Enum:AudioIEC958Codec", "SpaAudioIec958Codec"),
+    ("Spa:Enum:VideoFormat", "SpaVideoFormat"),
+];
+
 #[derive(Debug, serde::Deserialize)]
 struct SpaTypeInfo {
     r#type: u32,
@@ -40,8 +52,8 @@ impl Entry {
 
             let ty = info.r#type;
 
-            let rs_spa_type = spa_type_to_rs(spa_type);
-            let get = if let Some(call) = spa_type_to_as_call(spa_type) {
+            let rs_spa_type = spa_type_to_rs(spa_type, info);
+            let get = if let Some(call) = spa_type_to_as_call(spa_type, info) {
                 quote! {
                     self.get(#ty)?.#call
                 }
@@ -98,7 +110,7 @@ fn camel_case(v: &str) -> impl quote::IdentFragment + '_ {
 }
 
 fn spa_type_doc(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
-    let res = spa_type_to_rs(parent).to_string();
+    let res = spa_type_to_rs(parent, info).to_string();
 
     let mut doc = " ".to_string();
 
@@ -121,6 +133,16 @@ fn spa_type_doc(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
         }
     } else {
         doc += &info.name;
+
+        if spa_extract_known_enum_name(parent, info).is_some() {
+            return quote! {
+                #[doc = #doc]
+            };
+        } else if let Some(enum_name) = spa_extract_enum_name(parent, info) {
+            doc += "\n";
+            doc += "    enum: ";
+            doc += enum_name;
+        }
     }
 
     if !info.values.is_empty() && (res == "PodDeserializer" || parent == SpaType::Id) {
@@ -135,10 +157,34 @@ fn spa_type_doc(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
     }
 }
 
-fn spa_type_to_as_call(parent: SpaType) -> Option<TokenStream> {
+fn spa_extract_enum_name(parent: SpaType, info: &SpaTypeInfo) -> Option<&str> {
+    if parent == SpaType::Id && !info.values.is_empty() {
+        let variant_name = &info.values[0].name;
+        let id = variant_name.rfind(':').unwrap();
+        let enum_name = &variant_name[..id];
+        Some(enum_name)
+    } else {
+        None
+    }
+}
+
+fn spa_extract_known_enum_name(parent: SpaType, info: &SpaTypeInfo) -> Option<&str> {
+    spa_extract_enum_name(parent, info)
+        .and_then(|name| ID_TO_ENUM_MAP.iter().find(|(a, _)| *a == name))
+        .map(|(_, v)| v)
+        .copied()
+}
+
+fn spa_type_to_as_call(parent: SpaType, info: &SpaTypeInfo) -> Option<TokenStream> {
     let out = match parent {
         SpaType::Bool => quote!(as_bool()),
-        SpaType::Id => quote!(as_id()),
+        SpaType::Id => {
+            if spa_extract_known_enum_name(parent, info).is_some() {
+                quote!(as_id().map(SpaEnum::from_raw))
+            } else {
+                quote!(as_id())
+            }
+        }
         SpaType::Int => quote!(as_i32()),
         SpaType::Long => quote!(as_i64()),
         SpaType::Float => quote!(as_f32()),
@@ -168,10 +214,17 @@ fn spa_type_to_as_call(parent: SpaType) -> Option<TokenStream> {
     Some(quote!(#out.ok()))
 }
 
-fn spa_type_to_rs(parent: SpaType) -> TokenStream {
+fn spa_type_to_rs(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
     match parent {
         SpaType::Bool => quote!(bool),
-        SpaType::Id => quote!(u32),
+        SpaType::Id => {
+            if let Some(enum_name) = spa_extract_known_enum_name(parent, info) {
+                let name = format_ident!("{enum_name}");
+                quote!(SpaEnum<#name>)
+            } else {
+                quote!(u32)
+            }
+        }
         SpaType::Int => quote!(i32),
         SpaType::Long => quote!(i64),
         SpaType::Float => quote!(f32),

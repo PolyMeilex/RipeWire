@@ -372,6 +372,20 @@ pub enum SpaParamProfile {
     Save = 8,
 }
 #[repr(u32)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaParamPortConfigMode {
+    #[doc = "< no configuration"]
+    None = 0,
+    #[doc = "< passthrough configuration"]
+    Passthrough = 1,
+    #[doc = "< convert configuration"]
+    Convert = 2,
+    #[doc = "< dsp configuration, depending on the external\n  format. For audio, ports will be configured for\n  the given number of channels with F32 format."]
+    Dsp = 3,
+}
+#[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamPortConfig"]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
@@ -701,6 +715,307 @@ pub enum SpaFormat {
     StartBinary = 262144,
     StartStream = 327680,
     StartApplication = 393216,
+}
+impl SpaAudioFormat {
+    pub const DspS32: SpaAudioFormat = SpaAudioFormat::S2432P;
+}
+impl SpaAudioFormat {
+    pub const DspF32: SpaAudioFormat = SpaAudioFormat::F32P;
+}
+impl SpaAudioFormat {
+    pub const DspF64: SpaAudioFormat = SpaAudioFormat::F64P;
+}
+impl SpaAudioFormat {
+    pub const S16: SpaAudioFormat = SpaAudioFormat::S16Le;
+}
+impl SpaAudioFormat {
+    pub const U16: SpaAudioFormat = SpaAudioFormat::U16Le;
+}
+impl SpaAudioFormat {
+    pub const S2432: SpaAudioFormat = SpaAudioFormat::S2432Le;
+}
+impl SpaAudioFormat {
+    pub const U2432: SpaAudioFormat = SpaAudioFormat::U2432Le;
+}
+impl SpaAudioFormat {
+    pub const S32: SpaAudioFormat = SpaAudioFormat::S32Le;
+}
+impl SpaAudioFormat {
+    pub const U32: SpaAudioFormat = SpaAudioFormat::U32Le;
+}
+impl SpaAudioFormat {
+    pub const S24: SpaAudioFormat = SpaAudioFormat::S24Le;
+}
+impl SpaAudioFormat {
+    pub const U24: SpaAudioFormat = SpaAudioFormat::U24Le;
+}
+impl SpaAudioFormat {
+    pub const S20: SpaAudioFormat = SpaAudioFormat::S20Le;
+}
+impl SpaAudioFormat {
+    pub const U20: SpaAudioFormat = SpaAudioFormat::U20Le;
+}
+impl SpaAudioFormat {
+    pub const S18: SpaAudioFormat = SpaAudioFormat::S18Le;
+}
+impl SpaAudioFormat {
+    pub const U18: SpaAudioFormat = SpaAudioFormat::U18Le;
+}
+impl SpaAudioFormat {
+    pub const F32: SpaAudioFormat = SpaAudioFormat::F32Le;
+}
+impl SpaAudioFormat {
+    pub const F64: SpaAudioFormat = SpaAudioFormat::F64Le;
+}
+impl SpaAudioFormat {
+    pub const S16Oe: SpaAudioFormat = SpaAudioFormat::S16Be;
+}
+impl SpaAudioFormat {
+    pub const U16Oe: SpaAudioFormat = SpaAudioFormat::U16Be;
+}
+impl SpaAudioFormat {
+    pub const S2432Oe: SpaAudioFormat = SpaAudioFormat::S2432Be;
+}
+impl SpaAudioFormat {
+    pub const U2432Oe: SpaAudioFormat = SpaAudioFormat::U2432Be;
+}
+impl SpaAudioFormat {
+    pub const S32Oe: SpaAudioFormat = SpaAudioFormat::S32Be;
+}
+impl SpaAudioFormat {
+    pub const U32Oe: SpaAudioFormat = SpaAudioFormat::U32Be;
+}
+impl SpaAudioFormat {
+    pub const S24Oe: SpaAudioFormat = SpaAudioFormat::S24Be;
+}
+impl SpaAudioFormat {
+    pub const U24Oe: SpaAudioFormat = SpaAudioFormat::U24Be;
+}
+impl SpaAudioFormat {
+    pub const S20Oe: SpaAudioFormat = SpaAudioFormat::S20Be;
+}
+impl SpaAudioFormat {
+    pub const U20Oe: SpaAudioFormat = SpaAudioFormat::U20Be;
+}
+impl SpaAudioFormat {
+    pub const S18Oe: SpaAudioFormat = SpaAudioFormat::S18Be;
+}
+impl SpaAudioFormat {
+    pub const U18Oe: SpaAudioFormat = SpaAudioFormat::U18Be;
+}
+impl SpaAudioFormat {
+    pub const F32Oe: SpaAudioFormat = SpaAudioFormat::F32Be;
+}
+impl SpaAudioFormat {
+    pub const F64Oe: SpaAudioFormat = SpaAudioFormat::F64Be;
+}
+#[repr(u32)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaAudioFormat {
+    Unknown = 0,
+    Encoded = 1,
+    StartInterleaved = 256,
+    S8 = 257,
+    U8 = 258,
+    S16Le = 259,
+    S16Be = 260,
+    U16Le = 261,
+    U16Be = 262,
+    S2432Le = 263,
+    S2432Be = 264,
+    U2432Le = 265,
+    U2432Be = 266,
+    S32Le = 267,
+    S32Be = 268,
+    U32Le = 269,
+    U32Be = 270,
+    S24Le = 271,
+    S24Be = 272,
+    U24Le = 273,
+    U24Be = 274,
+    S20Le = 275,
+    S20Be = 276,
+    U20Le = 277,
+    U20Be = 278,
+    S18Le = 279,
+    S18Be = 280,
+    U18Le = 281,
+    U18Be = 282,
+    F32Le = 283,
+    F32Be = 284,
+    F64Le = 285,
+    F64Be = 286,
+    Ulaw = 287,
+    Alaw = 288,
+    StartPlanar = 512,
+    U8P = 513,
+    S16P = 514,
+    S2432P = 515,
+    S32P = 516,
+    S24P = 517,
+    F32P = 518,
+    F64P = 519,
+    S8P = 520,
+    StartOther = 1024,
+}
+#[repr(u32)]
+#[doc = " \\addtogroup spa_param\n \\{"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaAudioIec958Codec {
+    Unknown = 0,
+    Pcm = 1,
+    Dts = 2,
+    Ac3 = 3,
+    #[doc = "< MPEG-1 or MPEG-2 (Part 3, not AAC)"]
+    Mpeg = 4,
+    #[doc = "< MPEG-2 AAC"]
+    Mpeg2Aac = 5,
+    Eac3 = 6,
+    #[doc = "< Dolby TrueHD"]
+    Truehd = 7,
+    #[doc = "< DTS-HD Master Audio"]
+    Dtshd = 8,
+}
+#[repr(u32)]
+#[doc = " \\addtogroup spa_param\n \\{"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaBluetoothAudioCodec {
+    Start = 0,
+    Sbc = 1,
+    SbcXq = 2,
+    Mpeg = 3,
+    Aac = 4,
+    AacEld = 5,
+    Aptx = 6,
+    AptxHd = 7,
+    Ldac = 8,
+    AptxLl = 9,
+    AptxLlDuplex = 10,
+    Faststream = 11,
+    FaststreamDuplex = 12,
+    Lc3PlusHr = 13,
+    Opus05 = 14,
+    Opus0551 = 15,
+    Opus0571 = 16,
+    Opus05Duplex = 17,
+    Opus05Pro = 18,
+    OpusG = 19,
+    Cvsd = 256,
+    Msbc = 257,
+    Lc3Swb = 258,
+    Lc3 = 512,
+}
+impl SpaVideoFormat {
+    pub const DspF32: SpaVideoFormat = SpaVideoFormat::RgbaF32;
+}
+#[repr(u32)]
+#[doc = " Video formats\n\n The components are in general described in big-endian order. There are some\n exceptions (e.g. RGB15 and RGB16) which use the host endianness.\n\n Most of the formats are identical to their GStreamer equivalent. See the\n GStreamer video formats documentation for more details:\n\n https://gstreamer.freedesktop.org/documentation/additional/design/mediatype-video-raw.html#formats"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaVideoFormat {
+    Unknown = 0,
+    Encoded = 1,
+    I420 = 2,
+    Yv12 = 3,
+    Yuy2 = 4,
+    Uyvy = 5,
+    Ayuv = 6,
+    RgBx = 7,
+    BgRx = 8,
+    XRgb = 9,
+    XBgr = 10,
+    Rgba = 11,
+    Bgra = 12,
+    Argb = 13,
+    Abgr = 14,
+    Rgb = 15,
+    Bgr = 16,
+    Y41B = 17,
+    Y42B = 18,
+    Yvyu = 19,
+    Y444 = 20,
+    V210 = 21,
+    V216 = 22,
+    Nv12 = 23,
+    Nv21 = 24,
+    Gray8 = 25,
+    Gray16Be = 26,
+    Gray16Le = 27,
+    V308 = 28,
+    Rgb16 = 29,
+    Bgr16 = 30,
+    Rgb15 = 31,
+    Bgr15 = 32,
+    Uyvp = 33,
+    A420 = 34,
+    Rgb8P = 35,
+    Yuv9 = 36,
+    Yvu9 = 37,
+    Iyu1 = 38,
+    Argb64 = 39,
+    Ayuv64 = 40,
+    R210 = 41,
+    I42010Be = 42,
+    I42010Le = 43,
+    I42210Be = 44,
+    I42210Le = 45,
+    Y44410Be = 46,
+    Y44410Le = 47,
+    Gbr = 48,
+    Gbr10Be = 49,
+    Gbr10Le = 50,
+    Nv16 = 51,
+    Nv24 = 52,
+    Nv1264Z32 = 53,
+    A42010Be = 54,
+    A42010Le = 55,
+    A42210Be = 56,
+    A42210Le = 57,
+    A44410Be = 58,
+    A44410Le = 59,
+    Nv61 = 60,
+    P01010Be = 61,
+    P01010Le = 62,
+    Iyu2 = 63,
+    Vyuy = 64,
+    Gbra = 65,
+    Gbra10Be = 66,
+    Gbra10Le = 67,
+    Gbr12Be = 68,
+    Gbr12Le = 69,
+    Gbra12Be = 70,
+    Gbra12Le = 71,
+    I42012Be = 72,
+    I42012Le = 73,
+    I42212Be = 74,
+    I42212Le = 75,
+    Y44412Be = 76,
+    Y44412Le = 77,
+    RgbaF16 = 78,
+    RgbaF32 = 79,
+    #[doc = "< 32-bit x:R:G:B 2:10:10:10 little endian"]
+    XRgb210Le = 80,
+    #[doc = "< 32-bit x:B:G:R 2:10:10:10 little endian"]
+    XBgr210Le = 81,
+    #[doc = "< 32-bit R:G:B:x 10:10:10:2 little endian"]
+    RgBx102Le = 82,
+    #[doc = "< 32-bit B:G:R:x 10:10:10:2 little endian"]
+    BgRx102Le = 83,
+    #[doc = "< 32-bit A:R:G:B 2:10:10:10 little endian"]
+    Argb210Le = 84,
+    #[doc = "< 32-bit A:B:G:R 2:10:10:10 little endian"]
+    Abgr210Le = 85,
+    #[doc = "< 32-bit R:G:B:A 10:10:10:2 little endian"]
+    Rgba102Le = 86,
+    #[doc = "< 32-bit B:G:R:A 10:10:10:2 little endian"]
+    Bgra102Le = 87,
 }
 #[repr(u32)]
 #[doc = " Properties for SPA_TYPE_OBJECT_ParamLatency\n\n The latency indicates:\n\n - for playback: time delay between start of a graph cycle, and the rendering of\n   the first sample of that cycle in audio output.\n\n - for capture: time delay between start of a graph cycle, and the first sample\n   of that cycle having occurred in audio input.\n\n For physical output/input, the latency is intended to correspond to the\n rendering/capture of physical audio, including hardware internal rendering delay.\n\n The latency values are adjusted by \\ref SPA_PROP_latencyOffsetNsec or\n SPA_PARAM_ProcessLatency, if present. (e.g. for ALSA this is used to adjust for\n the internal hardware latency)."]

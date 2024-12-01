@@ -82,6 +82,11 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
             "enum spa_meta_type" => "SPA_META_",
             "enum pw_link_state" => "PW_LINK_STATE_",
             "enum pw_node_state" => "PW_NODE_STATE_",
+            "enum spa_param_port_config_mode" => "SPA_PARAM_PORT_CONFIG_MODE_",
+            "enum spa_bluetooth_audio_codec" => "SPA_BLUETOOTH_AUDIO_CODEC_",
+            "enum spa_audio_format" => "SPA_AUDIO_FORMAT_",
+            "enum spa_audio_iec958_codec" => "SPA_AUDIO_IEC958_CODEC_",
+            "enum spa_video_format" => "SPA_VIDEO_FORMAT_",
             _ => return None,
         };
 
@@ -146,6 +151,11 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_param_process_latency",
         "pw_link_state",
         "pw_node_state",
+        "spa_param_port_config_mode",
+        "spa_bluetooth_audio_codec",
+        "spa_audio_format",
+        "spa_audio_iec958_codec",
+        "spa_video_format",
     ] {
         builder = builder.allowlist_type(name).rustified_enum(name);
     }
