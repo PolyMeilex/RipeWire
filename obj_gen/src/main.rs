@@ -67,8 +67,8 @@ impl Entry {
 
         let src = quote! {
             #[doc = #doc]
-            struct #ident;
-            impl #ident {
+            struct #ident<'a>(PodObjectDeserializer<'a>);
+            impl<'a> #ident<'a> {
                 fn get(&self, id: u32) -> Option<PodDeserializer> {
                     todo!("{id}")
                 }
@@ -98,17 +98,40 @@ fn camel_case(v: &str) -> impl quote::IdentFragment + '_ {
 }
 
 fn spa_type_doc(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
-    if spa_type_to_rs(parent).to_string() == "PodDeserializer" {
-        let mut doc = format!(" {}\n", info.name);
-        doc += &format!("    parent: {:?}\n", parent);
-        quote! {
+    let res = spa_type_to_rs(parent).to_string();
+
+    let mut doc = " ".to_string();
+
+    if parent == SpaType::Array {
+        doc += &info.name;
+        doc += "\n";
+        doc += &format!("    parent: Array<{}>", info.values[0].name);
+        doc += "\n";
+
+        return quote! {
             #[doc = #doc]
+        };
+    } else if res == "PodDeserializer" || res == "PodObjectDeserializer" {
+        doc += &info.name;
+        doc += "\n";
+        doc += &format!("    parent: {:?}", parent);
+
+        if info.values.is_empty() {
+            doc += "\n";
         }
     } else {
-        let doc = format!(" {}", &info.name);
-        quote! {
-            #[doc = #doc]
+        doc += &info.name;
+    }
+
+    if !info.values.is_empty() && (res == "PodDeserializer" || parent == SpaType::Id) {
+        doc += "\n";
+        for v in info.values.iter() {
+            doc += &format!("    value-{}: {:?}\n", v.r#type, v.name);
         }
+    }
+
+    quote! {
+        #[doc = #doc]
     }
 }
 
@@ -124,6 +147,21 @@ fn spa_type_to_as_call(parent: SpaType) -> Option<TokenStream> {
         SpaType::Rectangle => quote!(as_rectangle()),
         SpaType::Fraction => quote!(as_fraction()),
         SpaType::Fd => quote!(as_fd()),
+        SpaType::Array => quote!(as_array()),
+        SpaType::Struct => quote!(as_struct()),
+        SpaType::Object => quote!(as_object()),
+        SpaType::Sequence => quote!(as_sequence()),
+
+        SpaType::ObjectFormat => {
+            quote! {
+                as_object().map(Format)
+            }
+        }
+        SpaType::ObjectProps => {
+            quote! {
+                as_object().map(Props)
+            }
+        }
         _ => return None,
     };
 
@@ -143,13 +181,13 @@ fn spa_type_to_rs(parent: SpaType) -> TokenStream {
         SpaType::Fraction => quote!(SpaFraction),
         SpaType::Fd => quote!(i64),
 
-        SpaType::Array => quote!(PodDeserializer),
-        SpaType::Struct => quote!(PodDeserializer),
-        SpaType::Object => quote!(PodDeserializer),
-        SpaType::Sequence => quote!(PodDeserializer),
+        SpaType::Array => quote!(PodArrayDeserializer),
+        SpaType::Struct => quote!(PodStructDeserializer),
+        SpaType::Object => quote!(PodObjectDeserializer),
+        SpaType::Sequence => quote!(PodSequenceDeserializer),
         SpaType::Pod => quote!(PodDeserializer),
-        SpaType::ObjectFormat => quote!(PodDeserializer),
-        SpaType::ObjectProps => quote!(PodDeserializer),
+        SpaType::ObjectFormat => quote!(Format),
+        SpaType::ObjectProps => quote!(Props),
 
         todo => todo!("{todo:?} unsupported"),
     }
@@ -188,6 +226,7 @@ fn main() {
     let mut out = String::new();
 
     out += "use super::*;";
+    out += "\n";
 
     for e in json {
         e.print(&mut out);

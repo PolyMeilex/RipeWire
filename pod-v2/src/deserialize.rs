@@ -257,6 +257,14 @@ impl<'a> PodDeserializer<'a> {
         matches!(self.kind(), PodDeserializerKind::None)
     }
 
+    pub fn as_array(&self) -> Result<PodArrayDeserializer<'a>> {
+        if let PodDeserializerKind::Array(pod) = self.kind() {
+            Ok(pod)
+        } else {
+            Err(self.unexpected_type(SpaType::Array))
+        }
+    }
+
     pub fn as_struct(&self) -> Result<PodStructDeserializer<'a>> {
         if let PodDeserializerKind::Struct(pod) = self.kind() {
             Ok(pod)
