@@ -1,10 +1,9 @@
-#include "spa/pod/builder.h"
+#include <ctype.h>
 #include <getopt.h>
 #include <locale.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include "spa/debug/pod.h"
 #include "spa/debug/types.h"
 #include "spa/utils/type.h"
 #include <spa/control/control.h>
@@ -244,7 +243,7 @@ static const struct type_deff type_deffs[] = {
     {NULL, NULL},
 };
 
-int main(int argc, char *argv[]) {
+int main(void) {
   printf("use super::*;\n\n");
 
   const struct type_deff *deff = type_deffs;
