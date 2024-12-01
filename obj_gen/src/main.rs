@@ -9,7 +9,9 @@ struct SpaTypeInfo {
     r#type: u32,
     parent: u32,
     name: String,
-    values: Option<Box<SpaTypeInfo>>,
+    #[allow(unused)]
+    #[serde(default)]
+    values: Vec<SpaTypeInfo>,
 }
 
 #[derive(Debug, serde::Deserialize)]

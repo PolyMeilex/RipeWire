@@ -16,6 +16,8 @@ static void print_ident(void) {
 
 static void print_obj_key(const char *key) { printf("\"%s\": ", key); }
 
+static void generate_info(const struct spa_type_info *info);
+
 static void generate_property(const struct spa_type_info *info) {
   printf("{ ");
 
@@ -26,16 +28,50 @@ static void generate_property(const struct spa_type_info *info) {
   printf("%d, ", info->parent);
 
   print_obj_key("name");
-  printf("\"%s\", ", info->name);
+  printf("\"%s\"", info->name);
 
-  print_obj_key("values");
   if (info->values) {
-    generate_property(info->values);
+    printf(", ");
+    printf("\n");
+
+    push_ident();
+    {
+      print_ident();
+      print_obj_key("values");
+      generate_info(info->values);
+      printf("\n");
+    }
+    pop_ident();
+
+    print_ident();
   } else {
-    printf("null");
+    printf(" ");
   }
 
   printf("}");
+}
+
+static void generate_info(const struct spa_type_info *info) {
+  printf("[\n");
+
+  while (true) {
+    push_ident();
+    print_ident();
+    generate_property(info);
+    pop_ident();
+
+    info++;
+
+    if (info && info->name) {
+      printf(",\n");
+    } else {
+      break;
+    }
+  }
+
+  printf("\n");
+  print_ident();
+  printf("]");
 }
 
 static void generate(struct type_deff r) {
@@ -47,26 +83,9 @@ static void generate(struct type_deff r) {
 
   print_ident();
   print_obj_key("properties");
-  printf("[\n");
-
-  while (true) {
-    push_ident();
-    print_ident();
-    generate_property(r.info);
-    pop_ident();
-
-    r.info++;
-
-    if (r.info && r.info->name) {
-      printf(",\n");
-    } else {
-      break;
-    }
-  }
-
+  generate_info(r.info);
   printf("\n");
-  print_ident();
-  printf("]\n");
+
   printf("}");
 }
 
