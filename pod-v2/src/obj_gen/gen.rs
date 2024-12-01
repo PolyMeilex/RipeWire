@@ -1,6 +1,13 @@
 use super::*;
+macro_rules! opt_fmt {
+    ($f:ident, $self:ident . $key:ident) => {
+        if let Some(v) = $self.$key() {
+            $f.field(stringify!(key), &v);
+        }
+    };
+}
 /// Spa:Pod:Object:Param:PropInfo
-struct PropInfo<'a>(pub PodObjectDeserializer<'a>);
+pub struct PropInfo<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PropInfo<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -36,8 +43,21 @@ impl<'a> PropInfo<'a> {
         self.get(7u32)?.as_str().ok()
     }
 }
+impl<'a> std::fmt::Debug for PropInfo<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("PropInfo");
+        opt_fmt!(f, self.id);
+        opt_fmt!(f, self.name);
+        opt_fmt!(f, self.ty);
+        opt_fmt!(f, self.labels);
+        opt_fmt!(f, self.container);
+        opt_fmt!(f, self.params);
+        opt_fmt!(f, self.description);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Props
-struct Props<'a>(pub PodObjectDeserializer<'a>);
+pub struct Props<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Props<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -237,8 +257,60 @@ impl<'a> Props<'a> {
         self.get(524289u32)?.as_struct().ok()
     }
 }
+impl<'a> std::fmt::Debug for Props<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Props");
+        opt_fmt!(f, self.device);
+        opt_fmt!(f, self.device_name);
+        opt_fmt!(f, self.device_fd);
+        opt_fmt!(f, self.card);
+        opt_fmt!(f, self.card_name);
+        opt_fmt!(f, self.min_latency);
+        opt_fmt!(f, self.max_latency);
+        opt_fmt!(f, self.periods);
+        opt_fmt!(f, self.period_size);
+        opt_fmt!(f, self.period_event);
+        opt_fmt!(f, self.live);
+        opt_fmt!(f, self.rate);
+        opt_fmt!(f, self.quality);
+        opt_fmt!(f, self.bluetooth_audio_codec);
+        opt_fmt!(f, self.bluetooth_offload_active);
+        opt_fmt!(f, self.wave_type);
+        opt_fmt!(f, self.frequency);
+        opt_fmt!(f, self.volume);
+        opt_fmt!(f, self.mute);
+        opt_fmt!(f, self.pattern_type);
+        opt_fmt!(f, self.dither_type);
+        opt_fmt!(f, self.truncate);
+        opt_fmt!(f, self.channel_volumes);
+        opt_fmt!(f, self.volume_base);
+        opt_fmt!(f, self.volume_step);
+        opt_fmt!(f, self.channel_map);
+        opt_fmt!(f, self.monitor_mute);
+        opt_fmt!(f, self.monitor_volumes);
+        opt_fmt!(f, self.latency_offset_nsec);
+        opt_fmt!(f, self.soft_mute);
+        opt_fmt!(f, self.soft_volumes);
+        opt_fmt!(f, self.iec958_codecs);
+        opt_fmt!(f, self.volume_ramp_samples);
+        opt_fmt!(f, self.volume_ramp_step_samples);
+        opt_fmt!(f, self.volume_ramp_time);
+        opt_fmt!(f, self.volume_ramp_step_time);
+        opt_fmt!(f, self.volume_ramp_scale);
+        opt_fmt!(f, self.brightness);
+        opt_fmt!(f, self.contrast);
+        opt_fmt!(f, self.saturation);
+        opt_fmt!(f, self.hue);
+        opt_fmt!(f, self.gamma);
+        opt_fmt!(f, self.exposure);
+        opt_fmt!(f, self.gain);
+        opt_fmt!(f, self.sharpness);
+        opt_fmt!(f, self.params);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Format
-struct Format<'a>(pub PodObjectDeserializer<'a>);
+pub struct Format<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Format<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -386,8 +458,48 @@ impl<'a> Format<'a> {
         self.get(131091u32)?.as_id().ok()
     }
 }
+impl<'a> std::fmt::Debug for Format<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Format");
+        opt_fmt!(f, self.media_type);
+        opt_fmt!(f, self.media_subtype);
+        opt_fmt!(f, self.audio_format);
+        opt_fmt!(f, self.audio_flags);
+        opt_fmt!(f, self.audio_rate);
+        opt_fmt!(f, self.audio_channels);
+        opt_fmt!(f, self.audio_position);
+        opt_fmt!(f, self.audio_iec958_codec);
+        opt_fmt!(f, self.audio_bitorder);
+        opt_fmt!(f, self.audio_interleave);
+        opt_fmt!(f, self.audio_bitrate);
+        opt_fmt!(f, self.audio_block_align);
+        opt_fmt!(f, self.audio_aac_stream_format);
+        opt_fmt!(f, self.audio_wma_profile);
+        opt_fmt!(f, self.audio_amr_band_mode);
+        opt_fmt!(f, self.video_format);
+        opt_fmt!(f, self.video_modifier);
+        opt_fmt!(f, self.video_size);
+        opt_fmt!(f, self.video_framerate);
+        opt_fmt!(f, self.video_max_framerate);
+        opt_fmt!(f, self.video_views);
+        opt_fmt!(f, self.video_interlace_mode);
+        opt_fmt!(f, self.video_pixel_aspect_ratio);
+        opt_fmt!(f, self.video_multiview_mode);
+        opt_fmt!(f, self.video_multiview_flags);
+        opt_fmt!(f, self.video_chroma_site);
+        opt_fmt!(f, self.video_color_range);
+        opt_fmt!(f, self.video_color_matrix);
+        opt_fmt!(f, self.video_transfer_function);
+        opt_fmt!(f, self.video_color_primaries);
+        opt_fmt!(f, self.video_profile);
+        opt_fmt!(f, self.video_level);
+        opt_fmt!(f, self.video_h264_stream_format);
+        opt_fmt!(f, self.video_h264_alignment);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Buffers
-struct Buffers<'a>(pub PodObjectDeserializer<'a>);
+pub struct Buffers<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Buffers<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -421,8 +533,21 @@ impl<'a> Buffers<'a> {
         self.get(7u32)?.as_i32().ok()
     }
 }
+impl<'a> std::fmt::Debug for Buffers<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Buffers");
+        opt_fmt!(f, self.buffers);
+        opt_fmt!(f, self.blocks);
+        opt_fmt!(f, self.block_info_size);
+        opt_fmt!(f, self.block_info_stride);
+        opt_fmt!(f, self.block_info_align);
+        opt_fmt!(f, self.block_info_data_type);
+        opt_fmt!(f, self.block_info_meta_type);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Meta
-struct Meta<'a>(pub PodObjectDeserializer<'a>);
+pub struct Meta<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Meta<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -448,8 +573,16 @@ impl<'a> Meta<'a> {
         self.get(2u32)?.as_i32().ok()
     }
 }
+impl<'a> std::fmt::Debug for Meta<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Meta");
+        opt_fmt!(f, self.ty);
+        opt_fmt!(f, self.size);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:IO
-struct Io<'a>(pub PodObjectDeserializer<'a>);
+pub struct Io<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Io<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -476,8 +609,16 @@ impl<'a> Io<'a> {
         self.get(2u32)?.as_i32().ok()
     }
 }
+impl<'a> std::fmt::Debug for Io<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Io");
+        opt_fmt!(f, self.id);
+        opt_fmt!(f, self.size);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Profile
-struct Profile<'a>(pub PodObjectDeserializer<'a>);
+pub struct Profile<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profile<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -520,8 +661,22 @@ impl<'a> Profile<'a> {
         self.get(8u32)?.as_bool().ok()
     }
 }
+impl<'a> std::fmt::Debug for Profile<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Profile");
+        opt_fmt!(f, self.index);
+        opt_fmt!(f, self.name);
+        opt_fmt!(f, self.description);
+        opt_fmt!(f, self.priority);
+        opt_fmt!(f, self.available);
+        opt_fmt!(f, self.info);
+        opt_fmt!(f, self.classes);
+        opt_fmt!(f, self.save);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:PortConfig
-struct PortConfig<'a>(pub PodObjectDeserializer<'a>);
+pub struct PortConfig<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PortConfig<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -547,8 +702,19 @@ impl<'a> PortConfig<'a> {
         self.get(5u32)?.as_object().map(Format).ok()
     }
 }
+impl<'a> std::fmt::Debug for PortConfig<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("PortConfig");
+        opt_fmt!(f, self.direction);
+        opt_fmt!(f, self.mode);
+        opt_fmt!(f, self.monitor);
+        opt_fmt!(f, self.control);
+        opt_fmt!(f, self.format);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Route
-struct Route<'a>(pub PodObjectDeserializer<'a>);
+pub struct Route<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Route<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -611,8 +777,27 @@ impl<'a> Route<'a> {
         self.get(13u32)?.as_bool().ok()
     }
 }
+impl<'a> std::fmt::Debug for Route<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Route");
+        opt_fmt!(f, self.index);
+        opt_fmt!(f, self.direction);
+        opt_fmt!(f, self.device);
+        opt_fmt!(f, self.name);
+        opt_fmt!(f, self.description);
+        opt_fmt!(f, self.priority);
+        opt_fmt!(f, self.available);
+        opt_fmt!(f, self.info);
+        opt_fmt!(f, self.profiles);
+        opt_fmt!(f, self.props);
+        opt_fmt!(f, self.devices);
+        opt_fmt!(f, self.profile);
+        opt_fmt!(f, self.save);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Profiler
-struct Profiler<'a>(pub PodObjectDeserializer<'a>);
+pub struct Profiler<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profiler<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -634,8 +819,18 @@ impl<'a> Profiler<'a> {
         self.get(131073u32)?.as_struct().ok()
     }
 }
+impl<'a> std::fmt::Debug for Profiler<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Profiler");
+        opt_fmt!(f, self.info);
+        opt_fmt!(f, self.clock);
+        opt_fmt!(f, self.driver_block);
+        opt_fmt!(f, self.follower_block);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Latency
-struct Latency<'a>(pub PodObjectDeserializer<'a>);
+pub struct Latency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Latency<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -669,8 +864,21 @@ impl<'a> Latency<'a> {
         self.get(7u32)?.as_i64().ok()
     }
 }
+impl<'a> std::fmt::Debug for Latency<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Latency");
+        opt_fmt!(f, self.direction);
+        opt_fmt!(f, self.min_quantum);
+        opt_fmt!(f, self.max_quantum);
+        opt_fmt!(f, self.min_rate);
+        opt_fmt!(f, self.max_rate);
+        opt_fmt!(f, self.min_ns);
+        opt_fmt!(f, self.max_ns);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:ProcessLatency
-struct ProcessLatency<'a>(pub PodObjectDeserializer<'a>);
+pub struct ProcessLatency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> ProcessLatency<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -688,8 +896,17 @@ impl<'a> ProcessLatency<'a> {
         self.get(3u32)?.as_i64().ok()
     }
 }
+impl<'a> std::fmt::Debug for ProcessLatency<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("ProcessLatency");
+        opt_fmt!(f, self.quantum);
+        opt_fmt!(f, self.rate);
+        opt_fmt!(f, self.ns);
+        f.finish()
+    }
+}
 /// Spa:Pod:Object:Param:Tag
-struct Tag<'a>(pub PodObjectDeserializer<'a>);
+pub struct Tag<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Tag<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -701,5 +918,13 @@ impl<'a> Tag<'a> {
     /// Spa:Pod:Object:Param:Tag:info
     fn info(&self) -> Option<PodStructDeserializer> {
         self.get(2u32)?.as_struct().ok()
+    }
+}
+impl<'a> std::fmt::Debug for Tag<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Tag");
+        opt_fmt!(f, self.direction);
+        opt_fmt!(f, self.info);
+        f.finish()
     }
 }

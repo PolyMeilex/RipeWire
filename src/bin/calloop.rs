@@ -213,7 +213,15 @@ impl PipewireState {
         _device: PwDevice,
         device_event: pw_device::Event,
     ) {
-        dbg!(&device_event);
+        if let pw_device::Event::Param(msg) = device_event {
+            if msg.id == SpaEnum::Value(SpaParamType::Route) {
+                let obj = pod_v2::obj_gen::Route(msg.params.as_deserializer().as_object().unwrap());
+                dbg!("Param");
+                dbg!(obj);
+            }
+        } else {
+            dbg!(&device_event);
+        }
     }
 
     pub fn done(&mut self, ctx: &mut Context<Self>) {
@@ -241,6 +249,7 @@ impl PipewireState {
         if let Some(global) = device {
             let device: PwDevice = self.registry.bind(ctx, global);
 
+            device.enum_param(ctx, SpaParamType::Route);
             device.set_param(
                 ctx,
                 pod::params::RouteParamBuilder::route()

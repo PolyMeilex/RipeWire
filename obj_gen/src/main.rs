@@ -52,6 +52,7 @@ struct Entry {
 impl Entry {
     fn print(&self, out: &mut impl Write) {
         let ident = format_ident!("{}", camel_case(spa_short_name(&self.name).unwrap()));
+        let ident_str = ident.to_string();
 
         let props = self.properties.iter().filter_map(|info| {
             let ident = spa_strip_parent_name(&self.name, &info.name)?;
@@ -92,17 +93,48 @@ impl Entry {
             Some(src)
         });
 
+        // TODO: Remove duplication
+        let props_dbg = self.properties.iter().filter_map(|info| {
+            let ident = spa_strip_parent_name(&self.name, &info.name)?;
+            let ident = if ident == "type" {
+                format_ident!("ty")
+            } else {
+                format_ident!("{}", snake_case(ident))
+            };
+
+            let spa_type = SpaType::from_raw(info.parent).unwrap();
+
+            if spa_type == SpaType::None {
+                return None;
+            }
+
+            let src = quote! {
+                opt_fmt!(f, self.#ident);
+            };
+
+            Some(src)
+        });
+
         let doc = format!(" {}", self.name);
 
         let src = quote! {
             #[doc = #doc]
-            struct #ident<'a>(pub PodObjectDeserializer<'a>);
+            pub struct #ident<'a>(pub PodObjectDeserializer<'a>);
             impl<'a> #ident<'a> {
                 fn get(&self, id: u32) -> Option<PodDeserializer> {
                     todo!("{id}")
                 }
 
                 #(#props)*
+            }
+
+
+            impl<'a> std::fmt::Debug for #ident<'a> {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    let mut f = f.debug_struct(#ident_str);
+                    #(#props_dbg)*
+                    f.finish()
+                }
             }
         };
 
@@ -298,6 +330,17 @@ fn main() {
 
     out += "use super::*;";
     out += "\n";
+
+    out += &quote! {
+        macro_rules! opt_fmt {
+            ($f: ident, $self: ident.$key: ident) => {
+                if let Some(v) = $self.$key() {
+                    $f.field(stringify!(key), &v);
+                }
+            };
+        }
+    }
+    .to_string();
 
     for e in json {
         e.print(&mut out);

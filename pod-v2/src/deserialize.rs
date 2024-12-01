@@ -762,6 +762,24 @@ impl<'a> fmt::Debug for PodChoiceDeserializer<'a> {
 impl<'a> fmt::Debug for PodDeserializer<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
+            PodDeserializerKind::String(v) => v.fmt(f),
+            PodDeserializerKind::Bool(v) => v.fmt(f),
+            PodDeserializerKind::Int(v) => {
+                v.fmt(f)?;
+                write!(f, "_i32")
+            }
+            PodDeserializerKind::Long(v) => {
+                v.fmt(f)?;
+                write!(f, "_i64")
+            }
+            PodDeserializerKind::Float(v) => {
+                v.fmt(f)?;
+                write!(f, "_f32")
+            }
+            PodDeserializerKind::Double(v) => {
+                v.fmt(f)?;
+                write!(f, "_f64")
+            }
             PodDeserializerKind::Rectangle(v) => f
                 .debug_struct("Rectangle")
                 .field("width", &v.width)
@@ -782,7 +800,7 @@ impl<'a> fmt::Debug for PodDeserializer<'a> {
                 .debug_struct("UnknownPod")
                 .field("type", &pod.ty())
                 .finish_non_exhaustive(),
-            _ => self.kind().fmt(f),
+            v => v.fmt(f),
         }
     }
 }
