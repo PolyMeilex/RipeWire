@@ -51,10 +51,10 @@ impl Entry {
                 }
             };
 
-            let doc = format!(" {}", info.name);
+            let doc = spa_type_doc(spa_type, info);
 
             let src = quote! {
-                #[doc = #doc]
+                #doc
                 fn #ident(&self) -> Option<#rs_spa_type> {
                     #get
                 }
@@ -95,6 +95,21 @@ fn snake_case(v: &str) -> impl quote::IdentFragment + '_ {
 
 fn camel_case(v: &str) -> impl quote::IdentFragment + '_ {
     DisplayToIdent(heck::AsUpperCamelCase(v))
+}
+
+fn spa_type_doc(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
+    if spa_type_to_rs(parent).to_string() == "PodDeserializer" {
+        let mut doc = format!(" {}\n", info.name);
+        doc += &format!("    parent: {:?}\n", parent);
+        quote! {
+            #[doc = #doc]
+        }
+    } else {
+        let doc = format!(" {}", &info.name);
+        quote! {
+            #[doc = #doc]
+        }
+    }
 }
 
 fn spa_type_to_as_call(parent: SpaType) -> Option<TokenStream> {

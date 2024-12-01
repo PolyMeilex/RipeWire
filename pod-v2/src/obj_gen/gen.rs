@@ -13,11 +13,15 @@ impl PropInfo {
     fn name(&self) -> Option<&BStr> {
         self.get(2u32)?.as_str().ok()
     }
-    /// Spa:Pod:Object:Param:PropInfo:type
+    /** Spa:Pod:Object:Param:PropInfo:type
+        parent: Pod
+    */
     fn ty(&self) -> Option<PodDeserializer> {
         self.get(3u32)
     }
-    /// Spa:Pod:Object:Param:PropInfo:labels
+    /** Spa:Pod:Object:Param:PropInfo:labels
+        parent: Struct
+    */
     fn labels(&self) -> Option<PodDeserializer> {
         self.get(4u32)
     }
@@ -128,7 +132,9 @@ impl Props {
     fn truncate(&self) -> Option<bool> {
         self.get(65543u32)?.as_bool().ok()
     }
-    /// Spa:Pod:Object:Param:Props:channelVolumes
+    /** Spa:Pod:Object:Param:Props:channelVolumes
+        parent: Array
+    */
     fn channel_volumes(&self) -> Option<PodDeserializer> {
         self.get(65544u32)
     }
@@ -140,7 +146,9 @@ impl Props {
     fn volume_step(&self) -> Option<f32> {
         self.get(65546u32)?.as_f32().ok()
     }
-    /// Spa:Pod:Object:Param:Props:channelMap
+    /** Spa:Pod:Object:Param:Props:channelMap
+        parent: Array
+    */
     fn channel_map(&self) -> Option<PodDeserializer> {
         self.get(65547u32)
     }
@@ -148,7 +156,9 @@ impl Props {
     fn monitor_mute(&self) -> Option<bool> {
         self.get(65548u32)?.as_bool().ok()
     }
-    /// Spa:Pod:Object:Param:Props:monitorVolumes
+    /** Spa:Pod:Object:Param:Props:monitorVolumes
+        parent: Array
+    */
     fn monitor_volumes(&self) -> Option<PodDeserializer> {
         self.get(65549u32)
     }
@@ -160,11 +170,15 @@ impl Props {
     fn soft_mute(&self) -> Option<bool> {
         self.get(65551u32)?.as_bool().ok()
     }
-    /// Spa:Pod:Object:Param:Props:softVolumes
+    /** Spa:Pod:Object:Param:Props:softVolumes
+        parent: Array
+    */
     fn soft_volumes(&self) -> Option<PodDeserializer> {
         self.get(65552u32)
     }
-    /// Spa:Pod:Object:Param:Props:iec958Codecs
+    /** Spa:Pod:Object:Param:Props:iec958Codecs
+        parent: Array
+    */
     fn iec958_codecs(&self) -> Option<PodDeserializer> {
         self.get(65553u32)
     }
@@ -220,7 +234,9 @@ impl Props {
     fn sharpness(&self) -> Option<i32> {
         self.get(131080u32)?.as_i32().ok()
     }
-    /// Spa:Pod:Object:Param:Props:params
+    /** Spa:Pod:Object:Param:Props:params
+        parent: Struct
+    */
     fn params(&self) -> Option<PodDeserializer> {
         self.get(524289u32)
     }
@@ -255,7 +271,9 @@ impl Format {
     fn audio_channels(&self) -> Option<i32> {
         self.get(65540u32)?.as_i32().ok()
     }
-    /// Spa:Pod:Object:Param:Format:Audio:position
+    /** Spa:Pod:Object:Param:Format:Audio:position
+        parent: Array
+    */
     fn audio_position(&self) -> Option<PodDeserializer> {
         self.get(65541u32)
     }
@@ -459,11 +477,15 @@ impl Profile {
     fn available(&self) -> Option<u32> {
         self.get(5u32)?.as_id().ok()
     }
-    /// Spa:Pod:Object:Param:Profile:info
+    /** Spa:Pod:Object:Param:Profile:info
+        parent: Struct
+    */
     fn info(&self) -> Option<PodDeserializer> {
         self.get(6u32)
     }
-    /// Spa:Pod:Object:Param:Profile:classes
+    /** Spa:Pod:Object:Param:Profile:classes
+        parent: Struct
+    */
     fn classes(&self) -> Option<PodDeserializer> {
         self.get(7u32)
     }
@@ -494,7 +516,9 @@ impl PortConfig {
     fn control(&self) -> Option<bool> {
         self.get(4u32)?.as_bool().ok()
     }
-    /// Spa:Pod:Object:Param:PortConfig:format
+    /** Spa:Pod:Object:Param:PortConfig:format
+        parent: ObjectFormat
+    */
     fn format(&self) -> Option<PodDeserializer> {
         self.get(5u32)
     }
@@ -533,7 +557,9 @@ impl Route {
     fn available(&self) -> Option<u32> {
         self.get(7u32)?.as_id().ok()
     }
-    /// Spa:Pod:Object:Param:Route:info
+    /** Spa:Pod:Object:Param:Route:info
+        parent: Struct
+    */
     fn info(&self) -> Option<PodDeserializer> {
         self.get(8u32)
     }
@@ -541,7 +567,9 @@ impl Route {
     fn profiles(&self) -> Option<i32> {
         self.get(9u32)?.as_i32().ok()
     }
-    /// Spa:Pod:Object:Param:Route:props
+    /** Spa:Pod:Object:Param:Route:props
+        parent: ObjectProps
+    */
     fn props(&self) -> Option<PodDeserializer> {
         self.get(10u32)
     }
@@ -564,19 +592,27 @@ impl Profiler {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
     }
-    /// Spa:Pod:Object:Profiler:info
+    /** Spa:Pod:Object:Profiler:info
+        parent: Struct
+    */
     fn info(&self) -> Option<PodDeserializer> {
         self.get(65537u32)
     }
-    /// Spa:Pod:Object:Profiler:clock
+    /** Spa:Pod:Object:Profiler:clock
+        parent: Struct
+    */
     fn clock(&self) -> Option<PodDeserializer> {
         self.get(65538u32)
     }
-    /// Spa:Pod:Object:Profiler:driverBlock
+    /** Spa:Pod:Object:Profiler:driverBlock
+        parent: Struct
+    */
     fn driver_block(&self) -> Option<PodDeserializer> {
         self.get(65539u32)
     }
-    /// Spa:Pod:Object:Profiler:followerBlock
+    /** Spa:Pod:Object:Profiler:followerBlock
+        parent: Struct
+    */
     fn follower_block(&self) -> Option<PodDeserializer> {
         self.get(131073u32)
     }
@@ -645,7 +681,9 @@ impl Tag {
     fn direction(&self) -> Option<u32> {
         self.get(1u32)?.as_id().ok()
     }
-    /// Spa:Pod:Object:Param:Tag:info
+    /** Spa:Pod:Object:Param:Tag:info
+        parent: Struct
+    */
     fn info(&self) -> Option<PodDeserializer> {
         self.get(2u32)
     }
