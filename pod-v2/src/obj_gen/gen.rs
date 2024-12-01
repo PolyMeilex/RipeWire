@@ -2,7 +2,7 @@ use super::*;
 macro_rules! opt_fmt {
     ($f:ident, $self:ident . $key:ident) => {
         if let Some(v) = $self.$key() {
-            $f.field(stringify!(key), &v);
+            $f.field(stringify!($key), &v);
         }
     };
 }
@@ -10,7 +10,7 @@ macro_rules! opt_fmt {
 pub struct PropInfo<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PropInfo<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:PropInfo:id
     fn id(&self) -> Option<SpaEnum<SpaProp>> {
@@ -60,7 +60,7 @@ impl<'a> std::fmt::Debug for PropInfo<'a> {
 pub struct Props<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Props<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:Props:device
     fn device(&self) -> Option<&BStr> {
@@ -313,7 +313,7 @@ impl<'a> std::fmt::Debug for Props<'a> {
 pub struct Format<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Format<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:Format:mediaType
     fn media_type(&self) -> Option<SpaEnum<SpaMediaType>> {
@@ -502,7 +502,7 @@ impl<'a> std::fmt::Debug for Format<'a> {
 pub struct Buffers<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Buffers<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:Buffers:buffers
     fn buffers(&self) -> Option<i32> {
@@ -550,7 +550,7 @@ impl<'a> std::fmt::Debug for Buffers<'a> {
 pub struct Meta<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Meta<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /** Spa:Pod:Object:Param:Meta:type
         enum: Spa:Pointer:Meta
@@ -585,7 +585,7 @@ impl<'a> std::fmt::Debug for Meta<'a> {
 pub struct Io<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Io<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /** Spa:Pod:Object:Param:IO:id
         enum: Spa:Enum:IO
@@ -621,7 +621,7 @@ impl<'a> std::fmt::Debug for Io<'a> {
 pub struct Profile<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profile<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:Profile:index
     fn index(&self) -> Option<i32> {
@@ -679,7 +679,7 @@ impl<'a> std::fmt::Debug for Profile<'a> {
 pub struct PortConfig<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PortConfig<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:PortConfig:direction
     fn direction(&self) -> Option<SpaEnum<SpaDirection>> {
@@ -717,7 +717,7 @@ impl<'a> std::fmt::Debug for PortConfig<'a> {
 pub struct Route<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Route<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:Route:index
     fn index(&self) -> Option<i32> {
@@ -800,7 +800,7 @@ impl<'a> std::fmt::Debug for Route<'a> {
 pub struct Profiler<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profiler<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Profiler:info
     fn info(&self) -> Option<PodStructDeserializer> {
@@ -833,7 +833,7 @@ impl<'a> std::fmt::Debug for Profiler<'a> {
 pub struct Latency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Latency<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:Latency:direction
     fn direction(&self) -> Option<SpaEnum<SpaDirection>> {
@@ -881,7 +881,7 @@ impl<'a> std::fmt::Debug for Latency<'a> {
 pub struct ProcessLatency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> ProcessLatency<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:ProcessLatency:quantum
     fn quantum(&self) -> Option<f32> {
@@ -909,7 +909,7 @@ impl<'a> std::fmt::Debug for ProcessLatency<'a> {
 pub struct Tag<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Tag<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
-        todo!("{id}")
+        self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
     /// Spa:Pod:Object:Param:Tag:direction
     fn direction(&self) -> Option<SpaEnum<SpaDirection>> {

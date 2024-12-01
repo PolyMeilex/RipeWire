@@ -122,7 +122,7 @@ impl Entry {
             pub struct #ident<'a>(pub PodObjectDeserializer<'a>);
             impl<'a> #ident<'a> {
                 fn get(&self, id: u32) -> Option<PodDeserializer> {
-                    todo!("{id}")
+                    self.0.clone().find(|v| v.key == id).map(|v| v.value)
                 }
 
                 #(#props)*
