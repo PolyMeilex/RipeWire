@@ -14,6 +14,19 @@ static ID_TO_ENUM_MAP: &[(&str, &str)] = &[
     ("Spa:Enum:AudioFormat", "SpaAudioFormat"),
     ("Spa:Enum:AudioIEC958Codec", "SpaAudioIec958Codec"),
     ("Spa:Enum:VideoFormat", "SpaVideoFormat"),
+    ("Spa:Enum:VideoInterlaceMode", "SpaVideoInterlaceMode"),
+];
+
+static PROP_NAME_TO_ENUM_MAP: &[(&str, &str)] = &[
+    (
+        "Spa:Pod:Object:Param:Format:Video:multiviewMode",
+        "SpaVideoMultiviewMode",
+    ),
+    // TODO: Don't use SpaEnum for bitflags
+    (
+        "Spa:Pod:Object:Param:Format:Video:multiviewFlags",
+        "SpaVideoMultiviewFlags",
+    ),
 ];
 
 #[derive(Debug, serde::Deserialize)]
@@ -171,6 +184,7 @@ fn spa_extract_enum_name(parent: SpaType, info: &SpaTypeInfo) -> Option<&str> {
 fn spa_extract_known_enum_name(parent: SpaType, info: &SpaTypeInfo) -> Option<&str> {
     spa_extract_enum_name(parent, info)
         .and_then(|name| ID_TO_ENUM_MAP.iter().find(|(a, _)| *a == name))
+        .or_else(|| PROP_NAME_TO_ENUM_MAP.iter().find(|(a, _)| *a == info.name))
         .map(|(_, v)| v)
         .copied()
 }

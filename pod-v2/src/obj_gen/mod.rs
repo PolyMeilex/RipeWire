@@ -7,8 +7,10 @@ use crate::{
 };
 use bstr::BStr;
 use libspa_consts::{
-    SpaDirection, SpaEnum, SpaFraction, SpaMediaSubtype, SpaMetaType, SpaParamPortConfigMode,
-    SpaProp, SpaRectangle,
+    SpaAudioFormat, SpaAudioIec958Codec, SpaBluetoothAudioCodec, SpaDirection, SpaEnum,
+    SpaFraction, SpaMediaSubtype, SpaMediaType, SpaMetaType, SpaParamPortConfigMode, SpaProp,
+    SpaRectangle, SpaVideoFormat, SpaVideoInterlaceMode, SpaVideoMultiviewFlags,
+    SpaVideoMultiviewMode,
 };
 
 mod gen;

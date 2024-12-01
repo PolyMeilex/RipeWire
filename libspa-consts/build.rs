@@ -4,7 +4,6 @@
 use std::path::PathBuf;
 
 use bindgen::callbacks::EnumVariantCustomBehavior;
-use convert_case::{Case, Casing};
 
 fn main() {
     let libs = system_deps::Config::new()
@@ -19,7 +18,7 @@ struct ParseCallbacks;
 
 impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
     fn item_name(&self, original_item_name: &str) -> Option<String> {
-        Some(original_item_name.to_case(Case::UpperCamel))
+        Some(heck::AsUpperCamelCase(original_item_name).to_string())
     }
 
     fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
@@ -56,45 +55,20 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
         original_variant_name: &str,
         _variant_value: bindgen::callbacks::EnumVariantValue,
     ) -> Option<String> {
-        let prefix = match enum_name? {
-            "enum spa_choice_type" => "SPA_CHOICE_",
-            "enum spa_prop" => "SPA_PROP_",
-            "enum spa_prop_info" => "SPA_PROP_INFO_",
-            "enum spa_param_tag" => "SPA_PARAM_TAG_",
-            "enum spa_param_buffers" => "SPA_PARAM_BUFFERS_",
-            "enum spa_param_meta" => "SPA_PARAM_META_",
-            "enum spa_param_profile" => "SPA_PARAM_PROFILE_",
-            "enum spa_param_port_config" => "SPA_PARAM_PORT_CONFIG_",
-            "enum spa_profiler" => "SPA_PROFILER_",
-            "enum spa_param_latency" => "SPA_PARAM_LATENCY_",
-            "enum spa_param_process_latency" => "SPA_PARAM_PROCESS_LATENCY_",
-            "enum spa_data_type" => "SPA_DATA_",
-            "enum spa_param_route" => "SPA_PARAM_ROUTE_",
-            "enum spa_param_type" => "SPA_PARAM_",
-            "enum spa_param_io" => "SPA_PARAM_IO_",
-            "enum spa_io_type" => "SPA_IO_",
-            "enum spa_media_type" => "SPA_MEDIA_TYPE_",
-            "enum spa_media_subtype" => "SPA_MEDIA_SUBTYPE_",
-            "enum spa_format" => "SPA_FORMAT_",
-            "enum spa_direction" => "SPA_DIRECTION_",
-            "enum spa_param_availability" => "SPA_PARAM_AVAILABILITY_",
-            "enum spa_control_type" => "SPA_CONTROL_",
-            "enum spa_meta_type" => "SPA_META_",
-            "enum pw_link_state" => "PW_LINK_STATE_",
-            "enum pw_node_state" => "PW_NODE_STATE_",
-            "enum spa_param_port_config_mode" => "SPA_PARAM_PORT_CONFIG_MODE_",
-            "enum spa_bluetooth_audio_codec" => "SPA_BLUETOOTH_AUDIO_CODEC_",
-            "enum spa_audio_format" => "SPA_AUDIO_FORMAT_",
-            "enum spa_audio_iec958_codec" => "SPA_AUDIO_IEC958_CODEC_",
-            "enum spa_video_format" => "SPA_VIDEO_FORMAT_",
-            _ => return None,
+        let prefix = if let Some(enum_name) = enum_name?.strip_prefix("enum ") {
+            match enum_name {
+                "spa_choice_type" | "spa_data_type" | "spa_param_type" | "spa_io_type"
+                | "spa_control_type" | "spa_meta_type" => &format!(
+                    "{}_",
+                    heck::AsShoutySnekCase(enum_name.strip_suffix("_type").unwrap())
+                ),
+                _ => &format!("{}_", heck::AsShoutySnekCase(enum_name)),
+            }
+        } else {
+            return None;
         };
 
-        Some(
-            original_variant_name
-                .strip_prefix(prefix)?
-                .to_case(Case::UpperCamel),
-        )
+        Some(heck::AsUpperCamelCase(original_variant_name.strip_prefix(prefix)?).to_string())
     }
 }
 
@@ -113,17 +87,22 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         .size_t_is_usize(true)
         .ignore_functions()
         .ignore_methods()
-        .allowlist_type("spa_rectangle")
-        .allowlist_type("spa_fraction")
-        .allowlist_type("spa_io_video_size")
-        .allowlist_type("spa_io_clock")
-        .allowlist_type("spa_io_segment_bar")
-        .allowlist_type("spa_io_segment_video")
-        .allowlist_type("spa_io_segment")
-        .allowlist_type("spa_io_position")
         .prepend_enum_name(false)
         .layout_tests(false)
         .derive_eq(true);
+
+    for name in [
+        "spa_rectangle",
+        "spa_fraction",
+        "spa_io_video_size",
+        "spa_io_clock",
+        "spa_io_segment_bar",
+        "spa_io_segment_video",
+        "spa_io_segment",
+        "spa_io_position",
+    ] {
+        builder = builder.allowlist_type(name);
+    }
 
     for name in [
         "spa_choice_type",
@@ -156,9 +135,14 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_audio_format",
         "spa_audio_iec958_codec",
         "spa_video_format",
+        "spa_video_interlace_mode",
+        "spa_video_multiview_mode",
+        "spa_video_multiview_flags",
     ] {
         builder = builder.allowlist_type(name).rustified_enum(name);
     }
+
+    builder = builder.bitfield_enum("spa_video_multiview_flags");
 
     let builder = libs
         .iter()

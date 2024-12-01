@@ -717,13 +717,13 @@ pub enum SpaFormat {
     StartApplication = 393216,
 }
 impl SpaAudioFormat {
-    pub const DspS32: SpaAudioFormat = SpaAudioFormat::S2432P;
+    pub const DspS32: SpaAudioFormat = SpaAudioFormat::S2432p;
 }
 impl SpaAudioFormat {
-    pub const DspF32: SpaAudioFormat = SpaAudioFormat::F32P;
+    pub const DspF32: SpaAudioFormat = SpaAudioFormat::F32p;
 }
 impl SpaAudioFormat {
-    pub const DspF64: SpaAudioFormat = SpaAudioFormat::F64P;
+    pub const DspF64: SpaAudioFormat = SpaAudioFormat::F64p;
 }
 impl SpaAudioFormat {
     pub const S16: SpaAudioFormat = SpaAudioFormat::S16Le;
@@ -850,14 +850,14 @@ pub enum SpaAudioFormat {
     Ulaw = 287,
     Alaw = 288,
     StartPlanar = 512,
-    U8P = 513,
-    S16P = 514,
-    S2432P = 515,
-    S32P = 516,
-    S24P = 517,
-    F32P = 518,
-    F64P = 519,
-    S8P = 520,
+    U8p = 513,
+    S16p = 514,
+    S2432p = 515,
+    S32p = 516,
+    S24p = 517,
+    F32p = 518,
+    F64p = 519,
+    S8p = 520,
     StartOther = 1024,
 }
 #[repr(u32)]
@@ -899,7 +899,7 @@ pub enum SpaBluetoothAudioCodec {
     AptxLlDuplex = 10,
     Faststream = 11,
     FaststreamDuplex = 12,
-    Lc3PlusHr = 13,
+    Lc3plusHr = 13,
     Opus05 = 14,
     Opus0551 = 15,
     Opus0571 = 16,
@@ -911,6 +911,103 @@ pub enum SpaBluetoothAudioCodec {
     Lc3Swb = 258,
     Lc3 = 512,
 }
+#[repr(i32)]
+#[doc = " All possible stereoscopic 3D and multiview representations.\n In conjunction with \\ref spa_video_multiview_flags, describes how\n multiview content is being transported in the stream."]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaVideoMultiviewMode {
+    #[doc = " A special value indicating no multiview information. Used in spa_video_info and other\n places to indicate that no specific multiview handling has been requested or provided.\n This value is never carried on caps."]
+    None = -1,
+    #[doc = "< All frames are monoscopic"]
+    Mono = 0,
+    #[doc = "< All frames represent a left-eye view"]
+    Left = 1,
+    #[doc = "< All frames represent a right-eye view"]
+    Right = 2,
+    #[doc = "< Left and right eye views are provided\n   in the left and right half of the frame\n   respectively."]
+    SideBySide = 3,
+    #[doc = "< Left and right eye views are provided\n   in the left and right half of the\n   frame, but have been sampled using\n   quincunx method, with half-pixel offset\n   between the 2 views."]
+    SideBySideQuincunx = 4,
+    #[doc = "< Alternating vertical columns of pixels\n   represent the left and right eye view\n   respectively."]
+    ColumnInterleaved = 5,
+    #[doc = "< Alternating horizontal rows of pixels\n   represent the left and right eye view\n   respectively."]
+    RowInterleaved = 6,
+    #[doc = "< The top half of the frame contains the\n   left eye, and the bottom half the right\n   eye."]
+    TopBottom = 7,
+    #[doc = "< Pixels are arranged with alternating\n   pixels representing left and right eye\n   views in a checkerboard fashion."]
+    Checkerboard = 8,
+    #[doc = "< Left and right eye views are provided\n   in separate frames alternately."]
+    FrameByFrame = 32,
+    #[doc = "< Multipleindependent views are\n   provided in separate frames in\n   sequence. This method only applies to\n   raw video buffers at the moment.\n   Specific view identification is via\n   metadata on raw video buffers."]
+    MultiviewFrameByFrame = 33,
+    #[doc = "< Multiple views are provided as separate\n   \\ref spa_data framebuffers attached\n   to each \\ref spa_buffer, described\n   by the metadata"]
+    Separated = 34,
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< No flags"]
+    pub const None: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(0);
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< For stereo streams, the normal arrangement\n   of left and right views is reversed"]
+    pub const RightViewFirst: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(1);
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< The left view is vertically mirrored"]
+    pub const LeftFlipped: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(2);
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< The left view is horizontally mirrored"]
+    pub const LeftFlopped: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(4);
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< The right view is vertically mirrored"]
+    pub const RightFlipped: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(8);
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< The right view is horizontally mirrored"]
+    pub const RightFlopped: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(16);
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< For frame-packed multiview\n   modes, indicates that the individual\n   views have been encoded with half the true\n   width or height and should be scaled back\n   up for display. This flag is used for\n   overriding input layout interpretation\n   by adjusting pixel-aspect-ratio.\n   For side-by-side, column interleaved or\n   checkerboard packings, the\n   pixel width will be doubled.\n   For row interleaved and\n   top-bottom encodings, pixel height will\n   be doubled"]
+    pub const HalfAspect: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(16384);
+}
+impl SpaVideoMultiviewFlags {
+    #[doc = "< The video stream contains both\n   mono and multiview portions,\n   signalled on each buffer by the\n   absence or presence of a buffer flag."]
+    pub const MixedMono: SpaVideoMultiviewFlags = SpaVideoMultiviewFlags(32768);
+}
+impl ::std::ops::BitOr<SpaVideoMultiviewFlags> for SpaVideoMultiviewFlags {
+    type Output = Self;
+    #[inline]
+    fn bitor(self, other: Self) -> Self {
+        SpaVideoMultiviewFlags(self.0 | other.0)
+    }
+}
+impl ::std::ops::BitOrAssign for SpaVideoMultiviewFlags {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: SpaVideoMultiviewFlags) {
+        self.0 |= rhs.0;
+    }
+}
+impl ::std::ops::BitAnd<SpaVideoMultiviewFlags> for SpaVideoMultiviewFlags {
+    type Output = Self;
+    #[inline]
+    fn bitand(self, other: Self) -> Self {
+        SpaVideoMultiviewFlags(self.0 & other.0)
+    }
+}
+impl ::std::ops::BitAndAssign for SpaVideoMultiviewFlags {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: SpaVideoMultiviewFlags) {
+        self.0 &= rhs.0;
+    }
+}
+#[repr(transparent)]
+#[doc = " spa_video_multiview_flags are used to indicate extra properties of a\n stereo/multiview stream beyond the frame layout and buffer mapping\n that is conveyed in the \\ref spa_video_multiview_mode."]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub struct SpaVideoMultiviewFlags(pub ::std::os::raw::c_uint);
 impl SpaVideoFormat {
     pub const DspF32: SpaVideoFormat = SpaVideoFormat::RgbaF32;
 }
@@ -937,8 +1034,8 @@ pub enum SpaVideoFormat {
     Abgr = 14,
     Rgb = 15,
     Bgr = 16,
-    Y41B = 17,
-    Y42B = 18,
+    Y41b = 17,
+    Y42b = 18,
     Yvyu = 19,
     Y444 = 20,
     V210 = 21,
@@ -955,67 +1052,82 @@ pub enum SpaVideoFormat {
     Bgr15 = 32,
     Uyvp = 33,
     A420 = 34,
-    Rgb8P = 35,
+    Rgb8p = 35,
     Yuv9 = 36,
     Yvu9 = 37,
     Iyu1 = 38,
     Argb64 = 39,
     Ayuv64 = 40,
     R210 = 41,
-    I42010Be = 42,
-    I42010Le = 43,
-    I42210Be = 44,
-    I42210Le = 45,
-    Y44410Be = 46,
-    Y44410Le = 47,
+    I42010be = 42,
+    I42010le = 43,
+    I42210be = 44,
+    I42210le = 45,
+    Y44410be = 46,
+    Y44410le = 47,
     Gbr = 48,
-    Gbr10Be = 49,
-    Gbr10Le = 50,
+    Gbr10be = 49,
+    Gbr10le = 50,
     Nv16 = 51,
     Nv24 = 52,
-    Nv1264Z32 = 53,
-    A42010Be = 54,
-    A42010Le = 55,
-    A42210Be = 56,
-    A42210Le = 57,
-    A44410Be = 58,
-    A44410Le = 59,
+    Nv1264z32 = 53,
+    A42010be = 54,
+    A42010le = 55,
+    A42210be = 56,
+    A42210le = 57,
+    A44410be = 58,
+    A44410le = 59,
     Nv61 = 60,
-    P01010Be = 61,
-    P01010Le = 62,
+    P01010be = 61,
+    P01010le = 62,
     Iyu2 = 63,
     Vyuy = 64,
     Gbra = 65,
-    Gbra10Be = 66,
-    Gbra10Le = 67,
-    Gbr12Be = 68,
-    Gbr12Le = 69,
-    Gbra12Be = 70,
-    Gbra12Le = 71,
-    I42012Be = 72,
-    I42012Le = 73,
-    I42212Be = 74,
-    I42212Le = 75,
-    Y44412Be = 76,
-    Y44412Le = 77,
+    Gbra10be = 66,
+    Gbra10le = 67,
+    Gbr12be = 68,
+    Gbr12le = 69,
+    Gbra12be = 70,
+    Gbra12le = 71,
+    I42012be = 72,
+    I42012le = 73,
+    I42212be = 74,
+    I42212le = 75,
+    Y44412be = 76,
+    Y44412le = 77,
     RgbaF16 = 78,
     RgbaF32 = 79,
     #[doc = "< 32-bit x:R:G:B 2:10:10:10 little endian"]
-    XRgb210Le = 80,
+    XRgb210le = 80,
     #[doc = "< 32-bit x:B:G:R 2:10:10:10 little endian"]
-    XBgr210Le = 81,
+    XBgr210le = 81,
     #[doc = "< 32-bit R:G:B:x 10:10:10:2 little endian"]
-    RgBx102Le = 82,
+    RgBx102le = 82,
     #[doc = "< 32-bit B:G:R:x 10:10:10:2 little endian"]
-    BgRx102Le = 83,
+    BgRx102le = 83,
     #[doc = "< 32-bit A:R:G:B 2:10:10:10 little endian"]
-    Argb210Le = 84,
+    Argb210le = 84,
     #[doc = "< 32-bit A:B:G:R 2:10:10:10 little endian"]
-    Abgr210Le = 85,
+    Abgr210le = 85,
     #[doc = "< 32-bit R:G:B:A 10:10:10:2 little endian"]
-    Rgba102Le = 86,
+    Rgba102le = 86,
     #[doc = "< 32-bit B:G:R:A 10:10:10:2 little endian"]
-    Bgra102Le = 87,
+    Bgra102le = 87,
+}
+#[repr(u32)]
+#[doc = " The possible values of the #spa_video_interlace_mode describing the interlace\n mode of the stream."]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaVideoInterlaceMode {
+    #[doc = "< all frames are progressive"]
+    Progressive = 0,
+    #[doc = "< 2 fields are interleaved in one video frame.\n Extra buffer flags describe the field order."]
+    Interleaved = 1,
+    #[doc = "< frames contains both interlaced and progressive\n   video, the buffer flags describe the frame and\n   fields."]
+    Mixed = 2,
+    #[doc = "< 2 fields are stored in one buffer, use the\n   frame ID to get access to the required\n   field. For multiview (the 'views'\n   property > 1) the fields of view N can\n   be found at frame ID (N * 2) and (N *\n   2) + 1. Each field has only half the\n   amount of lines as noted in the height\n   property. This mode requires multiple\n   spa_data to describe the fields."]
+    Fields = 3,
 }
 #[repr(u32)]
 #[doc = " Properties for SPA_TYPE_OBJECT_ParamLatency\n\n The latency indicates:\n\n - for playback: time delay between start of a graph cycle, and the rendering of\n   the first sample of that cycle in audio output.\n\n - for capture: time delay between start of a graph cycle, and the first sample\n   of that cycle having occurred in audio input.\n\n For physical output/input, the latency is intended to correspond to the\n rendering/capture of physical audio, including hardware internal rendering delay.\n\n The latency values are adjusted by \\ref SPA_PROP_latencyOffsetNsec or\n SPA_PARAM_ProcessLatency, if present. (e.g. for ALSA this is used to adjust for\n the internal hardware latency)."]

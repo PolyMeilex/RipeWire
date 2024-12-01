@@ -363,27 +363,21 @@ impl<'a> Format<'a> {
     fn video_views(&self) -> Option<i32> {
         self.get(131078u32)?.as_i32().ok()
     }
-    /** Spa:Pod:Object:Param:Format:Video:interlaceMode
-        enum: Spa:Enum:VideoInterlaceMode
-        value-0: "Spa:Enum:VideoInterlaceMode:progressive"
-        value-1: "Spa:Enum:VideoInterlaceMode:interleaved"
-        value-2: "Spa:Enum:VideoInterlaceMode:mixed"
-        value-3: "Spa:Enum:VideoInterlaceMode:fields"
-    */
-    fn video_interlace_mode(&self) -> Option<u32> {
-        self.get(131079u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Video:interlaceMode
+    fn video_interlace_mode(&self) -> Option<SpaEnum<SpaVideoInterlaceMode>> {
+        self.get(131079u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:pixelAspectRatio
     fn video_pixel_aspect_ratio(&self) -> Option<SpaFraction> {
         self.get(131080u32)?.as_fraction().ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:multiviewMode
-    fn video_multiview_mode(&self) -> Option<u32> {
-        self.get(131081u32)?.as_id().ok()
+    fn video_multiview_mode(&self) -> Option<SpaEnum<SpaVideoMultiviewMode>> {
+        self.get(131081u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:multiviewFlags
-    fn video_multiview_flags(&self) -> Option<u32> {
-        self.get(131082u32)?.as_id().ok()
+    fn video_multiview_flags(&self) -> Option<SpaEnum<SpaVideoMultiviewFlags>> {
+        self.get(131082u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:chromaSite
     fn video_chroma_site(&self) -> Option<u32> {

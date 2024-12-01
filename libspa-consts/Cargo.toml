@@ -21,7 +21,8 @@ num-derive = "0.4"
 bindgen = { version = "0.69", default-features = false }
 cc = "1.0"
 system-deps = "6"
-convert_case = "0.6"
+heck = "0.5.0"
+
 
 [package.metadata.system-deps]
 libspa = { name = "libspa-0.2", version = "0.2" }
