@@ -1,6 +1,6 @@
 use super::*;
 /// Spa:Pod:Object:Param:PropInfo
-struct PropInfo<'a>(PodObjectDeserializer<'a>);
+struct PropInfo<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PropInfo<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -37,7 +37,7 @@ impl<'a> PropInfo<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Props
-struct Props<'a>(PodObjectDeserializer<'a>);
+struct Props<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Props<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -238,7 +238,7 @@ impl<'a> Props<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Format
-struct Format<'a>(PodObjectDeserializer<'a>);
+struct Format<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Format<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -281,14 +281,9 @@ impl<'a> Format<'a> {
     fn audio_iec958_codec(&self) -> Option<SpaEnum<SpaAudioIec958Codec>> {
         self.get(65542u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:bitorder
-        enum: Spa:Enum:ParamBitorder
-        value-0: "Spa:Enum:ParamBitorder:unknown"
-        value-1: "Spa:Enum:ParamBitorder:msb"
-        value-2: "Spa:Enum:ParamBitorder:lsb"
-    */
-    fn audio_bitorder(&self) -> Option<u32> {
-        self.get(65543u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Audio:bitorder
+    fn audio_bitorder(&self) -> Option<SpaEnum<SpaParamBitorder>> {
+        self.get(65543u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:interleave
     fn audio_interleave(&self) -> Option<i32> {
@@ -302,42 +297,17 @@ impl<'a> Format<'a> {
     fn audio_block_align(&self) -> Option<i32> {
         self.get(65546u32)?.as_i32().ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
-        enum: Spa:Enum:AudioAACStreamFormat
-        value-0: "Spa:Enum:AudioAACStreamFormat:UNKNOWN"
-        value-1: "Spa:Enum:AudioAACStreamFormat:RAW"
-        value-2: "Spa:Enum:AudioAACStreamFormat:MP2ADTS"
-        value-3: "Spa:Enum:AudioAACStreamFormat:MP4ADTS"
-        value-4: "Spa:Enum:AudioAACStreamFormat:MP4LOAS"
-        value-5: "Spa:Enum:AudioAACStreamFormat:MP4LATM"
-        value-6: "Spa:Enum:AudioAACStreamFormat:ADIF"
-        value-7: "Spa:Enum:AudioAACStreamFormat:MP4FF"
-    */
-    fn audio_aac_stream_format(&self) -> Option<u32> {
-        self.get(65547u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
+    fn audio_aac_stream_format(&self) -> Option<SpaEnum<SpaAudioAacStreamFormat>> {
+        self.get(65547u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:WMA:profile
-        enum: Spa:Enum:AudioWMAProfile
-        value-0: "Spa:Enum:AudioWMAProfile:UNKNOWN"
-        value-1: "Spa:Enum:AudioWMAProfile:WMA7"
-        value-2: "Spa:Enum:AudioWMAProfile:WMA8"
-        value-3: "Spa:Enum:AudioWMAProfile:WMA9"
-        value-4: "Spa:Enum:AudioWMAProfile:WMA10"
-        value-5: "Spa:Enum:AudioWMAProfile:WMA9-Pro"
-        value-6: "Spa:Enum:AudioWMAProfile:WMA9-Lossless"
-        value-7: "Spa:Enum:AudioWMAProfile:WMA10-Lossless"
-    */
-    fn audio_wma_profile(&self) -> Option<u32> {
-        self.get(65548u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Audio:WMA:profile
+    fn audio_wma_profile(&self) -> Option<SpaEnum<SpaAudioWmaProfile>> {
+        self.get(65548u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
-        enum: Spa:Enum:AudioAMRBandMode
-        value-0: "Spa:Enum:AudioAMRBandMode:UNKNOWN"
-        value-1: "Spa:Enum:AudioAMRBandMode:NB"
-        value-2: "Spa:Enum:AudioAMRBandMode:WB"
-    */
-    fn audio_amr_band_mode(&self) -> Option<u32> {
-        self.get(65549u32)?.as_id().ok()
+    /// Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
+    fn audio_amr_band_mode(&self) -> Option<SpaEnum<SpaAudioAmrBandMode>> {
+        self.get(65549u32)?.as_id().map(SpaEnum::from_raw).ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:format
     fn video_format(&self) -> Option<SpaEnum<SpaVideoFormat>> {
@@ -417,7 +387,7 @@ impl<'a> Format<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Buffers
-struct Buffers<'a>(PodObjectDeserializer<'a>);
+struct Buffers<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Buffers<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -452,7 +422,7 @@ impl<'a> Buffers<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Meta
-struct Meta<'a>(PodObjectDeserializer<'a>);
+struct Meta<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Meta<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -479,7 +449,7 @@ impl<'a> Meta<'a> {
     }
 }
 /// Spa:Pod:Object:Param:IO
-struct Io<'a>(PodObjectDeserializer<'a>);
+struct Io<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Io<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -507,7 +477,7 @@ impl<'a> Io<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Profile
-struct Profile<'a>(PodObjectDeserializer<'a>);
+struct Profile<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profile<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -551,7 +521,7 @@ impl<'a> Profile<'a> {
     }
 }
 /// Spa:Pod:Object:Param:PortConfig
-struct PortConfig<'a>(PodObjectDeserializer<'a>);
+struct PortConfig<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PortConfig<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -578,7 +548,7 @@ impl<'a> PortConfig<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Route
-struct Route<'a>(PodObjectDeserializer<'a>);
+struct Route<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Route<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -642,7 +612,7 @@ impl<'a> Route<'a> {
     }
 }
 /// Spa:Pod:Object:Profiler
-struct Profiler<'a>(PodObjectDeserializer<'a>);
+struct Profiler<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profiler<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -665,7 +635,7 @@ impl<'a> Profiler<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Latency
-struct Latency<'a>(PodObjectDeserializer<'a>);
+struct Latency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Latency<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -700,7 +670,7 @@ impl<'a> Latency<'a> {
     }
 }
 /// Spa:Pod:Object:Param:ProcessLatency
-struct ProcessLatency<'a>(PodObjectDeserializer<'a>);
+struct ProcessLatency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> ProcessLatency<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")
@@ -719,7 +689,7 @@ impl<'a> ProcessLatency<'a> {
     }
 }
 /// Spa:Pod:Object:Param:Tag
-struct Tag<'a>(PodObjectDeserializer<'a>);
+struct Tag<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Tag<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         todo!("{id}")

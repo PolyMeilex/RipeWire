@@ -293,6 +293,18 @@ pub enum SpaParamType {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
+pub enum SpaParamBitorder {
+    #[doc = "< unknown bitorder"]
+    Unknown = 0,
+    #[doc = "< most significant bit"]
+    Msb = 1,
+    #[doc = "< least significant bit"]
+    Lsb = 2,
+}
+#[repr(u32)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpaParamAvailability {
     #[doc = "< unknown availability"]
     Unknown = 0,
@@ -879,6 +891,48 @@ pub enum SpaAudioIec958Codec {
     Truehd = 7,
     #[doc = "< DTS-HD Master Audio"]
     Dtshd = 8,
+}
+#[repr(u32)]
+#[doc = " \\addtogroup spa_param\n \\{"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaAudioAacStreamFormat {
+    Unknown = 0,
+    Raw = 1,
+    Mp2adts = 2,
+    Mp4adts = 3,
+    Mp4loas = 4,
+    Mp4latm = 5,
+    Adif = 6,
+    Mp4ff = 7,
+    Custom = 65536,
+}
+#[repr(u32)]
+#[doc = " \\addtogroup spa_param\n \\{"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaAudioWmaProfile {
+    Unknown = 0,
+    Wma7 = 1,
+    Wma8 = 2,
+    Wma9 = 3,
+    Wma10 = 4,
+    Wma9Pro = 5,
+    Wma9Lossless = 6,
+    Wma10Lossless = 7,
+    Custom = 65536,
+}
+#[repr(u32)]
+#[doc = " \\addtogroup spa_param\n \\{"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaAudioAmrBandMode {
+    Unknown = 0,
+    Nb = 1,
+    Wb = 2,
 }
 #[repr(u32)]
 #[doc = " \\addtogroup spa_param\n \\{"]

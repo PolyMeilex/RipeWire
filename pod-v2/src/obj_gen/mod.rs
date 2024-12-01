@@ -6,12 +6,7 @@ use crate::{
     PodDeserializer,
 };
 use bstr::BStr;
-use libspa_consts::{
-    SpaAudioFormat, SpaAudioIec958Codec, SpaBluetoothAudioCodec, SpaDirection, SpaEnum,
-    SpaFraction, SpaMediaSubtype, SpaMediaType, SpaMetaType, SpaParamPortConfigMode, SpaProp,
-    SpaRectangle, SpaVideoFormat, SpaVideoInterlaceMode, SpaVideoMultiviewFlags,
-    SpaVideoMultiviewMode,
-};
+use libspa_consts::*;
 
 mod gen;
 pub use gen::*;

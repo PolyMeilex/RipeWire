@@ -138,6 +138,10 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_video_interlace_mode",
         "spa_video_multiview_mode",
         "spa_video_multiview_flags",
+        "spa_audio_amr_band_mode",
+        "spa_audio_wma_profile",
+        "spa_audio_aac_stream_format",
+        "spa_param_bitorder",
     ] {
         builder = builder.allowlist_type(name).rustified_enum(name);
     }

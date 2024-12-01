@@ -15,6 +15,10 @@ static ID_TO_ENUM_MAP: &[(&str, &str)] = &[
     ("Spa:Enum:AudioIEC958Codec", "SpaAudioIec958Codec"),
     ("Spa:Enum:VideoFormat", "SpaVideoFormat"),
     ("Spa:Enum:VideoInterlaceMode", "SpaVideoInterlaceMode"),
+    ("Spa:Enum:AudioAMRBandMode", "SpaAudioAmrBandMode"),
+    ("Spa:Enum:AudioWMAProfile", "SpaAudioWmaProfile"),
+    ("Spa:Enum:AudioAACStreamFormat", "SpaAudioAacStreamFormat"),
+    ("Spa:Enum:ParamBitorder", "SpaParamBitorder"),
 ];
 
 static PROP_NAME_TO_ENUM_MAP: &[(&str, &str)] = &[
@@ -92,7 +96,7 @@ impl Entry {
 
         let src = quote! {
             #[doc = #doc]
-            struct #ident<'a>(PodObjectDeserializer<'a>);
+            struct #ident<'a>(pub PodObjectDeserializer<'a>);
             impl<'a> #ident<'a> {
                 fn get(&self, id: u32) -> Option<PodDeserializer> {
                     todo!("{id}")

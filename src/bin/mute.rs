@@ -1,4 +1,3 @@
-use libspa_consts::SpaParamType;
 use pod::dictionary::Dictionary;
 use std::{io::Write as _, os::fd::AsRawFd};
 

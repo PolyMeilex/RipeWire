@@ -2,7 +2,6 @@
 
 use std::io::{self, Read};
 use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
-use std::sync::atomic::{AtomicI32, AtomicU32};
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
 use libspa_consts::{SpaDirection, SpaEnum, SpaParamType};
