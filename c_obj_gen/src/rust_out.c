@@ -17,7 +17,7 @@
 #include <pipewire/pipewire.h>
 
 // Function to check if a string starts with a given prefix
-bool starts_with(const char *str, const char *prefix) {
+static bool starts_with(const char *str, const char *prefix) {
   while (*prefix) {
     if (*prefix != *str) {
       return false;
@@ -29,7 +29,7 @@ bool starts_with(const char *str, const char *prefix) {
 }
 
 // Function to strip the prefix
-const char *strip_prefix(const char *str, const char *prefix) {
+static const char *strip_prefix(const char *str, const char *prefix) {
   if (starts_with(str, prefix)) {
     size_t prefix_len = strlen(prefix);
     return str + prefix_len;
@@ -38,7 +38,7 @@ const char *strip_prefix(const char *str, const char *prefix) {
   return NULL;
 }
 
-char *camel_to_snake(const char *camel_in) {
+static char *camel_to_snake(const char *camel_in) {
   char *camel = malloc(strlen(camel_in));
 
   // TODO: Does not belong here
@@ -73,11 +73,11 @@ char *camel_to_snake(const char *camel_in) {
   return snake;
 }
 
-const char *getter_name(const char *obj, const char *field) {
+static const char *getter_name(const char *obj, const char *field) {
   return strip_prefix(strip_prefix(field, obj), ":");
 }
 
-void print_get_fn_signature(const struct spa_type_info *info, const char *name,
+static void print_get_fn_signature(const struct spa_type_info *info, const char *name,
                             const char *ret) {
   if (strcmp(name, "type") == 0) {
     name = "ty";
@@ -91,13 +91,13 @@ void print_get_fn_signature(const struct spa_type_info *info, const char *name,
   free(snake);
 }
 
-void print_get_fn_body(uint32_t id, const char *as) {
+static void print_get_fn_body(uint32_t id, const char *as) {
   printf("{\n");
   printf("        self.get(%d)?.%s().ok()\n", id, as);
   printf("    }\n");
 }
 
-void print_get_fn(const char *parent_full_name,
+static void print_get_fn(const char *parent_full_name,
                   const struct spa_type_info *info, const char *ret,
                   const char *as) {
   const char *name = getter_name(parent_full_name, info->name);
@@ -106,7 +106,7 @@ void print_get_fn(const char *parent_full_name,
   print_get_fn_body(info->type, as);
 }
 
-void info_to_rs_getter(const char *parent_full_name,
+static void info_to_rs_getter(const char *parent_full_name,
                        const struct spa_type_info *info) {
   const char *name = spa_debug_type_short_name(info->name);
   const struct spa_type_info *parent_info;
@@ -201,7 +201,7 @@ void info_to_rs_getter(const char *parent_full_name,
   printf("\n\n");
 }
 
-size_t type_info_count(size_t size) {
+static size_t type_info_count(size_t size) {
   return size / sizeof(struct spa_type_info);
 }
 
@@ -210,7 +210,7 @@ struct type_deff {
   const struct spa_type_info *info;
 };
 
-void generate(struct type_deff r) {
+static void generate(struct type_deff r) {
   const char *name = spa_debug_type_short_name(r.name);
   const char *full_name = r.name;
 
@@ -243,7 +243,7 @@ static const struct type_deff type_deffs[] = {
     {NULL, NULL},
 };
 
-int main(void) {
+void rust_out_run(void) {
   printf("use super::*;\n\n");
 
   const struct type_deff *deff = type_deffs;
@@ -252,6 +252,4 @@ int main(void) {
     printf("\n");
     deff++;
   }
-
-  return 0;
 }

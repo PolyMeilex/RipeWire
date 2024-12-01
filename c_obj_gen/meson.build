@@ -5,8 +5,10 @@ project('c_obj_gen', 'c',
 
 pipewire_dep = dependency('libpipewire-0.3')
 
+subdir('src')
+
 exe = executable('c_obj_gen', 
-  'c_obj_gen.c',
+  sources,
   install : true,
   dependencies: [pipewire_dep],
 )
