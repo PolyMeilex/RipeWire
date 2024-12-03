@@ -182,7 +182,7 @@ impl PipewireState {
                     }
                 }
 
-                println!("&device_event = {:?}", &msg);
+                println!("&node_event = {:?}", &msg);
             }
             pw_node::Event::Param(msg) => {
                 let SpaEnum::Value(id) = msg.id else {

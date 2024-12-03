@@ -37,7 +37,7 @@ static PROP_NAME_TYPE_OVERRIDE: &[(&str, SpaType)] = &[
     // Sometimes Choice sometimes Id (TODO)
     (
         "Spa:Pod:Object:Param:Format:Audio:iec958Codec",
-        SpaType::Pod,
+        SpaType::Choice,
     ),
 ];
 
@@ -198,7 +198,13 @@ fn spa_type_doc(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
     if parent == SpaType::Array {
         doc += &info.name;
         doc += "\n";
-        doc += &format!("    parent: Array<{}>", info.values[0].name);
+        doc += &format!(
+            "    parent: Array<{}>",
+            info.values
+                .first()
+                .map(|v| v.name.as_str())
+                .unwrap_or("unknown")
+        );
         doc += "\n";
 
         return quote! {

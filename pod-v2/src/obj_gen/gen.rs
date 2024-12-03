@@ -541,11 +541,14 @@ impl<'a> Format<'a> {
     fn audio_position(&self) -> Option<PodDeserializer> {
         self.get(65541u32)
     }
-    /** Spa:Pod:Object:Param:Format:Audio:iec958Codec
-        parent: Pod
-    */
-    fn audio_iec958_codec(&self) -> Option<PodDeserializer> {
-        self.get(65542u32)
+    /// Spa:Pod:Object:Param:Format:Audio:iec958Codec
+    fn audio_iec958_codec(&self) -> Option<PodChoiceDeserializer> {
+        self.get(65542u32)?
+            .as_choice()
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:iec958Codec")
+            })
+            .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:bitorder
     fn audio_bitorder(&self) -> Option<SpaEnum<SpaParamBitorder>> {
