@@ -221,16 +221,16 @@ impl<'a> Props<'a> {
         self.get(65558u32)?.as_id().ok()
     }
     /// Spa:Pod:Object:Param:Props:brightness
-    fn brightness(&self) -> Option<i32> {
-        self.get(131073u32)?.as_i32().ok()
+    fn brightness(&self) -> Option<f32> {
+        self.get(131073u32)?.as_f32().ok()
     }
     /// Spa:Pod:Object:Param:Props:contrast
-    fn contrast(&self) -> Option<i32> {
-        self.get(131074u32)?.as_i32().ok()
+    fn contrast(&self) -> Option<f32> {
+        self.get(131074u32)?.as_f32().ok()
     }
     /// Spa:Pod:Object:Param:Props:saturation
-    fn saturation(&self) -> Option<i32> {
-        self.get(131075u32)?.as_i32().ok()
+    fn saturation(&self) -> Option<f32> {
+        self.get(131075u32)?.as_f32().ok()
     }
     /// Spa:Pod:Object:Param:Props:hue
     fn hue(&self) -> Option<i32> {
@@ -245,12 +245,12 @@ impl<'a> Props<'a> {
         self.get(131078u32)?.as_i32().ok()
     }
     /// Spa:Pod:Object:Param:Props:gain
-    fn gain(&self) -> Option<i32> {
-        self.get(131079u32)?.as_i32().ok()
+    fn gain(&self) -> Option<f32> {
+        self.get(131079u32)?.as_f32().ok()
     }
     /// Spa:Pod:Object:Param:Props:sharpness
-    fn sharpness(&self) -> Option<i32> {
-        self.get(131080u32)?.as_i32().ok()
+    fn sharpness(&self) -> Option<f32> {
+        self.get(131080u32)?.as_f32().ok()
     }
     /// Spa:Pod:Object:Param:Props:params
     fn params(&self) -> Option<PodStructDeserializer> {
@@ -756,17 +756,21 @@ impl<'a> Route<'a> {
     fn info(&self) -> Option<PodStructDeserializer> {
         self.get(8u32)?.as_struct().ok()
     }
-    /// Spa:Pod:Object:Param:Route:profiles
-    fn profiles(&self) -> Option<i32> {
-        self.get(9u32)?.as_i32().ok()
+    /** Spa:Pod:Object:Param:Route:profiles
+        parent: Array<Spa:intArray>
+    */
+    fn profiles(&self) -> Option<PodArrayDeserializer> {
+        self.get(9u32)?.as_array().ok()
     }
     /// Spa:Pod:Object:Param:Route:props
     fn props(&self) -> Option<Props> {
         self.get(10u32)?.as_object().map(Props).ok()
     }
-    /// Spa:Pod:Object:Param:Route:devices
-    fn devices(&self) -> Option<i32> {
-        self.get(11u32)?.as_i32().ok()
+    /** Spa:Pod:Object:Param:Route:devices
+        parent: Array<Spa:intArray>
+    */
+    fn devices(&self) -> Option<PodArrayDeserializer> {
+        self.get(11u32)?.as_array().ok()
     }
     /// Spa:Pod:Object:Param:Route:profile
     fn profile(&self) -> Option<i32> {
@@ -818,6 +822,10 @@ impl<'a> Profiler<'a> {
     fn follower_block(&self) -> Option<PodStructDeserializer> {
         self.get(131073u32)?.as_struct().ok()
     }
+    /// Spa:Pod:Object:Profiler:followerClock
+    fn follower_clock(&self) -> Option<PodStructDeserializer> {
+        self.get(131074u32)?.as_struct().ok()
+    }
 }
 impl<'a> std::fmt::Debug for Profiler<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -826,6 +834,7 @@ impl<'a> std::fmt::Debug for Profiler<'a> {
         opt_fmt!(f, self.clock);
         opt_fmt!(f, self.driver_block);
         opt_fmt!(f, self.follower_block);
+        opt_fmt!(f, self.follower_clock);
         f.finish()
     }
 }

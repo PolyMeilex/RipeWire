@@ -335,7 +335,7 @@ fn main() {
         macro_rules! opt_fmt {
             ($f: ident, $self: ident.$key: ident) => {
                 if let Some(v) = $self.$key() {
-                    $f.field(stringify!(key), &v);
+                    $f.field(stringify!($key), &v);
                 }
             };
         }
