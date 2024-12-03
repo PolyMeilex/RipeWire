@@ -8,8 +8,8 @@ use std::{
 use crate::{
     connection::{Connection, Message, MessageBuffer},
     object_map::{Object, ObjectMap, ObjectType},
-    protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_registry},
-    proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwRegistry},
+    protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry},
+    proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwNode, PwRegistry},
 };
 
 struct CallbackArgs<'a, D> {
@@ -129,6 +129,14 @@ impl<D> Context<D> {
                     pw_device::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
 
                 let device = PwDevice::from_id(id);
+                self.dispatch_event_inner(state, device, event);
+            }
+            ObjectType::Node => {
+                let mut pod = msg.body;
+                let event =
+                    pw_node::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+
+                let device = PwNode::from_id(id);
                 self.dispatch_event_inner(state, device, event);
             }
             ty => unimplemented!("{ty:?}"),

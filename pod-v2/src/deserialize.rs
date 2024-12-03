@@ -265,6 +265,14 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
+    pub fn as_choice(&self) -> Result<PodChoiceDeserializer<'a>> {
+        if let PodDeserializerKind::Choice(pod) = self.kind() {
+            Ok(pod)
+        } else {
+            Err(self.unexpected_type(SpaType::Choice))
+        }
+    }
+
     pub fn as_struct(&self) -> Result<PodStructDeserializer<'a>> {
         if let PodDeserializerKind::Struct(pod) = self.kind() {
             Ok(pod)

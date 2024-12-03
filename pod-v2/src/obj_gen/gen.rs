@@ -17,14 +17,14 @@ impl<'a> PropInfo<'a> {
         self.get(1u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PropInfo:id"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PropInfo:name
     fn name(&self) -> Option<&BStr> {
         self.get(2u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PropInfo:name"))
             .ok()
     }
     /** Spa:Pod:Object:Param:PropInfo:type
@@ -37,28 +37,28 @@ impl<'a> PropInfo<'a> {
     fn labels(&self) -> Option<PodStructDeserializer> {
         self.get(4u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PropInfo:labels"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PropInfo:container
     fn container(&self) -> Option<u32> {
         self.get(5u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PropInfo:container"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PropInfo:params
     fn params(&self) -> Option<bool> {
         self.get(6u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PropInfo:params"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PropInfo:description
     fn description(&self) -> Option<&BStr> {
         self.get(7u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PropInfo:description"))
             .ok()
     }
 }
@@ -85,91 +85,91 @@ impl<'a> Props<'a> {
     fn device(&self) -> Option<&BStr> {
         self.get(257u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:device"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:deviceName
     fn device_name(&self) -> Option<&BStr> {
         self.get(258u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:deviceName"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:deviceFd
     fn device_fd(&self) -> Option<i64> {
         self.get(259u32)?
             .as_fd()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:deviceFd"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:card
     fn card(&self) -> Option<&BStr> {
         self.get(260u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:card"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:cardName
     fn card_name(&self) -> Option<&BStr> {
         self.get(261u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:cardName"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:minLatency
     fn min_latency(&self) -> Option<i32> {
         self.get(262u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:minLatency"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:maxLatency
     fn max_latency(&self) -> Option<i32> {
         self.get(263u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:maxLatency"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:periods
     fn periods(&self) -> Option<i32> {
         self.get(264u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:periods"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:periodSize
     fn period_size(&self) -> Option<i32> {
         self.get(265u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:periodSize"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:periodEvent
     fn period_event(&self) -> Option<bool> {
         self.get(266u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:periodEvent"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:live
     fn live(&self) -> Option<bool> {
         self.get(267u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:live"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:rate
     fn rate(&self) -> Option<f64> {
         self.get(268u32)?
             .as_f64()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:rate"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:quality
     fn quality(&self) -> Option<i32> {
         self.get(269u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:quality"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:bluetoothAudioCodec
@@ -177,63 +177,73 @@ impl<'a> Props<'a> {
         self.get(270u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Props:bluetoothAudioCodec"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:bluetoothOffloadActive
     fn bluetooth_offload_active(&self) -> Option<bool> {
         self.get(271u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Props:bluetoothOffloadActive"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:waveType
     fn wave_type(&self) -> Option<u32> {
         self.get(65537u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:waveType"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:frequency
     fn frequency(&self) -> Option<i32> {
         self.get(65538u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:frequency"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volume
     fn volume(&self) -> Option<f32> {
         self.get(65539u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:volume"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:mute
     fn mute(&self) -> Option<bool> {
         self.get(65540u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:mute"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:patternType
     fn pattern_type(&self) -> Option<u32> {
         self.get(65541u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:patternType"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:ditherType
     fn dither_type(&self) -> Option<u32> {
         self.get(65542u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:ditherType"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:truncate
     fn truncate(&self) -> Option<bool> {
         self.get(65543u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:truncate"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Props:channelVolumes
@@ -242,21 +252,21 @@ impl<'a> Props<'a> {
     fn channel_volumes(&self) -> Option<PodArrayDeserializer> {
         self.get(65544u32)?
             .as_array()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:channelVolumes"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volumeBase
     fn volume_base(&self) -> Option<f32> {
         self.get(65545u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:volumeBase"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volumeStep
     fn volume_step(&self) -> Option<f32> {
         self.get(65546u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:volumeStep"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Props:channelMap
@@ -265,14 +275,14 @@ impl<'a> Props<'a> {
     fn channel_map(&self) -> Option<PodArrayDeserializer> {
         self.get(65547u32)?
             .as_array()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:channelMap"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:monitorMute
     fn monitor_mute(&self) -> Option<bool> {
         self.get(65548u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:monitorMute"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Props:monitorVolumes
@@ -281,21 +291,23 @@ impl<'a> Props<'a> {
     fn monitor_volumes(&self) -> Option<PodArrayDeserializer> {
         self.get(65549u32)?
             .as_array()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:monitorVolumes"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:latencyOffsetNsec
     fn latency_offset_nsec(&self) -> Option<i64> {
         self.get(65550u32)?
             .as_i64()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:latencyOffsetNsec")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:softMute
     fn soft_mute(&self) -> Option<bool> {
         self.get(65551u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:softMute"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Props:softVolumes
@@ -304,7 +316,7 @@ impl<'a> Props<'a> {
     fn soft_volumes(&self) -> Option<PodArrayDeserializer> {
         self.get(65552u32)?
             .as_array()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:softVolumes"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Props:iec958Codecs
@@ -313,105 +325,114 @@ impl<'a> Props<'a> {
     fn iec958_codecs(&self) -> Option<PodArrayDeserializer> {
         self.get(65553u32)?
             .as_array()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:iec958Codecs"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volumeRampSamples
     fn volume_ramp_samples(&self) -> Option<i32> {
         self.get(65554u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:volumeRampSamples")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volumeRampStepSamples
     fn volume_ramp_step_samples(&self) -> Option<i32> {
         self.get(65555u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Props:volumeRampStepSamples"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volumeRampTime
     fn volume_ramp_time(&self) -> Option<i32> {
         self.get(65556u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:volumeRampTime"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volumeRampStepTime
     fn volume_ramp_step_time(&self) -> Option<i32> {
         self.get(65557u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:volumeRampStepTime")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:volumeRampScale
     fn volume_ramp_scale(&self) -> Option<u32> {
         self.get(65558u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:volumeRampScale"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:brightness
     fn brightness(&self) -> Option<f32> {
         self.get(131073u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:brightness"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:contrast
     fn contrast(&self) -> Option<f32> {
         self.get(131074u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:contrast"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:saturation
     fn saturation(&self) -> Option<f32> {
         self.get(131075u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:saturation"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:hue
     fn hue(&self) -> Option<i32> {
         self.get(131076u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:hue"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:gamma
     fn gamma(&self) -> Option<i32> {
         self.get(131077u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:gamma"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:exposure
     fn exposure(&self) -> Option<i32> {
         self.get(131078u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:exposure"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:gain
     fn gain(&self) -> Option<f32> {
         self.get(131079u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:gain"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:sharpness
     fn sharpness(&self) -> Option<f32> {
         self.get(131080u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:sharpness"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Props:params
     fn params(&self) -> Option<PodStructDeserializer> {
         self.get(524289u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Props:params"))
             .ok()
     }
 }
@@ -473,29 +494,23 @@ impl<'a> Format<'a> {
     fn get(&self, id: u32) -> Option<PodDeserializer> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    /// Spa:Pod:Object:Param:Format:mediaType
-    fn media_type(&self) -> Option<SpaEnum<SpaMediaType>> {
-        self.get(1u32)?
-            .as_id()
-            .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
-            .ok()
+    /** Spa:Pod:Object:Param:Format:mediaType
+        parent: Pod
+    */
+    fn media_type(&self) -> Option<PodDeserializer> {
+        self.get(1u32)
     }
-    /// Spa:Pod:Object:Param:Format:mediaSubtype
-    fn media_subtype(&self) -> Option<SpaEnum<SpaMediaSubtype>> {
-        self.get(2u32)?
-            .as_id()
-            .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
-            .ok()
+    /** Spa:Pod:Object:Param:Format:mediaSubtype
+        parent: Pod
+    */
+    fn media_subtype(&self) -> Option<PodDeserializer> {
+        self.get(2u32)
     }
-    /// Spa:Pod:Object:Param:Format:Audio:format
-    fn audio_format(&self) -> Option<SpaEnum<SpaAudioFormat>> {
-        self.get(65537u32)?
-            .as_id()
-            .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
-            .ok()
+    /** Spa:Pod:Object:Param:Format:Audio:format
+        parent: Pod
+    */
+    fn audio_format(&self) -> Option<PodDeserializer> {
+        self.get(65537u32)
     }
     /** Spa:Pod:Object:Param:Format:Audio:flags
         enum: Spa:Flags:AudioFlags
@@ -505,67 +520,64 @@ impl<'a> Format<'a> {
     fn audio_flags(&self) -> Option<u32> {
         self.get(65538u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:flags"))
             .ok()
     }
-    /// Spa:Pod:Object:Param:Format:Audio:rate
-    fn audio_rate(&self) -> Option<i32> {
-        self.get(65539u32)?
-            .as_i32()
-            .map_err(|err| unreachable!("{err}"))
-            .ok()
+    /** Spa:Pod:Object:Param:Format:Audio:rate
+        parent: Pod
+    */
+    fn audio_rate(&self) -> Option<PodDeserializer> {
+        self.get(65539u32)
     }
-    /// Spa:Pod:Object:Param:Format:Audio:channels
-    fn audio_channels(&self) -> Option<i32> {
-        self.get(65540u32)?
-            .as_i32()
-            .map_err(|err| unreachable!("{err}"))
-            .ok()
+    /** Spa:Pod:Object:Param:Format:Audio:channels
+        parent: Pod
+    */
+    fn audio_channels(&self) -> Option<PodDeserializer> {
+        self.get(65540u32)
     }
     /** Spa:Pod:Object:Param:Format:Audio:position
-        parent: Array<Spa:channelMap>
+        parent: Pod
     */
-    fn audio_position(&self) -> Option<PodArrayDeserializer> {
-        self.get(65541u32)?
-            .as_array()
-            .map_err(|err| unreachable!("{err}"))
-            .ok()
+    fn audio_position(&self) -> Option<PodDeserializer> {
+        self.get(65541u32)
     }
-    /// Spa:Pod:Object:Param:Format:Audio:iec958Codec
-    fn audio_iec958_codec(&self) -> Option<SpaEnum<SpaAudioIec958Codec>> {
-        self.get(65542u32)?
-            .as_id()
-            .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
-            .ok()
+    /** Spa:Pod:Object:Param:Format:Audio:iec958Codec
+        parent: Pod
+    */
+    fn audio_iec958_codec(&self) -> Option<PodDeserializer> {
+        self.get(65542u32)
     }
     /// Spa:Pod:Object:Param:Format:Audio:bitorder
     fn audio_bitorder(&self) -> Option<SpaEnum<SpaParamBitorder>> {
         self.get(65543u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:bitorder"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:interleave
     fn audio_interleave(&self) -> Option<i32> {
         self.get(65544u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:interleave")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:bitrate
     fn audio_bitrate(&self) -> Option<i32> {
         self.get(65545u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:bitrate"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:blockAlign
     fn audio_block_align(&self) -> Option<i32> {
         self.get(65546u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:blockAlign")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
@@ -573,7 +585,12 @@ impl<'a> Format<'a> {
         self.get(65547u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:WMA:profile
@@ -581,7 +598,9 @@ impl<'a> Format<'a> {
         self.get(65548u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:WMA:profile")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
@@ -589,7 +608,12 @@ impl<'a> Format<'a> {
         self.get(65549u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Audio:AMR:bandMode"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:format
@@ -597,42 +621,47 @@ impl<'a> Format<'a> {
         self.get(131073u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:format"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:modifier
     fn video_modifier(&self) -> Option<i64> {
         self.get(131074u32)?
             .as_i64()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:modifier"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:size
     fn video_size(&self) -> Option<SpaRectangle> {
         self.get(131075u32)?
             .as_rectangle()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:size"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:framerate
     fn video_framerate(&self) -> Option<SpaFraction> {
         self.get(131076u32)?
             .as_fraction()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:framerate"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:maxFramerate
     fn video_max_framerate(&self) -> Option<SpaFraction> {
         self.get(131077u32)?
             .as_fraction()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:maxFramerate"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:views
     fn video_views(&self) -> Option<i32> {
         self.get(131078u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:views"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:interlaceMode
@@ -640,14 +669,24 @@ impl<'a> Format<'a> {
         self.get(131079u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:interlaceMode"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:pixelAspectRatio
     fn video_pixel_aspect_ratio(&self) -> Option<SpaFraction> {
         self.get(131080u32)?
             .as_fraction()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:pixelAspectRatio"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:multiviewMode
@@ -655,7 +694,12 @@ impl<'a> Format<'a> {
         self.get(131081u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:multiviewMode"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:multiviewFlags
@@ -663,70 +707,101 @@ impl<'a> Format<'a> {
         self.get(131082u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:multiviewFlags"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:chromaSite
     fn video_chroma_site(&self) -> Option<u32> {
         self.get(131083u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:chromaSite")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:colorRange
     fn video_color_range(&self) -> Option<u32> {
         self.get(131084u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:colorRange")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:colorMatrix
     fn video_color_matrix(&self) -> Option<u32> {
         self.get(131085u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:colorMatrix")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:transferFunction
     fn video_transfer_function(&self) -> Option<u32> {
         self.get(131086u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:transferFunction"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:colorPrimaries
     fn video_color_primaries(&self) -> Option<u32> {
         self.get(131087u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:colorPrimaries"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:profile
     fn video_profile(&self) -> Option<i32> {
         self.get(131088u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:profile"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:level
     fn video_level(&self) -> Option<i32> {
         self.get(131089u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Video:level"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:H264:streamFormat
     fn video_h264_stream_format(&self) -> Option<u32> {
         self.get(131090u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:H264:streamFormat"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Format:Video:H264:alignment
     fn video_h264_alignment(&self) -> Option<u32> {
         self.get(131091u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Format:Video:H264:alignment"
+                )
+            })
             .ok()
     }
 }
@@ -780,49 +855,63 @@ impl<'a> Buffers<'a> {
     fn buffers(&self) -> Option<i32> {
         self.get(1u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Buffers:buffers"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Buffers:blocks
     fn blocks(&self) -> Option<i32> {
         self.get(2u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Buffers:blocks"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:size
     fn block_info_size(&self) -> Option<i32> {
         self.get(3u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Buffers:BlockInfo:size"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:stride
     fn block_info_stride(&self) -> Option<i32> {
         self.get(4u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Buffers:BlockInfo:stride")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:align
     fn block_info_align(&self) -> Option<i32> {
         self.get(5u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!("{}: {err}", "Spa:Pod:Object:Param:Buffers:BlockInfo:align")
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:dataType
     fn block_info_data_type(&self) -> Option<i32> {
         self.get(6u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Buffers:BlockInfo:dataType"
+                )
+            })
             .ok()
     }
     /// Spa:Pod:Object:Param:Buffers:BlockInfo:metaType
     fn block_info_meta_type(&self) -> Option<i32> {
         self.get(7u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| {
+                unreachable!(
+                    "{}: {err}",
+                    "Spa:Pod:Object:Param:Buffers:BlockInfo:metaType"
+                )
+            })
             .ok()
     }
 }
@@ -861,14 +950,14 @@ impl<'a> Meta<'a> {
     fn ty(&self) -> Option<u32> {
         self.get(1u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Meta:type"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Meta:size
     fn size(&self) -> Option<i32> {
         self.get(2u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Meta:size"))
             .ok()
     }
 }
@@ -903,14 +992,14 @@ impl<'a> Io<'a> {
     fn id(&self) -> Option<u32> {
         self.get(1u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:IO:id"))
             .ok()
     }
     /// Spa:Pod:Object:Param:IO:size
     fn size(&self) -> Option<i32> {
         self.get(2u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:IO:size"))
             .ok()
     }
 }
@@ -932,28 +1021,28 @@ impl<'a> Profile<'a> {
     fn index(&self) -> Option<i32> {
         self.get(1u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:index"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Profile:name
     fn name(&self) -> Option<&BStr> {
         self.get(2u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:name"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Profile:description
     fn description(&self) -> Option<&BStr> {
         self.get(3u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:description"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Profile:priority
     fn priority(&self) -> Option<i32> {
         self.get(4u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:priority"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Profile:available
@@ -965,28 +1054,28 @@ impl<'a> Profile<'a> {
     fn available(&self) -> Option<u32> {
         self.get(5u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:available"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Profile:info
     fn info(&self) -> Option<PodStructDeserializer> {
         self.get(6u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:info"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Profile:classes
     fn classes(&self) -> Option<PodStructDeserializer> {
         self.get(7u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:classes"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Profile:save
     fn save(&self) -> Option<bool> {
         self.get(8u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Profile:save"))
             .ok()
     }
 }
@@ -1015,7 +1104,7 @@ impl<'a> PortConfig<'a> {
         self.get(1u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PortConfig:direction"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PortConfig:mode
@@ -1023,21 +1112,21 @@ impl<'a> PortConfig<'a> {
         self.get(2u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PortConfig:mode"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PortConfig:monitor
     fn monitor(&self) -> Option<bool> {
         self.get(3u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PortConfig:monitor"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PortConfig:control
     fn control(&self) -> Option<bool> {
         self.get(4u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PortConfig:control"))
             .ok()
     }
     /// Spa:Pod:Object:Param:PortConfig:format
@@ -1045,7 +1134,7 @@ impl<'a> PortConfig<'a> {
         self.get(5u32)?
             .as_object()
             .map(Format)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PortConfig:format"))
             .ok()
     }
 }
@@ -1070,7 +1159,7 @@ impl<'a> Route<'a> {
     fn index(&self) -> Option<i32> {
         self.get(1u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:index"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:direction
@@ -1078,35 +1167,35 @@ impl<'a> Route<'a> {
         self.get(2u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:direction"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:device
     fn device(&self) -> Option<i32> {
         self.get(3u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:device"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:name
     fn name(&self) -> Option<&BStr> {
         self.get(4u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:name"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:description
     fn description(&self) -> Option<&BStr> {
         self.get(5u32)?
             .as_str()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:description"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:priority
     fn priority(&self) -> Option<i32> {
         self.get(6u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:priority"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Route:available
@@ -1118,14 +1207,14 @@ impl<'a> Route<'a> {
     fn available(&self) -> Option<u32> {
         self.get(7u32)?
             .as_id()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:available"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:info
     fn info(&self) -> Option<PodStructDeserializer> {
         self.get(8u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:info"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Route:profiles
@@ -1134,7 +1223,7 @@ impl<'a> Route<'a> {
     fn profiles(&self) -> Option<PodArrayDeserializer> {
         self.get(9u32)?
             .as_array()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:profiles"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:props
@@ -1142,7 +1231,7 @@ impl<'a> Route<'a> {
         self.get(10u32)?
             .as_object()
             .map(Props)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:props"))
             .ok()
     }
     /** Spa:Pod:Object:Param:Route:devices
@@ -1151,21 +1240,21 @@ impl<'a> Route<'a> {
     fn devices(&self) -> Option<PodArrayDeserializer> {
         self.get(11u32)?
             .as_array()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:devices"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:profile
     fn profile(&self) -> Option<i32> {
         self.get(12u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:profile"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Route:save
     fn save(&self) -> Option<bool> {
         self.get(13u32)?
             .as_bool()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Route:save"))
             .ok()
     }
 }
@@ -1198,35 +1287,35 @@ impl<'a> Profiler<'a> {
     fn info(&self) -> Option<PodStructDeserializer> {
         self.get(65537u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Profiler:info"))
             .ok()
     }
     /// Spa:Pod:Object:Profiler:clock
     fn clock(&self) -> Option<PodStructDeserializer> {
         self.get(65538u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Profiler:clock"))
             .ok()
     }
     /// Spa:Pod:Object:Profiler:driverBlock
     fn driver_block(&self) -> Option<PodStructDeserializer> {
         self.get(65539u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Profiler:driverBlock"))
             .ok()
     }
     /// Spa:Pod:Object:Profiler:followerBlock
     fn follower_block(&self) -> Option<PodStructDeserializer> {
         self.get(131073u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Profiler:followerBlock"))
             .ok()
     }
     /// Spa:Pod:Object:Profiler:followerClock
     fn follower_clock(&self) -> Option<PodStructDeserializer> {
         self.get(131074u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Profiler:followerClock"))
             .ok()
     }
 }
@@ -1252,49 +1341,49 @@ impl<'a> Latency<'a> {
         self.get(1u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Latency:direction"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Latency:minQuantum
     fn min_quantum(&self) -> Option<f32> {
         self.get(2u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Latency:minQuantum"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Latency:maxQuantum
     fn max_quantum(&self) -> Option<f32> {
         self.get(3u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Latency:maxQuantum"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Latency:minRate
     fn min_rate(&self) -> Option<i32> {
         self.get(4u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Latency:minRate"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Latency:maxRate
     fn max_rate(&self) -> Option<i32> {
         self.get(5u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Latency:maxRate"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Latency:minNs
     fn min_ns(&self) -> Option<i64> {
         self.get(6u32)?
             .as_i64()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Latency:minNs"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Latency:maxNs
     fn max_ns(&self) -> Option<i64> {
         self.get(7u32)?
             .as_i64()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Latency:maxNs"))
             .ok()
     }
 }
@@ -1321,21 +1410,21 @@ impl<'a> ProcessLatency<'a> {
     fn quantum(&self) -> Option<f32> {
         self.get(1u32)?
             .as_f32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:ProcessLatency:quantum"))
             .ok()
     }
     /// Spa:Pod:Object:Param:ProcessLatency:rate
     fn rate(&self) -> Option<i32> {
         self.get(2u32)?
             .as_i32()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:ProcessLatency:rate"))
             .ok()
     }
     /// Spa:Pod:Object:Param:ProcessLatency:ns
     fn ns(&self) -> Option<i64> {
         self.get(3u32)?
             .as_i64()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:ProcessLatency:ns"))
             .ok()
     }
 }
@@ -1359,14 +1448,14 @@ impl<'a> Tag<'a> {
         self.get(1u32)?
             .as_id()
             .map(SpaEnum::from_raw)
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Tag:direction"))
             .ok()
     }
     /// Spa:Pod:Object:Param:Tag:info
     fn info(&self) -> Option<PodStructDeserializer> {
         self.get(2u32)?
             .as_struct()
-            .map_err(|err| unreachable!("{err}"))
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Tag:info"))
             .ok()
     }
 }

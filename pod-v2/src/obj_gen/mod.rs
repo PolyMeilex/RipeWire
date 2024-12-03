@@ -1,7 +1,7 @@
 use crate::{
     deserialize::{
-        OwnedPod, PodArrayDeserializer, PodObjectDeserializer, PodSequenceDeserializer,
-        PodStructDeserializer,
+        OwnedPod, PodArrayDeserializer, PodChoiceDeserializer, PodObjectDeserializer,
+        PodSequenceDeserializer, PodStructDeserializer,
     },
     PodDeserializer,
 };

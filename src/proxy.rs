@@ -4,7 +4,7 @@ use pod::{Object, Value};
 use crate::{
     context::Context,
     object_map::ObjectType,
-    protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_registry},
+    protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry},
 };
 
 pub trait Proxy {
@@ -239,6 +239,53 @@ impl PwDevice {
 
     pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
         let msg = pw_device::methods::SetParam {
+            id: pod::utils::Id(value.id),
+            flags: 0,
+            param: Value::Object(value),
+        };
+
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        context.send_msg(&msg, &[]).unwrap();
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PwNode {
+    object_id: ObjectId,
+}
+
+impl Proxy for PwNode {
+    type Event = pw_node::Event;
+
+    fn from_id(object_id: ObjectId) -> Self {
+        Self { object_id }
+    }
+
+    fn id(&self) -> ObjectId {
+        self.object_id.clone()
+    }
+}
+
+impl PwNode {
+    pub fn id(&self) -> ObjectId {
+        self.object_id.clone()
+    }
+
+    pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
+        let msg = pw_node::methods::EnumParams {
+            seq: 0,
+            id: pod::utils::Id(id as u32),
+            index: 0,
+            num: 0,
+            filter: pod::Value::None,
+        };
+
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        context.send_msg(&msg, &[]).unwrap();
+    }
+
+    pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
+        let msg = pw_node::methods::SetParam {
             id: pod::utils::Id(value.id),
             flags: 0,
             param: Value::Object(value),

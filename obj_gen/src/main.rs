@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use libspa_consts::SpaType;
+use libspa_consts::{SpaEnum, SpaType};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
@@ -19,6 +19,26 @@ static ID_TO_ENUM_MAP: &[(&str, &str)] = &[
     ("Spa:Enum:AudioWMAProfile", "SpaAudioWmaProfile"),
     ("Spa:Enum:AudioAACStreamFormat", "SpaAudioAacStreamFormat"),
     ("Spa:Enum:ParamBitorder", "SpaParamBitorder"),
+];
+
+static PROP_NAME_TYPE_OVERRIDE: &[(&str, SpaType)] = &[
+    // Sometimes Choice sometimes Id
+    ("Spa:Pod:Object:Param:Format:Audio:format", SpaType::Pod),
+    // Sometimes Choice sometimes Int
+    ("Spa:Pod:Object:Param:Format:Audio:rate", SpaType::Pod),
+    // Sometimes Choice sometimes Int
+    ("Spa:Pod:Object:Param:Format:Audio:channels", SpaType::Pod),
+    // Sometimes Choice sometimes Id
+    ("Spa:Pod:Object:Param:Format:mediaType", SpaType::Pod),
+    // Sometimes Choice sometimes Id (TODO)
+    ("Spa:Pod:Object:Param:Format:mediaSubtype", SpaType::Pod),
+    // Sometimes Choice sometimes Id (TODO)
+    ("Spa:Pod:Object:Param:Format:Audio:position", SpaType::Pod),
+    // Sometimes Choice sometimes Id (TODO)
+    (
+        "Spa:Pod:Object:Param:Format:Audio:iec958Codec",
+        SpaType::Pod,
+    ),
 ];
 
 static PROP_NAME_TO_ENUM_MAP: &[(&str, &str)] = &[
@@ -50,6 +70,18 @@ struct Entry {
 }
 
 impl Entry {
+    fn postprocess(&mut self) {
+        for prop in self.properties.iter_mut() {
+            if let Some((_, to)) = PROP_NAME_TYPE_OVERRIDE
+                .iter()
+                .find(|(k, _)| *k == prop.name)
+            {
+                prop.values.clear();
+                prop.parent = SpaEnum::<_, u32>::Value(*to).as_raw();
+            }
+        }
+    }
+
     fn print(&self, out: &mut impl Write) {
         let ident = format_ident!("{}", camel_case(spa_short_name(&self.name).unwrap()));
         let ident_str = ident.to_string();
@@ -243,6 +275,7 @@ fn spa_type_to_as_call(parent: SpaType, info: &SpaTypeInfo) -> Option<TokenStrea
         SpaType::Rectangle => quote!(as_rectangle()),
         SpaType::Fraction => quote!(as_fraction()),
         SpaType::Fd => quote!(as_fd()),
+        SpaType::Choice => quote!(as_choice()),
         SpaType::Array => quote!(as_array()),
         SpaType::Struct => quote!(as_struct()),
         SpaType::Object => quote!(as_object()),
@@ -261,7 +294,8 @@ fn spa_type_to_as_call(parent: SpaType, info: &SpaTypeInfo) -> Option<TokenStrea
         _ => return None,
     };
 
-    Some(quote!(#out.map_err(|err| unreachable!("{err}")).ok()))
+    let name = &info.name;
+    Some(quote!(#out.map_err(|err| unreachable!("{}: {err}", #name)).ok()))
 }
 
 fn spa_type_to_rs(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
@@ -283,6 +317,7 @@ fn spa_type_to_rs(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
         SpaType::Rectangle => quote!(SpaRectangle),
         SpaType::Fraction => quote!(SpaFraction),
         SpaType::Fd => quote!(i64),
+        SpaType::Choice => quote!(PodChoiceDeserializer),
 
         SpaType::Array => quote!(PodArrayDeserializer),
         SpaType::Struct => quote!(PodStructDeserializer),
@@ -342,7 +377,8 @@ fn main() {
     }
     .to_string();
 
-    for e in json {
+    for mut e in json {
+        e.postprocess();
         e.print(&mut out);
     }
 

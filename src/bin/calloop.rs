@@ -16,9 +16,10 @@ use ripewire::protocol::pw_client_node::methods::{
     NodeInfoChangeMask, PortInfoChangeMask, PortUpdateChangeMask,
 };
 use ripewire::protocol::{
-    self, pw_client, pw_client_node, pw_core, pw_device, pw_registry, ParamFlags, ParamInfo,
+    self, pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry, ParamFlags,
+    ParamInfo,
 };
-use ripewire::proxy::{PwClient, PwClientNode, PwCore, PwDevice, PwRegistry};
+use ripewire::proxy::{PwClient, PwClientNode, PwCore, PwDevice, PwNode, PwRegistry};
 
 fn properties() -> Dictionary {
     let host = nix::unistd::gethostname().unwrap();
@@ -165,6 +166,54 @@ impl PipewireState {
         dbg!(&client_event);
     }
 
+    pub fn node_event(
+        &mut self,
+        ctx: &mut Context<Self>,
+        node: PwNode,
+        node_event: pw_node::Event,
+    ) {
+        dbg!(&node_event);
+
+        match node_event {
+            pw_node::Event::Info(msg) => {
+                for param in msg.params.iter() {
+                    if let SpaEnum::Value(id) = param.id {
+                        node.enum_param(ctx, id);
+                    }
+                }
+
+                println!("&device_event = {:?}", &msg);
+            }
+            pw_node::Event::Param(msg) => {
+                let SpaEnum::Value(id) = msg.id else {
+                    return;
+                };
+
+                match id {
+                    ty @ (SpaParamType::Format | SpaParamType::EnumFormat) => {
+                        let obj = pod_v2::obj_gen::Format(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
+                        let obj = pod_v2::obj_gen::Route(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
+                        let obj = pod_v2::obj_gen::Profile(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
     pub fn client_node_event(
         &mut self,
         _ctx: &mut Context<Self>,
@@ -209,18 +258,41 @@ impl PipewireState {
 
     pub fn device_event(
         &mut self,
-        _ctx: &mut Context<Self>,
-        _device: PwDevice,
+        ctx: &mut Context<Self>,
+        device: PwDevice,
         device_event: pw_device::Event,
     ) {
-        if let pw_device::Event::Param(msg) = device_event {
-            if msg.id == SpaEnum::Value(SpaParamType::Route) {
-                let obj = pod_v2::obj_gen::Route(msg.params.as_deserializer().as_object().unwrap());
-                dbg!("Param");
-                dbg!(obj);
+        match device_event {
+            pw_device::Event::Info(msg) => {
+                for param in msg.params.iter() {
+                    if let SpaEnum::Value(id) = param.id {
+                        device.enum_param(ctx, id);
+                    }
+                }
+
+                println!("&device_event = {:?}", &msg);
             }
-        } else {
-            dbg!(&device_event);
+            pw_device::Event::Param(msg) => {
+                let SpaEnum::Value(id) = msg.id else {
+                    return;
+                };
+
+                match id {
+                    ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
+                        let obj = pod_v2::obj_gen::Route(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
+                        let obj = pod_v2::obj_gen::Profile(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    _ => {}
+                }
+            }
         }
     }
 
@@ -240,6 +312,15 @@ impl PipewireState {
                     == Some("alsa_card.pci-0000_0b_00.6")
             });
 
+        for node in self
+            .globals
+            .iter()
+            .filter(|global| global.interface == ObjectType::Node)
+        {
+            let node: PwNode = self.registry.bind(ctx, node);
+            ctx.set_object_callback(&node, Self::node_event);
+        }
+
         if let Some(global) = client {
             let client: PwClient = self.registry.bind(ctx, global);
 
@@ -249,7 +330,6 @@ impl PipewireState {
         if let Some(global) = device {
             let device: PwDevice = self.registry.bind(ctx, global);
 
-            device.enum_param(ctx, SpaParamType::Route);
             device.set_param(
                 ctx,
                 pod::params::RouteParamBuilder::route()
