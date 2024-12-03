@@ -261,7 +261,7 @@ fn spa_type_to_as_call(parent: SpaType, info: &SpaTypeInfo) -> Option<TokenStrea
         _ => return None,
     };
 
-    Some(quote!(#out.ok()))
+    Some(quote!(#out.map_err(|err| unreachable!("{err}")).ok()))
 }
 
 fn spa_type_to_rs(parent: SpaType, info: &SpaTypeInfo) -> TokenStream {
