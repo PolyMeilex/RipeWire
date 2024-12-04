@@ -1,6 +1,7 @@
 use std::fmt::Write;
 
 use libspa_consts::SpaType;
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
 use crate::{camel_case, json, snake_case};
@@ -28,11 +29,10 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
 
     let obj_type = SpaType::from_raw(entry.r#type).unwrap();
 
-    let props = properties.iter().map(|(ident, info)| {
-        let name_doc = format!(" name: {}", info.name);
-        let return_doc = format!(" returns: {:?}", SpaType::from_raw(info.parent).unwrap());
+    let getters = properties.iter().map(|(ident, info)| {
+        let doc = get_doc(info);
 
-        let get = if let Some(key) = crate::get_key_enum(obj_type, info.r#type) {
+        let get_call = if let Some(key) = crate::get_key_enum(obj_type, info.r#type) {
             quote!(self.get(#key))
         } else {
             let ty = info.r#type;
@@ -40,10 +40,9 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
         };
 
         quote! {
-            #[doc = #name_doc]
-            #[doc = #return_doc]
+            #doc
             fn #ident(&self) -> Option<PodDeserializer> {
-                #get
+                #get_call
             }
         }
     });
@@ -56,15 +55,13 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
         }
     };
 
-    let get_typed = if let Some(key) = crate::get_key_enum_type(obj_type) {
+    let get_typed = crate::get_key_enum_type(obj_type).map(|key| {
         quote! {
             fn get(&self, key: #key) -> Option<PodDeserializer> {
                 self.get_raw(key.to_u32().unwrap())
             }
         }
-    } else {
-        quote!()
-    };
+    });
 
     let src = quote! {
         #[doc = #doc]
@@ -74,12 +71,35 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
             #get_raw
             #get_typed
 
-            #(#props)*
+            #(#getters)*
         }
     };
 
     writeln!(out, "{src}").unwrap();
     writeln!(out).unwrap();
+}
+
+fn get_doc(info: &json::SpaTypeInfo) -> TokenStream {
+    let name_doc = format!(" name: {}", info.name);
+    let return_doc = format!(" returns: {:?}", SpaType::from_raw(info.parent).unwrap());
+
+    let values_doc = {
+        let values_label_doc = (!info.values.is_empty()).then_some(quote!(#[doc = " values:"]));
+        let values_doc = info.values.iter().map(|v| {
+            let doc = format!("  {}: {:?}", v.r#type, v.name);
+            quote!(#doc)
+        });
+        quote! {
+            #values_label_doc
+            #(#[doc = #values_doc])*
+        }
+    };
+
+    quote! {
+        #[doc = #name_doc]
+        #[doc = #return_doc]
+        #values_doc
+    }
 }
 
 pub fn run() {

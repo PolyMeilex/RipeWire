@@ -17,6 +17,55 @@ impl<'a> PropInfo<'a> {
     }
     /// name: Spa:Pod:Object:Param:PropInfo:id
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Pod:Object:Param:Props:"
+    ///  1: "Spa:Pod:Object:Param:Props:unknown"
+    ///  257: "Spa:Pod:Object:Param:Props:device"
+    ///  258: "Spa:Pod:Object:Param:Props:deviceName"
+    ///  259: "Spa:Pod:Object:Param:Props:deviceFd"
+    ///  260: "Spa:Pod:Object:Param:Props:card"
+    ///  261: "Spa:Pod:Object:Param:Props:cardName"
+    ///  262: "Spa:Pod:Object:Param:Props:minLatency"
+    ///  263: "Spa:Pod:Object:Param:Props:maxLatency"
+    ///  264: "Spa:Pod:Object:Param:Props:periods"
+    ///  265: "Spa:Pod:Object:Param:Props:periodSize"
+    ///  266: "Spa:Pod:Object:Param:Props:periodEvent"
+    ///  267: "Spa:Pod:Object:Param:Props:live"
+    ///  268: "Spa:Pod:Object:Param:Props:rate"
+    ///  269: "Spa:Pod:Object:Param:Props:quality"
+    ///  270: "Spa:Pod:Object:Param:Props:bluetoothAudioCodec"
+    ///  271: "Spa:Pod:Object:Param:Props:bluetoothOffloadActive"
+    ///  65537: "Spa:Pod:Object:Param:Props:waveType"
+    ///  65538: "Spa:Pod:Object:Param:Props:frequency"
+    ///  65539: "Spa:Pod:Object:Param:Props:volume"
+    ///  65540: "Spa:Pod:Object:Param:Props:mute"
+    ///  65541: "Spa:Pod:Object:Param:Props:patternType"
+    ///  65542: "Spa:Pod:Object:Param:Props:ditherType"
+    ///  65543: "Spa:Pod:Object:Param:Props:truncate"
+    ///  65544: "Spa:Pod:Object:Param:Props:channelVolumes"
+    ///  65545: "Spa:Pod:Object:Param:Props:volumeBase"
+    ///  65546: "Spa:Pod:Object:Param:Props:volumeStep"
+    ///  65547: "Spa:Pod:Object:Param:Props:channelMap"
+    ///  65548: "Spa:Pod:Object:Param:Props:monitorMute"
+    ///  65549: "Spa:Pod:Object:Param:Props:monitorVolumes"
+    ///  65550: "Spa:Pod:Object:Param:Props:latencyOffsetNsec"
+    ///  65551: "Spa:Pod:Object:Param:Props:softMute"
+    ///  65552: "Spa:Pod:Object:Param:Props:softVolumes"
+    ///  65553: "Spa:Pod:Object:Param:Props:iec958Codecs"
+    ///  65554: "Spa:Pod:Object:Param:Props:volumeRampSamples"
+    ///  65555: "Spa:Pod:Object:Param:Props:volumeRampStepSamples"
+    ///  65556: "Spa:Pod:Object:Param:Props:volumeRampTime"
+    ///  65557: "Spa:Pod:Object:Param:Props:volumeRampStepTime"
+    ///  65558: "Spa:Pod:Object:Param:Props:volumeRampScale"
+    ///  131073: "Spa:Pod:Object:Param:Props:brightness"
+    ///  131074: "Spa:Pod:Object:Param:Props:contrast"
+    ///  131075: "Spa:Pod:Object:Param:Props:saturation"
+    ///  131076: "Spa:Pod:Object:Param:Props:hue"
+    ///  131077: "Spa:Pod:Object:Param:Props:gamma"
+    ///  131078: "Spa:Pod:Object:Param:Props:exposure"
+    ///  131079: "Spa:Pod:Object:Param:Props:gain"
+    ///  131080: "Spa:Pod:Object:Param:Props:sharpness"
+    ///  524289: "Spa:Pod:Object:Param:Props:params"
     fn id(&self) -> Option<PodDeserializer> {
         self.get(SpaPropInfo::Id)
     }
@@ -129,6 +178,30 @@ impl<'a> Props<'a> {
     }
     /// name: Spa:Pod:Object:Param:Props:bluetoothAudioCodec
     /// returns: Id
+    /// values:
+    ///  1: "Spa:Enum:BluetoothAudioCodec:sbc"
+    ///  2: "Spa:Enum:BluetoothAudioCodec:sbc_xq"
+    ///  3: "Spa:Enum:BluetoothAudioCodec:mpeg"
+    ///  4: "Spa:Enum:BluetoothAudioCodec:aac"
+    ///  5: "Spa:Enum:BluetoothAudioCodec:aac_eld"
+    ///  6: "Spa:Enum:BluetoothAudioCodec:aptx"
+    ///  7: "Spa:Enum:BluetoothAudioCodec:aptx_hd"
+    ///  8: "Spa:Enum:BluetoothAudioCodec:ldac"
+    ///  9: "Spa:Enum:BluetoothAudioCodec:aptx_ll"
+    ///  10: "Spa:Enum:BluetoothAudioCodec:aptx_ll_duplex"
+    ///  11: "Spa:Enum:BluetoothAudioCodec:faststream"
+    ///  12: "Spa:Enum:BluetoothAudioCodec:faststream_duplex"
+    ///  13: "Spa:Enum:BluetoothAudioCodec:lc3plus_hr"
+    ///  14: "Spa:Enum:BluetoothAudioCodec:opus_05"
+    ///  15: "Spa:Enum:BluetoothAudioCodec:opus_05_51"
+    ///  16: "Spa:Enum:BluetoothAudioCodec:opus_05_71"
+    ///  17: "Spa:Enum:BluetoothAudioCodec:opus_05_duplex"
+    ///  18: "Spa:Enum:BluetoothAudioCodec:opus_05_pro"
+    ///  19: "Spa:Enum:BluetoothAudioCodec:opus_g"
+    ///  256: "Spa:Enum:BluetoothAudioCodec:cvsd"
+    ///  257: "Spa:Enum:BluetoothAudioCodec:msbc"
+    ///  258: "Spa:Enum:BluetoothAudioCodec:lc3_swb"
+    ///  512: "Spa:Enum:BluetoothAudioCodec:lc3"
     fn bluetooth_audio_codec(&self) -> Option<PodDeserializer> {
         self.get(SpaProp::BluetoothAudioCodec)
     }
@@ -174,6 +247,8 @@ impl<'a> Props<'a> {
     }
     /// name: Spa:Pod:Object:Param:Props:channelVolumes
     /// returns: Array
+    /// values:
+    ///  0: "Spa:floatArray"
     fn channel_volumes(&self) -> Option<PodDeserializer> {
         self.get(SpaProp::ChannelVolumes)
     }
@@ -189,6 +264,8 @@ impl<'a> Props<'a> {
     }
     /// name: Spa:Pod:Object:Param:Props:channelMap
     /// returns: Array
+    /// values:
+    ///  0: "Spa:channelMap"
     fn channel_map(&self) -> Option<PodDeserializer> {
         self.get(SpaProp::ChannelMap)
     }
@@ -199,6 +276,8 @@ impl<'a> Props<'a> {
     }
     /// name: Spa:Pod:Object:Param:Props:monitorVolumes
     /// returns: Array
+    /// values:
+    ///  0: "Spa:floatArray"
     fn monitor_volumes(&self) -> Option<PodDeserializer> {
         self.get(SpaProp::MonitorVolumes)
     }
@@ -214,11 +293,15 @@ impl<'a> Props<'a> {
     }
     /// name: Spa:Pod:Object:Param:Props:softVolumes
     /// returns: Array
+    /// values:
+    ///  0: "Spa:floatArray"
     fn soft_volumes(&self) -> Option<PodDeserializer> {
         self.get(SpaProp::SoftVolumes)
     }
     /// name: Spa:Pod:Object:Param:Props:iec958Codecs
     /// returns: Array
+    /// values:
+    ///  0: "Spa:iec958Codec"
     fn iec958_codecs(&self) -> Option<PodDeserializer> {
         self.get(SpaProp::Iec958Codecs)
     }
@@ -306,21 +389,141 @@ impl<'a> Format<'a> {
     }
     /// name: Spa:Pod:Object:Param:Format:mediaType
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:MediaType:unknown"
+    ///  1: "Spa:Enum:MediaType:audio"
+    ///  2: "Spa:Enum:MediaType:video"
+    ///  3: "Spa:Enum:MediaType:image"
+    ///  4: "Spa:Enum:MediaType:binary"
+    ///  5: "Spa:Enum:MediaType:stream"
+    ///  6: "Spa:Enum:MediaType:application"
     fn media_type(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::MediaType)
     }
     /// name: Spa:Pod:Object:Param:Format:mediaSubtype
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:MediaSubtype:unknown"
+    ///  1: "Spa:Enum:MediaSubtype:raw"
+    ///  2: "Spa:Enum:MediaSubtype:dsp"
+    ///  3: "Spa:Enum:MediaSubtype:iec958"
+    ///  4: "Spa:Enum:MediaSubtype:dsd"
+    ///  65537: "Spa:Enum:MediaSubtype:mp3"
+    ///  65538: "Spa:Enum:MediaSubtype:aac"
+    ///  65539: "Spa:Enum:MediaSubtype:vorbis"
+    ///  65540: "Spa:Enum:MediaSubtype:wma"
+    ///  65541: "Spa:Enum:MediaSubtype:ra"
+    ///  65542: "Spa:Enum:MediaSubtype:sbc"
+    ///  65543: "Spa:Enum:MediaSubtype:adpcm"
+    ///  65544: "Spa:Enum:MediaSubtype:g723"
+    ///  65545: "Spa:Enum:MediaSubtype:g726"
+    ///  65546: "Spa:Enum:MediaSubtype:g729"
+    ///  65547: "Spa:Enum:MediaSubtype:amr"
+    ///  65548: "Spa:Enum:MediaSubtype:gsm"
+    ///  65549: "Spa:Enum:MediaSubtype:alac"
+    ///  65550: "Spa:Enum:MediaSubtype:flac"
+    ///  65551: "Spa:Enum:MediaSubtype:ape"
+    ///  65552: "Spa:Enum:MediaSubtype:opus"
+    ///  131073: "Spa:Enum:MediaSubtype:h264"
+    ///  131074: "Spa:Enum:MediaSubtype:mjpg"
+    ///  131075: "Spa:Enum:MediaSubtype:dv"
+    ///  131076: "Spa:Enum:MediaSubtype:mpegts"
+    ///  131077: "Spa:Enum:MediaSubtype:h263"
+    ///  131078: "Spa:Enum:MediaSubtype:mpeg1"
+    ///  131079: "Spa:Enum:MediaSubtype:mpeg2"
+    ///  131080: "Spa:Enum:MediaSubtype:mpeg4"
+    ///  131081: "Spa:Enum:MediaSubtype:xvid"
+    ///  131082: "Spa:Enum:MediaSubtype:vc1"
+    ///  131083: "Spa:Enum:MediaSubtype:vp8"
+    ///  131084: "Spa:Enum:MediaSubtype:vp9"
+    ///  131085: "Spa:Enum:MediaSubtype:bayer"
+    ///  196609: "Spa:Enum:MediaSubtype:jpeg"
+    ///  327681: "Spa:Enum:MediaSubtype:midi"
+    ///  393217: "Spa:Enum:MediaSubtype:control"
     fn media_subtype(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::MediaSubtype)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:format
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:AudioFormat:UNKNOWN"
+    ///  1: "Spa:Enum:AudioFormat:ENCODED"
+    ///  257: "Spa:Enum:AudioFormat:S8"
+    ///  258: "Spa:Enum:AudioFormat:U8"
+    ///  259: "Spa:Enum:AudioFormat:S16LE"
+    ///  260: "Spa:Enum:AudioFormat:S16BE"
+    ///  261: "Spa:Enum:AudioFormat:U16LE"
+    ///  262: "Spa:Enum:AudioFormat:U16BE"
+    ///  263: "Spa:Enum:AudioFormat:S24_32LE"
+    ///  264: "Spa:Enum:AudioFormat:S24_32BE"
+    ///  265: "Spa:Enum:AudioFormat:U24_32LE"
+    ///  266: "Spa:Enum:AudioFormat:U24_32BE"
+    ///  267: "Spa:Enum:AudioFormat:S32LE"
+    ///  268: "Spa:Enum:AudioFormat:S32BE"
+    ///  269: "Spa:Enum:AudioFormat:U32LE"
+    ///  270: "Spa:Enum:AudioFormat:U32BE"
+    ///  271: "Spa:Enum:AudioFormat:S24LE"
+    ///  272: "Spa:Enum:AudioFormat:S24BE"
+    ///  273: "Spa:Enum:AudioFormat:U24LE"
+    ///  274: "Spa:Enum:AudioFormat:U24BE"
+    ///  275: "Spa:Enum:AudioFormat:S20LE"
+    ///  276: "Spa:Enum:AudioFormat:S20BE"
+    ///  277: "Spa:Enum:AudioFormat:U20LE"
+    ///  278: "Spa:Enum:AudioFormat:U20BE"
+    ///  279: "Spa:Enum:AudioFormat:S18LE"
+    ///  280: "Spa:Enum:AudioFormat:S18BE"
+    ///  281: "Spa:Enum:AudioFormat:U18LE"
+    ///  282: "Spa:Enum:AudioFormat:U18BE"
+    ///  283: "Spa:Enum:AudioFormat:F32LE"
+    ///  284: "Spa:Enum:AudioFormat:F32BE"
+    ///  285: "Spa:Enum:AudioFormat:F64LE"
+    ///  286: "Spa:Enum:AudioFormat:F64BE"
+    ///  287: "Spa:Enum:AudioFormat:ULAW"
+    ///  288: "Spa:Enum:AudioFormat:ALAW"
+    ///  513: "Spa:Enum:AudioFormat:U8P"
+    ///  514: "Spa:Enum:AudioFormat:S16P"
+    ///  515: "Spa:Enum:AudioFormat:S24_32P"
+    ///  516: "Spa:Enum:AudioFormat:S32P"
+    ///  517: "Spa:Enum:AudioFormat:S24P"
+    ///  518: "Spa:Enum:AudioFormat:F32P"
+    ///  519: "Spa:Enum:AudioFormat:F64P"
+    ///  520: "Spa:Enum:AudioFormat:S8P"
+    ///  259: "Spa:Enum:AudioFormat:S16"
+    ///  260: "Spa:Enum:AudioFormat:S16OE"
+    ///  261: "Spa:Enum:AudioFormat:U16"
+    ///  262: "Spa:Enum:AudioFormat:U16OE"
+    ///  263: "Spa:Enum:AudioFormat:S24_32"
+    ///  264: "Spa:Enum:AudioFormat:S24_32OE"
+    ///  265: "Spa:Enum:AudioFormat:U24_32"
+    ///  266: "Spa:Enum:AudioFormat:U24_32OE"
+    ///  267: "Spa:Enum:AudioFormat:S32"
+    ///  268: "Spa:Enum:AudioFormat:S32OE"
+    ///  269: "Spa:Enum:AudioFormat:U32"
+    ///  270: "Spa:Enum:AudioFormat:U32OE"
+    ///  271: "Spa:Enum:AudioFormat:S24"
+    ///  272: "Spa:Enum:AudioFormat:S24OE"
+    ///  273: "Spa:Enum:AudioFormat:U24"
+    ///  274: "Spa:Enum:AudioFormat:U24OE"
+    ///  275: "Spa:Enum:AudioFormat:S20"
+    ///  276: "Spa:Enum:AudioFormat:S20OE"
+    ///  277: "Spa:Enum:AudioFormat:U20"
+    ///  278: "Spa:Enum:AudioFormat:U20OE"
+    ///  279: "Spa:Enum:AudioFormat:S18"
+    ///  280: "Spa:Enum:AudioFormat:S18OE"
+    ///  281: "Spa:Enum:AudioFormat:U18"
+    ///  282: "Spa:Enum:AudioFormat:U18OE"
+    ///  283: "Spa:Enum:AudioFormat:F32"
+    ///  284: "Spa:Enum:AudioFormat:F32OE"
+    ///  285: "Spa:Enum:AudioFormat:F64"
+    ///  286: "Spa:Enum:AudioFormat:F64OE"
     fn audio_format(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioFormat)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:flags
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Flags:AudioFlags:none"
+    ///  1: "Spa:Flags:AudioFlags:unpositioned"
     fn audio_flags(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioFlags)
     }
@@ -336,16 +539,32 @@ impl<'a> Format<'a> {
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:position
     /// returns: Array
+    /// values:
+    ///  0: "Spa:channelMap"
     fn audio_position(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioPosition)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:iec958Codec
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:AudioIEC958Codec:UNKNOWN"
+    ///  1: "Spa:Enum:AudioIEC958Codec:PCM"
+    ///  2: "Spa:Enum:AudioIEC958Codec:DTS"
+    ///  3: "Spa:Enum:AudioIEC958Codec:AC3"
+    ///  4: "Spa:Enum:AudioIEC958Codec:MPEG"
+    ///  5: "Spa:Enum:AudioIEC958Codec:MPEG2-AAC"
+    ///  6: "Spa:Enum:AudioIEC958Codec:EAC3"
+    ///  7: "Spa:Enum:AudioIEC958Codec:TrueHD"
+    ///  8: "Spa:Enum:AudioIEC958Codec:DTS-HD"
     fn audio_iec958_codec(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioIec958Codec)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:bitorder
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:ParamBitorder:unknown"
+    ///  1: "Spa:Enum:ParamBitorder:msb"
+    ///  2: "Spa:Enum:ParamBitorder:lsb"
     fn audio_bitorder(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioBitorder)
     }
@@ -366,21 +585,132 @@ impl<'a> Format<'a> {
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:AudioAACStreamFormat:UNKNOWN"
+    ///  1: "Spa:Enum:AudioAACStreamFormat:RAW"
+    ///  2: "Spa:Enum:AudioAACStreamFormat:MP2ADTS"
+    ///  3: "Spa:Enum:AudioAACStreamFormat:MP4ADTS"
+    ///  4: "Spa:Enum:AudioAACStreamFormat:MP4LOAS"
+    ///  5: "Spa:Enum:AudioAACStreamFormat:MP4LATM"
+    ///  6: "Spa:Enum:AudioAACStreamFormat:ADIF"
+    ///  7: "Spa:Enum:AudioAACStreamFormat:MP4FF"
     fn audio_aac_stream_format(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioAacStreamFormat)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:WMA:profile
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:AudioWMAProfile:UNKNOWN"
+    ///  1: "Spa:Enum:AudioWMAProfile:WMA7"
+    ///  2: "Spa:Enum:AudioWMAProfile:WMA8"
+    ///  3: "Spa:Enum:AudioWMAProfile:WMA9"
+    ///  4: "Spa:Enum:AudioWMAProfile:WMA10"
+    ///  5: "Spa:Enum:AudioWMAProfile:WMA9-Pro"
+    ///  6: "Spa:Enum:AudioWMAProfile:WMA9-Lossless"
+    ///  7: "Spa:Enum:AudioWMAProfile:WMA10-Lossless"
     fn audio_wma_profile(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioWmaProfile)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:AudioAMRBandMode:UNKNOWN"
+    ///  1: "Spa:Enum:AudioAMRBandMode:NB"
+    ///  2: "Spa:Enum:AudioAMRBandMode:WB"
     fn audio_amr_band_mode(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::AudioAmrBandMode)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:format
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:VideoFormat:UNKNOWN"
+    ///  1: "Spa:Enum:VideoFormat:ENCODED"
+    ///  2: "Spa:Enum:VideoFormat:I420"
+    ///  3: "Spa:Enum:VideoFormat:YV12"
+    ///  4: "Spa:Enum:VideoFormat:YUY2"
+    ///  5: "Spa:Enum:VideoFormat:UYVY"
+    ///  6: "Spa:Enum:VideoFormat:AYUV"
+    ///  7: "Spa:Enum:VideoFormat:RGBx"
+    ///  8: "Spa:Enum:VideoFormat:BGRx"
+    ///  9: "Spa:Enum:VideoFormat:xRGB"
+    ///  10: "Spa:Enum:VideoFormat:xBGR"
+    ///  11: "Spa:Enum:VideoFormat:RGBA"
+    ///  12: "Spa:Enum:VideoFormat:BGRA"
+    ///  13: "Spa:Enum:VideoFormat:ARGB"
+    ///  14: "Spa:Enum:VideoFormat:ABGR"
+    ///  15: "Spa:Enum:VideoFormat:RGB"
+    ///  16: "Spa:Enum:VideoFormat:BGR"
+    ///  17: "Spa:Enum:VideoFormat:Y41B"
+    ///  18: "Spa:Enum:VideoFormat:Y42B"
+    ///  19: "Spa:Enum:VideoFormat:YVYU"
+    ///  20: "Spa:Enum:VideoFormat:Y444"
+    ///  21: "Spa:Enum:VideoFormat:v210"
+    ///  22: "Spa:Enum:VideoFormat:v216"
+    ///  23: "Spa:Enum:VideoFormat:NV12"
+    ///  24: "Spa:Enum:VideoFormat:NV21"
+    ///  25: "Spa:Enum:VideoFormat:GRAY8"
+    ///  26: "Spa:Enum:VideoFormat:GRAY16_BE"
+    ///  27: "Spa:Enum:VideoFormat:GRAY16_LE"
+    ///  28: "Spa:Enum:VideoFormat:v308"
+    ///  29: "Spa:Enum:VideoFormat:RGB16"
+    ///  30: "Spa:Enum:VideoFormat:BGR16"
+    ///  31: "Spa:Enum:VideoFormat:RGB15"
+    ///  32: "Spa:Enum:VideoFormat:BGR15"
+    ///  33: "Spa:Enum:VideoFormat:UYVP"
+    ///  34: "Spa:Enum:VideoFormat:A420"
+    ///  35: "Spa:Enum:VideoFormat:RGB8P"
+    ///  36: "Spa:Enum:VideoFormat:YUV9"
+    ///  37: "Spa:Enum:VideoFormat:YVU9"
+    ///  38: "Spa:Enum:VideoFormat:IYU1"
+    ///  39: "Spa:Enum:VideoFormat:ARGB64"
+    ///  40: "Spa:Enum:VideoFormat:AYUV64"
+    ///  41: "Spa:Enum:VideoFormat:r210"
+    ///  42: "Spa:Enum:VideoFormat:I420_10BE"
+    ///  43: "Spa:Enum:VideoFormat:I420_10LE"
+    ///  44: "Spa:Enum:VideoFormat:I422_10BE"
+    ///  45: "Spa:Enum:VideoFormat:I422_10LE"
+    ///  46: "Spa:Enum:VideoFormat:Y444_10BE"
+    ///  47: "Spa:Enum:VideoFormat:Y444_10LE"
+    ///  48: "Spa:Enum:VideoFormat:GBR"
+    ///  49: "Spa:Enum:VideoFormat:GBR_10BE"
+    ///  50: "Spa:Enum:VideoFormat:GBR_10LE"
+    ///  51: "Spa:Enum:VideoFormat:NV16"
+    ///  52: "Spa:Enum:VideoFormat:NV24"
+    ///  53: "Spa:Enum:VideoFormat:NV12_64Z32"
+    ///  54: "Spa:Enum:VideoFormat:A420_10BE"
+    ///  55: "Spa:Enum:VideoFormat:A420_10LE"
+    ///  56: "Spa:Enum:VideoFormat:A422_10BE"
+    ///  57: "Spa:Enum:VideoFormat:A422_10LE"
+    ///  58: "Spa:Enum:VideoFormat:A444_10BE"
+    ///  59: "Spa:Enum:VideoFormat:A444_10LE"
+    ///  60: "Spa:Enum:VideoFormat:NV61"
+    ///  61: "Spa:Enum:VideoFormat:P010_10BE"
+    ///  62: "Spa:Enum:VideoFormat:P010_10LE"
+    ///  63: "Spa:Enum:VideoFormat:IYU2"
+    ///  64: "Spa:Enum:VideoFormat:VYUY"
+    ///  65: "Spa:Enum:VideoFormat:GBRA"
+    ///  66: "Spa:Enum:VideoFormat:GBRA_10BE"
+    ///  67: "Spa:Enum:VideoFormat:GBRA_10LE"
+    ///  68: "Spa:Enum:VideoFormat:GBR_12BE"
+    ///  69: "Spa:Enum:VideoFormat:GBR_12LE"
+    ///  70: "Spa:Enum:VideoFormat:GBRA_12BE"
+    ///  71: "Spa:Enum:VideoFormat:GBRA_12LE"
+    ///  72: "Spa:Enum:VideoFormat:I420_12BE"
+    ///  73: "Spa:Enum:VideoFormat:I420_12LE"
+    ///  74: "Spa:Enum:VideoFormat:I422_12BE"
+    ///  75: "Spa:Enum:VideoFormat:I422_12LE"
+    ///  76: "Spa:Enum:VideoFormat:Y444_12BE"
+    ///  77: "Spa:Enum:VideoFormat:Y444_12LE"
+    ///  78: "Spa:Enum:VideoFormat:RGBA_F16"
+    ///  79: "Spa:Enum:VideoFormat:RGBA_F32"
+    ///  80: "Spa:Enum:VideoFormat:xRGB_210LE"
+    ///  81: "Spa:Enum:VideoFormat:xBGR_210LE"
+    ///  82: "Spa:Enum:VideoFormat:RGBx_102LE"
+    ///  83: "Spa:Enum:VideoFormat:BGRx_102LE"
+    ///  84: "Spa:Enum:VideoFormat:ARGB_210LE"
+    ///  85: "Spa:Enum:VideoFormat:ABGR_210LE"
+    ///  86: "Spa:Enum:VideoFormat:RGBA_102LE"
+    ///  87: "Spa:Enum:VideoFormat:BGRA_102LE"
     fn video_format(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::VideoFormat)
     }
@@ -411,6 +741,11 @@ impl<'a> Format<'a> {
     }
     /// name: Spa:Pod:Object:Param:Format:Video:interlaceMode
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:VideoInterlaceMode:progressive"
+    ///  1: "Spa:Enum:VideoInterlaceMode:interleaved"
+    ///  2: "Spa:Enum:VideoInterlaceMode:mixed"
+    ///  3: "Spa:Enum:VideoInterlaceMode:fields"
     fn video_interlace_mode(&self) -> Option<PodDeserializer> {
         self.get(SpaFormat::VideoInterlaceMode)
     }
@@ -535,6 +870,17 @@ impl<'a> Meta<'a> {
     }
     /// name: Spa:Pod:Object:Param:Meta:type
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Pointer:Meta:Invalid"
+    ///  1: "Spa:Pointer:Meta:Header"
+    ///  2: "Spa:Pointer:Meta:Region:VideoCrop"
+    ///  3: "Spa:Pointer:Meta:Array:Region:VideoDamage"
+    ///  4: "Spa:Pointer:Meta:Bitmap"
+    ///  5: "Spa:Pointer:Meta:Cursor"
+    ///  6: "Spa:Pointer:Meta:Control"
+    ///  7: "Spa:Pointer:Meta:Busy"
+    ///  8: "Spa:Pointer:Meta:VideoTransform"
+    ///  9: "Spa:Pointer:Meta:SyncTimeline"
     fn ty(&self) -> Option<PodDeserializer> {
         self.get(SpaParamMeta::Type)
     }
@@ -557,6 +903,18 @@ impl<'a> Io<'a> {
     }
     /// name: Spa:Pod:Object:Param:IO:id
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:IO:Invalid"
+    ///  1: "Spa:Enum:IO:Buffers"
+    ///  2: "Spa:Enum:IO:Range"
+    ///  3: "Spa:Enum:IO:Clock"
+    ///  4: "Spa:Enum:IO:Latency"
+    ///  5: "Spa:Enum:IO:Control"
+    ///  6: "Spa:Enum:IO:Notify"
+    ///  7: "Spa:Enum:IO:Position"
+    ///  8: "Spa:Enum:IO:RateMatch"
+    ///  9: "Spa:Enum:IO:Memory"
+    ///  10: "Spa:Enum:IO:AsyncBuffers"
     fn id(&self) -> Option<PodDeserializer> {
         self.get(SpaParamIo::Id)
     }
@@ -599,6 +957,10 @@ impl<'a> Profile<'a> {
     }
     /// name: Spa:Pod:Object:Param:Profile:available
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:ParamAvailability:unknown"
+    ///  1: "Spa:Enum:ParamAvailability:no"
+    ///  2: "Spa:Enum:ParamAvailability:yes"
     fn available(&self) -> Option<PodDeserializer> {
         self.get(SpaParamProfile::Available)
     }
@@ -631,11 +993,19 @@ impl<'a> PortConfig<'a> {
     }
     /// name: Spa:Pod:Object:Param:PortConfig:direction
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:Direction:Input"
+    ///  1: "Spa:Enum:Direction:Output"
     fn direction(&self) -> Option<PodDeserializer> {
         self.get(SpaParamPortConfig::Direction)
     }
     /// name: Spa:Pod:Object:Param:PortConfig:mode
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:ParamPortConfigMode:none"
+    ///  1: "Spa:Enum:ParamPortConfigMode:passthrough"
+    ///  2: "Spa:Enum:ParamPortConfigMode:convert"
+    ///  3: "Spa:Enum:ParamPortConfigMode:dsp"
     fn mode(&self) -> Option<PodDeserializer> {
         self.get(SpaParamPortConfig::Mode)
     }
@@ -673,6 +1043,9 @@ impl<'a> Route<'a> {
     }
     /// name: Spa:Pod:Object:Param:Route:direction
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:Direction:Input"
+    ///  1: "Spa:Enum:Direction:Output"
     fn direction(&self) -> Option<PodDeserializer> {
         self.get(SpaParamRoute::Direction)
     }
@@ -698,6 +1071,10 @@ impl<'a> Route<'a> {
     }
     /// name: Spa:Pod:Object:Param:Route:available
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:ParamAvailability:unknown"
+    ///  1: "Spa:Enum:ParamAvailability:no"
+    ///  2: "Spa:Enum:ParamAvailability:yes"
     fn available(&self) -> Option<PodDeserializer> {
         self.get(SpaParamRoute::Available)
     }
@@ -708,6 +1085,8 @@ impl<'a> Route<'a> {
     }
     /// name: Spa:Pod:Object:Param:Route:profiles
     /// returns: Array
+    /// values:
+    ///  0: "Spa:intArray"
     fn profiles(&self) -> Option<PodDeserializer> {
         self.get(SpaParamRoute::Profiles)
     }
@@ -718,6 +1097,8 @@ impl<'a> Route<'a> {
     }
     /// name: Spa:Pod:Object:Param:Route:devices
     /// returns: Array
+    /// values:
+    ///  0: "Spa:intArray"
     fn devices(&self) -> Option<PodDeserializer> {
         self.get(SpaParamRoute::Devices)
     }
@@ -782,6 +1163,9 @@ impl<'a> Latency<'a> {
     }
     /// name: Spa:Pod:Object:Param:Latency:direction
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:Direction:Input"
+    ///  1: "Spa:Enum:Direction:Output"
     fn direction(&self) -> Option<PodDeserializer> {
         self.get(SpaParamLatency::Direction)
     }
@@ -856,6 +1240,9 @@ impl<'a> Tag<'a> {
     }
     /// name: Spa:Pod:Object:Param:Tag:direction
     /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:Direction:Input"
+    ///  1: "Spa:Enum:Direction:Output"
     fn direction(&self) -> Option<PodDeserializer> {
         self.get(SpaParamTag::Direction)
     }
