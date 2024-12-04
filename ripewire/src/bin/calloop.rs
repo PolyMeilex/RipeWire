@@ -191,19 +191,19 @@ impl PipewireState {
 
                 match id {
                     ty @ (SpaParamType::Format | SpaParamType::EnumFormat) => {
-                        let obj = pod_v2::obj_gen::Format(
+                        let obj = pod_v2::obj_gen::typed::Format(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
-                        let obj = pod_v2::obj_gen::Route(
+                        let obj = pod_v2::obj_gen::typed::Route(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
-                        let obj = pod_v2::obj_gen::Profile(
+                        let obj = pod_v2::obj_gen::typed::Profile(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");
@@ -279,13 +279,13 @@ impl PipewireState {
 
                 match id {
                     ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
-                        let obj = pod_v2::obj_gen::Route(
+                        let obj = pod_v2::obj_gen::untyped::Route(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
-                        let obj = pod_v2::obj_gen::Profile(
+                        let obj = pod_v2::obj_gen::untyped::Profile(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");

@@ -8,5 +8,5 @@ use crate::{
 use bstr::BStr;
 use libspa_consts::*;
 
-mod gen;
-pub use gen::*;
+pub mod typed;
+pub mod untyped;

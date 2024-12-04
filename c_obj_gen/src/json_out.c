@@ -1,8 +1,11 @@
+#include "spa/param/param.h"
+#include "spa/utils/type.h"
 #include <spa/utils/type-info.h>
 
 struct type_deff {
   const char *name;
   const struct spa_type_info *info;
+  uint32_t type;
 };
 
 static int ident_level = 0;
@@ -82,6 +85,10 @@ static void generate(struct type_deff r) {
   printf("\"%s\", \n", r.name);
 
   print_ident();
+  print_obj_key("type");
+  printf("%d, \n", r.type);
+
+  print_ident();
   print_obj_key("properties");
   generate_info(r.info);
   printf("\n");
@@ -90,20 +97,20 @@ static void generate(struct type_deff r) {
 }
 
 static const struct type_deff type_deffs[] = {
-    {SPA_TYPE_INFO_PropInfo, spa_type_prop_info},
-    {SPA_TYPE_INFO_Props, spa_type_props},
-    {SPA_TYPE_INFO_Format, spa_type_format},
-    {SPA_TYPE_INFO_PARAM_Buffers, spa_type_param_buffers},
-    {SPA_TYPE_INFO_PARAM_Meta, spa_type_param_meta},
-    {SPA_TYPE_INFO_PARAM_IO, spa_type_param_io},
-    {SPA_TYPE_INFO_PARAM_Profile, spa_type_param_profile},
-    {SPA_TYPE_INFO_PARAM_PortConfig, spa_type_param_port_config},
-    {SPA_TYPE_INFO_PARAM_Route, spa_type_param_route},
-    {SPA_TYPE_INFO_Profiler, spa_type_profiler},
-    {SPA_TYPE_INFO_PARAM_Latency, spa_type_param_latency},
-    {SPA_TYPE_INFO_PARAM_ProcessLatency, spa_type_param_process_latency},
-    {SPA_TYPE_INFO_PARAM_Tag, spa_type_param_tag},
-    {NULL, NULL},
+    {SPA_TYPE_INFO_PropInfo, spa_type_prop_info, SPA_TYPE_OBJECT_PropInfo },
+    {SPA_TYPE_INFO_Props, spa_type_props, SPA_TYPE_OBJECT_Props },
+    {SPA_TYPE_INFO_Format, spa_type_format, SPA_TYPE_OBJECT_Format },
+    {SPA_TYPE_INFO_PARAM_Buffers, spa_type_param_buffers, SPA_TYPE_OBJECT_ParamBuffers },
+    {SPA_TYPE_INFO_PARAM_Meta, spa_type_param_meta, SPA_TYPE_OBJECT_ParamMeta },
+    {SPA_TYPE_INFO_PARAM_IO, spa_type_param_io, SPA_TYPE_OBJECT_ParamIO },
+    {SPA_TYPE_INFO_PARAM_Profile, spa_type_param_profile, SPA_TYPE_OBJECT_ParamProfile },
+    {SPA_TYPE_INFO_PARAM_PortConfig, spa_type_param_port_config, SPA_TYPE_OBJECT_ParamPortConfig },
+    {SPA_TYPE_INFO_PARAM_Route, spa_type_param_route, SPA_TYPE_OBJECT_ParamRoute },
+    {SPA_TYPE_INFO_Profiler, spa_type_profiler, SPA_TYPE_OBJECT_Profiler },
+    {SPA_TYPE_INFO_PARAM_Latency, spa_type_param_latency, SPA_TYPE_OBJECT_ParamLatency },
+    {SPA_TYPE_INFO_PARAM_ProcessLatency, spa_type_param_process_latency, SPA_TYPE_OBJECT_ParamProcessLatency },
+    {SPA_TYPE_INFO_PARAM_Tag, spa_type_param_tag, SPA_TYPE_OBJECT_ParamTag },
+    {NULL, NULL, 0},
 };
 
 void json_out_run(void) {

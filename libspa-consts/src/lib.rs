@@ -9,6 +9,7 @@ mod bindings {
 }
 
 pub use bindings::*;
+pub use num_traits::{FromPrimitive, ToPrimitive};
 
 /// Wrapper type for enums that handles unknown variants gracefully
 #[derive(Clone, Copy, PartialEq, Eq)]
