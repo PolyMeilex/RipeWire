@@ -1252,3 +1252,1253 @@ impl<'a> Tag<'a> {
         self.get(SpaParamTag::Info)
     }
 }
+
+pub mod builder {
+    /// Spa:Pod:Object:Param:PropInfo
+    #[derive(Debug)]
+    pub struct PropInfoBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> PropInfoBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaPropInfo, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:PropInfo:id
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Pod:Object:Param:Props:"
+        ///  1: "Spa:Pod:Object:Param:Props:unknown"
+        ///  257: "Spa:Pod:Object:Param:Props:device"
+        ///  258: "Spa:Pod:Object:Param:Props:deviceName"
+        ///  259: "Spa:Pod:Object:Param:Props:deviceFd"
+        ///  260: "Spa:Pod:Object:Param:Props:card"
+        ///  261: "Spa:Pod:Object:Param:Props:cardName"
+        ///  262: "Spa:Pod:Object:Param:Props:minLatency"
+        ///  263: "Spa:Pod:Object:Param:Props:maxLatency"
+        ///  264: "Spa:Pod:Object:Param:Props:periods"
+        ///  265: "Spa:Pod:Object:Param:Props:periodSize"
+        ///  266: "Spa:Pod:Object:Param:Props:periodEvent"
+        ///  267: "Spa:Pod:Object:Param:Props:live"
+        ///  268: "Spa:Pod:Object:Param:Props:rate"
+        ///  269: "Spa:Pod:Object:Param:Props:quality"
+        ///  270: "Spa:Pod:Object:Param:Props:bluetoothAudioCodec"
+        ///  271: "Spa:Pod:Object:Param:Props:bluetoothOffloadActive"
+        ///  65537: "Spa:Pod:Object:Param:Props:waveType"
+        ///  65538: "Spa:Pod:Object:Param:Props:frequency"
+        ///  65539: "Spa:Pod:Object:Param:Props:volume"
+        ///  65540: "Spa:Pod:Object:Param:Props:mute"
+        ///  65541: "Spa:Pod:Object:Param:Props:patternType"
+        ///  65542: "Spa:Pod:Object:Param:Props:ditherType"
+        ///  65543: "Spa:Pod:Object:Param:Props:truncate"
+        ///  65544: "Spa:Pod:Object:Param:Props:channelVolumes"
+        ///  65545: "Spa:Pod:Object:Param:Props:volumeBase"
+        ///  65546: "Spa:Pod:Object:Param:Props:volumeStep"
+        ///  65547: "Spa:Pod:Object:Param:Props:channelMap"
+        ///  65548: "Spa:Pod:Object:Param:Props:monitorMute"
+        ///  65549: "Spa:Pod:Object:Param:Props:monitorVolumes"
+        ///  65550: "Spa:Pod:Object:Param:Props:latencyOffsetNsec"
+        ///  65551: "Spa:Pod:Object:Param:Props:softMute"
+        ///  65552: "Spa:Pod:Object:Param:Props:softVolumes"
+        ///  65553: "Spa:Pod:Object:Param:Props:iec958Codecs"
+        ///  65554: "Spa:Pod:Object:Param:Props:volumeRampSamples"
+        ///  65555: "Spa:Pod:Object:Param:Props:volumeRampStepSamples"
+        ///  65556: "Spa:Pod:Object:Param:Props:volumeRampTime"
+        ///  65557: "Spa:Pod:Object:Param:Props:volumeRampStepTime"
+        ///  65558: "Spa:Pod:Object:Param:Props:volumeRampScale"
+        ///  131073: "Spa:Pod:Object:Param:Props:brightness"
+        ///  131074: "Spa:Pod:Object:Param:Props:contrast"
+        ///  131075: "Spa:Pod:Object:Param:Props:saturation"
+        ///  131076: "Spa:Pod:Object:Param:Props:hue"
+        ///  131077: "Spa:Pod:Object:Param:Props:gamma"
+        ///  131078: "Spa:Pod:Object:Param:Props:exposure"
+        ///  131079: "Spa:Pod:Object:Param:Props:gain"
+        ///  131080: "Spa:Pod:Object:Param:Props:sharpness"
+        ///  524289: "Spa:Pod:Object:Param:Props:params"
+        fn id(&self, value: OwnedPod) {
+            self.set(SpaPropInfo::Id, value)
+        }
+        /// name: Spa:Pod:Object:Param:PropInfo:name
+        /// returns: String
+        fn name(&self, value: OwnedPod) {
+            self.set(SpaPropInfo::Name, value)
+        }
+        /// name: Spa:Pod:Object:Param:PropInfo:type
+        /// returns: Pod
+        fn ty(&self, value: OwnedPod) {
+            self.set(SpaPropInfo::Type, value)
+        }
+        /// name: Spa:Pod:Object:Param:PropInfo:labels
+        /// returns: Struct
+        fn labels(&self, value: OwnedPod) {
+            self.set(SpaPropInfo::Labels, value)
+        }
+        /// name: Spa:Pod:Object:Param:PropInfo:container
+        /// returns: Id
+        fn container(&self, value: OwnedPod) {
+            self.set(SpaPropInfo::Container, value)
+        }
+        /// name: Spa:Pod:Object:Param:PropInfo:params
+        /// returns: Bool
+        fn params(&self, value: OwnedPod) {
+            self.set(SpaPropInfo::Params, value)
+        }
+        /// name: Spa:Pod:Object:Param:PropInfo:description
+        /// returns: String
+        fn description(&self, value: OwnedPod) {
+            self.set(SpaPropInfo::Description, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Props
+    #[derive(Debug)]
+    pub struct PropsBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> PropsBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaProp, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:device
+        /// returns: String
+        fn device(&self, value: OwnedPod) {
+            self.set(SpaProp::Device, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:deviceName
+        /// returns: String
+        fn device_name(&self, value: OwnedPod) {
+            self.set(SpaProp::DeviceName, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:deviceFd
+        /// returns: Fd
+        fn device_fd(&self, value: OwnedPod) {
+            self.set(SpaProp::DeviceFd, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:card
+        /// returns: String
+        fn card(&self, value: OwnedPod) {
+            self.set(SpaProp::Card, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:cardName
+        /// returns: String
+        fn card_name(&self, value: OwnedPod) {
+            self.set(SpaProp::CardName, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:minLatency
+        /// returns: Int
+        fn min_latency(&self, value: OwnedPod) {
+            self.set(SpaProp::MinLatency, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:maxLatency
+        /// returns: Int
+        fn max_latency(&self, value: OwnedPod) {
+            self.set(SpaProp::MaxLatency, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:periods
+        /// returns: Int
+        fn periods(&self, value: OwnedPod) {
+            self.set(SpaProp::Periods, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:periodSize
+        /// returns: Int
+        fn period_size(&self, value: OwnedPod) {
+            self.set(SpaProp::PeriodSize, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:periodEvent
+        /// returns: Bool
+        fn period_event(&self, value: OwnedPod) {
+            self.set(SpaProp::PeriodEvent, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:live
+        /// returns: Bool
+        fn live(&self, value: OwnedPod) {
+            self.set(SpaProp::Live, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:rate
+        /// returns: Double
+        fn rate(&self, value: OwnedPod) {
+            self.set(SpaProp::Rate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:quality
+        /// returns: Int
+        fn quality(&self, value: OwnedPod) {
+            self.set(SpaProp::Quality, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:bluetoothAudioCodec
+        /// returns: Id
+        /// values:
+        ///  1: "Spa:Enum:BluetoothAudioCodec:sbc"
+        ///  2: "Spa:Enum:BluetoothAudioCodec:sbc_xq"
+        ///  3: "Spa:Enum:BluetoothAudioCodec:mpeg"
+        ///  4: "Spa:Enum:BluetoothAudioCodec:aac"
+        ///  5: "Spa:Enum:BluetoothAudioCodec:aac_eld"
+        ///  6: "Spa:Enum:BluetoothAudioCodec:aptx"
+        ///  7: "Spa:Enum:BluetoothAudioCodec:aptx_hd"
+        ///  8: "Spa:Enum:BluetoothAudioCodec:ldac"
+        ///  9: "Spa:Enum:BluetoothAudioCodec:aptx_ll"
+        ///  10: "Spa:Enum:BluetoothAudioCodec:aptx_ll_duplex"
+        ///  11: "Spa:Enum:BluetoothAudioCodec:faststream"
+        ///  12: "Spa:Enum:BluetoothAudioCodec:faststream_duplex"
+        ///  13: "Spa:Enum:BluetoothAudioCodec:lc3plus_hr"
+        ///  14: "Spa:Enum:BluetoothAudioCodec:opus_05"
+        ///  15: "Spa:Enum:BluetoothAudioCodec:opus_05_51"
+        ///  16: "Spa:Enum:BluetoothAudioCodec:opus_05_71"
+        ///  17: "Spa:Enum:BluetoothAudioCodec:opus_05_duplex"
+        ///  18: "Spa:Enum:BluetoothAudioCodec:opus_05_pro"
+        ///  19: "Spa:Enum:BluetoothAudioCodec:opus_g"
+        ///  256: "Spa:Enum:BluetoothAudioCodec:cvsd"
+        ///  257: "Spa:Enum:BluetoothAudioCodec:msbc"
+        ///  258: "Spa:Enum:BluetoothAudioCodec:lc3_swb"
+        ///  512: "Spa:Enum:BluetoothAudioCodec:lc3"
+        fn bluetooth_audio_codec(&self, value: OwnedPod) {
+            self.set(SpaProp::BluetoothAudioCodec, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:bluetoothOffloadActive
+        /// returns: Bool
+        fn bluetooth_offload_active(&self, value: OwnedPod) {
+            self.set(SpaProp::BluetoothOffloadActive, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:waveType
+        /// returns: Id
+        fn wave_type(&self, value: OwnedPod) {
+            self.set(SpaProp::WaveType, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:frequency
+        /// returns: Int
+        fn frequency(&self, value: OwnedPod) {
+            self.set(SpaProp::Frequency, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volume
+        /// returns: Float
+        fn volume(&self, value: OwnedPod) {
+            self.set(SpaProp::Volume, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:mute
+        /// returns: Bool
+        fn mute(&self, value: OwnedPod) {
+            self.set(SpaProp::Mute, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:patternType
+        /// returns: Id
+        fn pattern_type(&self, value: OwnedPod) {
+            self.set(SpaProp::PatternType, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:ditherType
+        /// returns: Id
+        fn dither_type(&self, value: OwnedPod) {
+            self.set(SpaProp::DitherType, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:truncate
+        /// returns: Bool
+        fn truncate(&self, value: OwnedPod) {
+            self.set(SpaProp::Truncate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:channelVolumes
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:floatArray"
+        fn channel_volumes(&self, value: OwnedPod) {
+            self.set(SpaProp::ChannelVolumes, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volumeBase
+        /// returns: Float
+        fn volume_base(&self, value: OwnedPod) {
+            self.set(SpaProp::VolumeBase, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volumeStep
+        /// returns: Float
+        fn volume_step(&self, value: OwnedPod) {
+            self.set(SpaProp::VolumeStep, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:channelMap
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:channelMap"
+        fn channel_map(&self, value: OwnedPod) {
+            self.set(SpaProp::ChannelMap, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:monitorMute
+        /// returns: Bool
+        fn monitor_mute(&self, value: OwnedPod) {
+            self.set(SpaProp::MonitorMute, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:monitorVolumes
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:floatArray"
+        fn monitor_volumes(&self, value: OwnedPod) {
+            self.set(SpaProp::MonitorVolumes, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:latencyOffsetNsec
+        /// returns: Long
+        fn latency_offset_nsec(&self, value: OwnedPod) {
+            self.set(SpaProp::LatencyOffsetNsec, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:softMute
+        /// returns: Bool
+        fn soft_mute(&self, value: OwnedPod) {
+            self.set(SpaProp::SoftMute, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:softVolumes
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:floatArray"
+        fn soft_volumes(&self, value: OwnedPod) {
+            self.set(SpaProp::SoftVolumes, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:iec958Codecs
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:iec958Codec"
+        fn iec958_codecs(&self, value: OwnedPod) {
+            self.set(SpaProp::Iec958Codecs, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volumeRampSamples
+        /// returns: Int
+        fn volume_ramp_samples(&self, value: OwnedPod) {
+            self.set(SpaProp::VolumeRampSamples, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volumeRampStepSamples
+        /// returns: Int
+        fn volume_ramp_step_samples(&self, value: OwnedPod) {
+            self.set(SpaProp::VolumeRampStepSamples, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volumeRampTime
+        /// returns: Int
+        fn volume_ramp_time(&self, value: OwnedPod) {
+            self.set(SpaProp::VolumeRampTime, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volumeRampStepTime
+        /// returns: Int
+        fn volume_ramp_step_time(&self, value: OwnedPod) {
+            self.set(SpaProp::VolumeRampStepTime, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:volumeRampScale
+        /// returns: Id
+        fn volume_ramp_scale(&self, value: OwnedPod) {
+            self.set(SpaProp::VolumeRampScale, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:brightness
+        /// returns: Float
+        fn brightness(&self, value: OwnedPod) {
+            self.set(SpaProp::Brightness, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:contrast
+        /// returns: Float
+        fn contrast(&self, value: OwnedPod) {
+            self.set(SpaProp::Contrast, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:saturation
+        /// returns: Float
+        fn saturation(&self, value: OwnedPod) {
+            self.set(SpaProp::Saturation, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:hue
+        /// returns: Int
+        fn hue(&self, value: OwnedPod) {
+            self.set(SpaProp::Hue, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:gamma
+        /// returns: Int
+        fn gamma(&self, value: OwnedPod) {
+            self.set(SpaProp::Gamma, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:exposure
+        /// returns: Int
+        fn exposure(&self, value: OwnedPod) {
+            self.set(SpaProp::Exposure, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:gain
+        /// returns: Float
+        fn gain(&self, value: OwnedPod) {
+            self.set(SpaProp::Gain, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:sharpness
+        /// returns: Float
+        fn sharpness(&self, value: OwnedPod) {
+            self.set(SpaProp::Sharpness, value)
+        }
+        /// name: Spa:Pod:Object:Param:Props:params
+        /// returns: Struct
+        fn params(&self, value: OwnedPod) {
+            self.set(SpaProp::Params, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Format
+    #[derive(Debug)]
+    pub struct FormatBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> FormatBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaFormat, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:mediaType
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:MediaType:unknown"
+        ///  1: "Spa:Enum:MediaType:audio"
+        ///  2: "Spa:Enum:MediaType:video"
+        ///  3: "Spa:Enum:MediaType:image"
+        ///  4: "Spa:Enum:MediaType:binary"
+        ///  5: "Spa:Enum:MediaType:stream"
+        ///  6: "Spa:Enum:MediaType:application"
+        fn media_type(&self, value: OwnedPod) {
+            self.set(SpaFormat::MediaType, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:mediaSubtype
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:MediaSubtype:unknown"
+        ///  1: "Spa:Enum:MediaSubtype:raw"
+        ///  2: "Spa:Enum:MediaSubtype:dsp"
+        ///  3: "Spa:Enum:MediaSubtype:iec958"
+        ///  4: "Spa:Enum:MediaSubtype:dsd"
+        ///  65537: "Spa:Enum:MediaSubtype:mp3"
+        ///  65538: "Spa:Enum:MediaSubtype:aac"
+        ///  65539: "Spa:Enum:MediaSubtype:vorbis"
+        ///  65540: "Spa:Enum:MediaSubtype:wma"
+        ///  65541: "Spa:Enum:MediaSubtype:ra"
+        ///  65542: "Spa:Enum:MediaSubtype:sbc"
+        ///  65543: "Spa:Enum:MediaSubtype:adpcm"
+        ///  65544: "Spa:Enum:MediaSubtype:g723"
+        ///  65545: "Spa:Enum:MediaSubtype:g726"
+        ///  65546: "Spa:Enum:MediaSubtype:g729"
+        ///  65547: "Spa:Enum:MediaSubtype:amr"
+        ///  65548: "Spa:Enum:MediaSubtype:gsm"
+        ///  65549: "Spa:Enum:MediaSubtype:alac"
+        ///  65550: "Spa:Enum:MediaSubtype:flac"
+        ///  65551: "Spa:Enum:MediaSubtype:ape"
+        ///  65552: "Spa:Enum:MediaSubtype:opus"
+        ///  131073: "Spa:Enum:MediaSubtype:h264"
+        ///  131074: "Spa:Enum:MediaSubtype:mjpg"
+        ///  131075: "Spa:Enum:MediaSubtype:dv"
+        ///  131076: "Spa:Enum:MediaSubtype:mpegts"
+        ///  131077: "Spa:Enum:MediaSubtype:h263"
+        ///  131078: "Spa:Enum:MediaSubtype:mpeg1"
+        ///  131079: "Spa:Enum:MediaSubtype:mpeg2"
+        ///  131080: "Spa:Enum:MediaSubtype:mpeg4"
+        ///  131081: "Spa:Enum:MediaSubtype:xvid"
+        ///  131082: "Spa:Enum:MediaSubtype:vc1"
+        ///  131083: "Spa:Enum:MediaSubtype:vp8"
+        ///  131084: "Spa:Enum:MediaSubtype:vp9"
+        ///  131085: "Spa:Enum:MediaSubtype:bayer"
+        ///  196609: "Spa:Enum:MediaSubtype:jpeg"
+        ///  327681: "Spa:Enum:MediaSubtype:midi"
+        ///  393217: "Spa:Enum:MediaSubtype:control"
+        fn media_subtype(&self, value: OwnedPod) {
+            self.set(SpaFormat::MediaSubtype, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:format
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:AudioFormat:UNKNOWN"
+        ///  1: "Spa:Enum:AudioFormat:ENCODED"
+        ///  257: "Spa:Enum:AudioFormat:S8"
+        ///  258: "Spa:Enum:AudioFormat:U8"
+        ///  259: "Spa:Enum:AudioFormat:S16LE"
+        ///  260: "Spa:Enum:AudioFormat:S16BE"
+        ///  261: "Spa:Enum:AudioFormat:U16LE"
+        ///  262: "Spa:Enum:AudioFormat:U16BE"
+        ///  263: "Spa:Enum:AudioFormat:S24_32LE"
+        ///  264: "Spa:Enum:AudioFormat:S24_32BE"
+        ///  265: "Spa:Enum:AudioFormat:U24_32LE"
+        ///  266: "Spa:Enum:AudioFormat:U24_32BE"
+        ///  267: "Spa:Enum:AudioFormat:S32LE"
+        ///  268: "Spa:Enum:AudioFormat:S32BE"
+        ///  269: "Spa:Enum:AudioFormat:U32LE"
+        ///  270: "Spa:Enum:AudioFormat:U32BE"
+        ///  271: "Spa:Enum:AudioFormat:S24LE"
+        ///  272: "Spa:Enum:AudioFormat:S24BE"
+        ///  273: "Spa:Enum:AudioFormat:U24LE"
+        ///  274: "Spa:Enum:AudioFormat:U24BE"
+        ///  275: "Spa:Enum:AudioFormat:S20LE"
+        ///  276: "Spa:Enum:AudioFormat:S20BE"
+        ///  277: "Spa:Enum:AudioFormat:U20LE"
+        ///  278: "Spa:Enum:AudioFormat:U20BE"
+        ///  279: "Spa:Enum:AudioFormat:S18LE"
+        ///  280: "Spa:Enum:AudioFormat:S18BE"
+        ///  281: "Spa:Enum:AudioFormat:U18LE"
+        ///  282: "Spa:Enum:AudioFormat:U18BE"
+        ///  283: "Spa:Enum:AudioFormat:F32LE"
+        ///  284: "Spa:Enum:AudioFormat:F32BE"
+        ///  285: "Spa:Enum:AudioFormat:F64LE"
+        ///  286: "Spa:Enum:AudioFormat:F64BE"
+        ///  287: "Spa:Enum:AudioFormat:ULAW"
+        ///  288: "Spa:Enum:AudioFormat:ALAW"
+        ///  513: "Spa:Enum:AudioFormat:U8P"
+        ///  514: "Spa:Enum:AudioFormat:S16P"
+        ///  515: "Spa:Enum:AudioFormat:S24_32P"
+        ///  516: "Spa:Enum:AudioFormat:S32P"
+        ///  517: "Spa:Enum:AudioFormat:S24P"
+        ///  518: "Spa:Enum:AudioFormat:F32P"
+        ///  519: "Spa:Enum:AudioFormat:F64P"
+        ///  520: "Spa:Enum:AudioFormat:S8P"
+        ///  259: "Spa:Enum:AudioFormat:S16"
+        ///  260: "Spa:Enum:AudioFormat:S16OE"
+        ///  261: "Spa:Enum:AudioFormat:U16"
+        ///  262: "Spa:Enum:AudioFormat:U16OE"
+        ///  263: "Spa:Enum:AudioFormat:S24_32"
+        ///  264: "Spa:Enum:AudioFormat:S24_32OE"
+        ///  265: "Spa:Enum:AudioFormat:U24_32"
+        ///  266: "Spa:Enum:AudioFormat:U24_32OE"
+        ///  267: "Spa:Enum:AudioFormat:S32"
+        ///  268: "Spa:Enum:AudioFormat:S32OE"
+        ///  269: "Spa:Enum:AudioFormat:U32"
+        ///  270: "Spa:Enum:AudioFormat:U32OE"
+        ///  271: "Spa:Enum:AudioFormat:S24"
+        ///  272: "Spa:Enum:AudioFormat:S24OE"
+        ///  273: "Spa:Enum:AudioFormat:U24"
+        ///  274: "Spa:Enum:AudioFormat:U24OE"
+        ///  275: "Spa:Enum:AudioFormat:S20"
+        ///  276: "Spa:Enum:AudioFormat:S20OE"
+        ///  277: "Spa:Enum:AudioFormat:U20"
+        ///  278: "Spa:Enum:AudioFormat:U20OE"
+        ///  279: "Spa:Enum:AudioFormat:S18"
+        ///  280: "Spa:Enum:AudioFormat:S18OE"
+        ///  281: "Spa:Enum:AudioFormat:U18"
+        ///  282: "Spa:Enum:AudioFormat:U18OE"
+        ///  283: "Spa:Enum:AudioFormat:F32"
+        ///  284: "Spa:Enum:AudioFormat:F32OE"
+        ///  285: "Spa:Enum:AudioFormat:F64"
+        ///  286: "Spa:Enum:AudioFormat:F64OE"
+        fn audio_format(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioFormat, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:flags
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Flags:AudioFlags:none"
+        ///  1: "Spa:Flags:AudioFlags:unpositioned"
+        fn audio_flags(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioFlags, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:rate
+        /// returns: Int
+        fn audio_rate(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioRate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:channels
+        /// returns: Int
+        fn audio_channels(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioChannels, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:position
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:channelMap"
+        fn audio_position(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioPosition, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:iec958Codec
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:AudioIEC958Codec:UNKNOWN"
+        ///  1: "Spa:Enum:AudioIEC958Codec:PCM"
+        ///  2: "Spa:Enum:AudioIEC958Codec:DTS"
+        ///  3: "Spa:Enum:AudioIEC958Codec:AC3"
+        ///  4: "Spa:Enum:AudioIEC958Codec:MPEG"
+        ///  5: "Spa:Enum:AudioIEC958Codec:MPEG2-AAC"
+        ///  6: "Spa:Enum:AudioIEC958Codec:EAC3"
+        ///  7: "Spa:Enum:AudioIEC958Codec:TrueHD"
+        ///  8: "Spa:Enum:AudioIEC958Codec:DTS-HD"
+        fn audio_iec958_codec(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioIec958Codec, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:bitorder
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:ParamBitorder:unknown"
+        ///  1: "Spa:Enum:ParamBitorder:msb"
+        ///  2: "Spa:Enum:ParamBitorder:lsb"
+        fn audio_bitorder(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioBitorder, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:interleave
+        /// returns: Int
+        fn audio_interleave(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioInterleave, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:bitrate
+        /// returns: Int
+        fn audio_bitrate(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioBitrate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:blockAlign
+        /// returns: Int
+        fn audio_block_align(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioBlockAlign, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:AudioAACStreamFormat:UNKNOWN"
+        ///  1: "Spa:Enum:AudioAACStreamFormat:RAW"
+        ///  2: "Spa:Enum:AudioAACStreamFormat:MP2ADTS"
+        ///  3: "Spa:Enum:AudioAACStreamFormat:MP4ADTS"
+        ///  4: "Spa:Enum:AudioAACStreamFormat:MP4LOAS"
+        ///  5: "Spa:Enum:AudioAACStreamFormat:MP4LATM"
+        ///  6: "Spa:Enum:AudioAACStreamFormat:ADIF"
+        ///  7: "Spa:Enum:AudioAACStreamFormat:MP4FF"
+        fn audio_aac_stream_format(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioAacStreamFormat, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:WMA:profile
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:AudioWMAProfile:UNKNOWN"
+        ///  1: "Spa:Enum:AudioWMAProfile:WMA7"
+        ///  2: "Spa:Enum:AudioWMAProfile:WMA8"
+        ///  3: "Spa:Enum:AudioWMAProfile:WMA9"
+        ///  4: "Spa:Enum:AudioWMAProfile:WMA10"
+        ///  5: "Spa:Enum:AudioWMAProfile:WMA9-Pro"
+        ///  6: "Spa:Enum:AudioWMAProfile:WMA9-Lossless"
+        ///  7: "Spa:Enum:AudioWMAProfile:WMA10-Lossless"
+        fn audio_wma_profile(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioWmaProfile, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:AudioAMRBandMode:UNKNOWN"
+        ///  1: "Spa:Enum:AudioAMRBandMode:NB"
+        ///  2: "Spa:Enum:AudioAMRBandMode:WB"
+        fn audio_amr_band_mode(&self, value: OwnedPod) {
+            self.set(SpaFormat::AudioAmrBandMode, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:format
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:VideoFormat:UNKNOWN"
+        ///  1: "Spa:Enum:VideoFormat:ENCODED"
+        ///  2: "Spa:Enum:VideoFormat:I420"
+        ///  3: "Spa:Enum:VideoFormat:YV12"
+        ///  4: "Spa:Enum:VideoFormat:YUY2"
+        ///  5: "Spa:Enum:VideoFormat:UYVY"
+        ///  6: "Spa:Enum:VideoFormat:AYUV"
+        ///  7: "Spa:Enum:VideoFormat:RGBx"
+        ///  8: "Spa:Enum:VideoFormat:BGRx"
+        ///  9: "Spa:Enum:VideoFormat:xRGB"
+        ///  10: "Spa:Enum:VideoFormat:xBGR"
+        ///  11: "Spa:Enum:VideoFormat:RGBA"
+        ///  12: "Spa:Enum:VideoFormat:BGRA"
+        ///  13: "Spa:Enum:VideoFormat:ARGB"
+        ///  14: "Spa:Enum:VideoFormat:ABGR"
+        ///  15: "Spa:Enum:VideoFormat:RGB"
+        ///  16: "Spa:Enum:VideoFormat:BGR"
+        ///  17: "Spa:Enum:VideoFormat:Y41B"
+        ///  18: "Spa:Enum:VideoFormat:Y42B"
+        ///  19: "Spa:Enum:VideoFormat:YVYU"
+        ///  20: "Spa:Enum:VideoFormat:Y444"
+        ///  21: "Spa:Enum:VideoFormat:v210"
+        ///  22: "Spa:Enum:VideoFormat:v216"
+        ///  23: "Spa:Enum:VideoFormat:NV12"
+        ///  24: "Spa:Enum:VideoFormat:NV21"
+        ///  25: "Spa:Enum:VideoFormat:GRAY8"
+        ///  26: "Spa:Enum:VideoFormat:GRAY16_BE"
+        ///  27: "Spa:Enum:VideoFormat:GRAY16_LE"
+        ///  28: "Spa:Enum:VideoFormat:v308"
+        ///  29: "Spa:Enum:VideoFormat:RGB16"
+        ///  30: "Spa:Enum:VideoFormat:BGR16"
+        ///  31: "Spa:Enum:VideoFormat:RGB15"
+        ///  32: "Spa:Enum:VideoFormat:BGR15"
+        ///  33: "Spa:Enum:VideoFormat:UYVP"
+        ///  34: "Spa:Enum:VideoFormat:A420"
+        ///  35: "Spa:Enum:VideoFormat:RGB8P"
+        ///  36: "Spa:Enum:VideoFormat:YUV9"
+        ///  37: "Spa:Enum:VideoFormat:YVU9"
+        ///  38: "Spa:Enum:VideoFormat:IYU1"
+        ///  39: "Spa:Enum:VideoFormat:ARGB64"
+        ///  40: "Spa:Enum:VideoFormat:AYUV64"
+        ///  41: "Spa:Enum:VideoFormat:r210"
+        ///  42: "Spa:Enum:VideoFormat:I420_10BE"
+        ///  43: "Spa:Enum:VideoFormat:I420_10LE"
+        ///  44: "Spa:Enum:VideoFormat:I422_10BE"
+        ///  45: "Spa:Enum:VideoFormat:I422_10LE"
+        ///  46: "Spa:Enum:VideoFormat:Y444_10BE"
+        ///  47: "Spa:Enum:VideoFormat:Y444_10LE"
+        ///  48: "Spa:Enum:VideoFormat:GBR"
+        ///  49: "Spa:Enum:VideoFormat:GBR_10BE"
+        ///  50: "Spa:Enum:VideoFormat:GBR_10LE"
+        ///  51: "Spa:Enum:VideoFormat:NV16"
+        ///  52: "Spa:Enum:VideoFormat:NV24"
+        ///  53: "Spa:Enum:VideoFormat:NV12_64Z32"
+        ///  54: "Spa:Enum:VideoFormat:A420_10BE"
+        ///  55: "Spa:Enum:VideoFormat:A420_10LE"
+        ///  56: "Spa:Enum:VideoFormat:A422_10BE"
+        ///  57: "Spa:Enum:VideoFormat:A422_10LE"
+        ///  58: "Spa:Enum:VideoFormat:A444_10BE"
+        ///  59: "Spa:Enum:VideoFormat:A444_10LE"
+        ///  60: "Spa:Enum:VideoFormat:NV61"
+        ///  61: "Spa:Enum:VideoFormat:P010_10BE"
+        ///  62: "Spa:Enum:VideoFormat:P010_10LE"
+        ///  63: "Spa:Enum:VideoFormat:IYU2"
+        ///  64: "Spa:Enum:VideoFormat:VYUY"
+        ///  65: "Spa:Enum:VideoFormat:GBRA"
+        ///  66: "Spa:Enum:VideoFormat:GBRA_10BE"
+        ///  67: "Spa:Enum:VideoFormat:GBRA_10LE"
+        ///  68: "Spa:Enum:VideoFormat:GBR_12BE"
+        ///  69: "Spa:Enum:VideoFormat:GBR_12LE"
+        ///  70: "Spa:Enum:VideoFormat:GBRA_12BE"
+        ///  71: "Spa:Enum:VideoFormat:GBRA_12LE"
+        ///  72: "Spa:Enum:VideoFormat:I420_12BE"
+        ///  73: "Spa:Enum:VideoFormat:I420_12LE"
+        ///  74: "Spa:Enum:VideoFormat:I422_12BE"
+        ///  75: "Spa:Enum:VideoFormat:I422_12LE"
+        ///  76: "Spa:Enum:VideoFormat:Y444_12BE"
+        ///  77: "Spa:Enum:VideoFormat:Y444_12LE"
+        ///  78: "Spa:Enum:VideoFormat:RGBA_F16"
+        ///  79: "Spa:Enum:VideoFormat:RGBA_F32"
+        ///  80: "Spa:Enum:VideoFormat:xRGB_210LE"
+        ///  81: "Spa:Enum:VideoFormat:xBGR_210LE"
+        ///  82: "Spa:Enum:VideoFormat:RGBx_102LE"
+        ///  83: "Spa:Enum:VideoFormat:BGRx_102LE"
+        ///  84: "Spa:Enum:VideoFormat:ARGB_210LE"
+        ///  85: "Spa:Enum:VideoFormat:ABGR_210LE"
+        ///  86: "Spa:Enum:VideoFormat:RGBA_102LE"
+        ///  87: "Spa:Enum:VideoFormat:BGRA_102LE"
+        fn video_format(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoFormat, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:modifier
+        /// returns: Long
+        fn video_modifier(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoModifier, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:size
+        /// returns: Rectangle
+        fn video_size(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoSize, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:framerate
+        /// returns: Fraction
+        fn video_framerate(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoFramerate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:maxFramerate
+        /// returns: Fraction
+        fn video_max_framerate(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoMaxFramerate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:views
+        /// returns: Int
+        fn video_views(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoViews, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:interlaceMode
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:VideoInterlaceMode:progressive"
+        ///  1: "Spa:Enum:VideoInterlaceMode:interleaved"
+        ///  2: "Spa:Enum:VideoInterlaceMode:mixed"
+        ///  3: "Spa:Enum:VideoInterlaceMode:fields"
+        fn video_interlace_mode(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoInterlaceMode, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:pixelAspectRatio
+        /// returns: Fraction
+        fn video_pixel_aspect_ratio(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoPixelAspectRatio, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:multiviewMode
+        /// returns: Id
+        fn video_multiview_mode(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoMultiviewMode, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:multiviewFlags
+        /// returns: Id
+        fn video_multiview_flags(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoMultiviewFlags, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:chromaSite
+        /// returns: Id
+        fn video_chroma_site(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoChromaSite, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:colorRange
+        /// returns: Id
+        fn video_color_range(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoColorRange, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:colorMatrix
+        /// returns: Id
+        fn video_color_matrix(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoColorMatrix, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:transferFunction
+        /// returns: Id
+        fn video_transfer_function(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoTransferFunction, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:colorPrimaries
+        /// returns: Id
+        fn video_color_primaries(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoColorPrimaries, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:profile
+        /// returns: Int
+        fn video_profile(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoProfile, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:level
+        /// returns: Int
+        fn video_level(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoLevel, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:H264:streamFormat
+        /// returns: Id
+        fn video_h264_stream_format(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoH264StreamFormat, value)
+        }
+        /// name: Spa:Pod:Object:Param:Format:Video:H264:alignment
+        /// returns: Id
+        fn video_h264_alignment(&self, value: OwnedPod) {
+            self.set(SpaFormat::VideoH264Alignment, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Buffers
+    #[derive(Debug)]
+    pub struct BuffersBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> BuffersBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamBuffers, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Buffers:buffers
+        /// returns: Int
+        fn buffers(&self, value: OwnedPod) {
+            self.set(SpaParamBuffers::Buffers, value)
+        }
+        /// name: Spa:Pod:Object:Param:Buffers:blocks
+        /// returns: Int
+        fn blocks(&self, value: OwnedPod) {
+            self.set(SpaParamBuffers::Blocks, value)
+        }
+        /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:size
+        /// returns: Int
+        fn block_info_size(&self, value: OwnedPod) {
+            self.set(SpaParamBuffers::Size, value)
+        }
+        /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:stride
+        /// returns: Int
+        fn block_info_stride(&self, value: OwnedPod) {
+            self.set(SpaParamBuffers::Stride, value)
+        }
+        /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:align
+        /// returns: Int
+        fn block_info_align(&self, value: OwnedPod) {
+            self.set(SpaParamBuffers::Align, value)
+        }
+        /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:dataType
+        /// returns: Int
+        fn block_info_data_type(&self, value: OwnedPod) {
+            self.set(SpaParamBuffers::DataType, value)
+        }
+        /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:metaType
+        /// returns: Int
+        fn block_info_meta_type(&self, value: OwnedPod) {
+            self.set(SpaParamBuffers::MetaType, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Meta
+    #[derive(Debug)]
+    pub struct MetaBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> MetaBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamMeta, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Meta:type
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Pointer:Meta:Invalid"
+        ///  1: "Spa:Pointer:Meta:Header"
+        ///  2: "Spa:Pointer:Meta:Region:VideoCrop"
+        ///  3: "Spa:Pointer:Meta:Array:Region:VideoDamage"
+        ///  4: "Spa:Pointer:Meta:Bitmap"
+        ///  5: "Spa:Pointer:Meta:Cursor"
+        ///  6: "Spa:Pointer:Meta:Control"
+        ///  7: "Spa:Pointer:Meta:Busy"
+        ///  8: "Spa:Pointer:Meta:VideoTransform"
+        ///  9: "Spa:Pointer:Meta:SyncTimeline"
+        fn ty(&self, value: OwnedPod) {
+            self.set(SpaParamMeta::Type, value)
+        }
+        /// name: Spa:Pod:Object:Param:Meta:size
+        /// returns: Int
+        fn size(&self, value: OwnedPod) {
+            self.set(SpaParamMeta::Size, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:IO
+    #[derive(Debug)]
+    pub struct IoBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> IoBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamIo, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:IO:id
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:IO:Invalid"
+        ///  1: "Spa:Enum:IO:Buffers"
+        ///  2: "Spa:Enum:IO:Range"
+        ///  3: "Spa:Enum:IO:Clock"
+        ///  4: "Spa:Enum:IO:Latency"
+        ///  5: "Spa:Enum:IO:Control"
+        ///  6: "Spa:Enum:IO:Notify"
+        ///  7: "Spa:Enum:IO:Position"
+        ///  8: "Spa:Enum:IO:RateMatch"
+        ///  9: "Spa:Enum:IO:Memory"
+        ///  10: "Spa:Enum:IO:AsyncBuffers"
+        fn id(&self, value: OwnedPod) {
+            self.set(SpaParamIo::Id, value)
+        }
+        /// name: Spa:Pod:Object:Param:IO:size
+        /// returns: Int
+        fn size(&self, value: OwnedPod) {
+            self.set(SpaParamIo::Size, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Profile
+    #[derive(Debug)]
+    pub struct ProfileBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> ProfileBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamProfile, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:index
+        /// returns: Int
+        fn index(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Index, value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:name
+        /// returns: String
+        fn name(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Name, value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:description
+        /// returns: String
+        fn description(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Description, value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:priority
+        /// returns: Int
+        fn priority(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Priority, value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:available
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:ParamAvailability:unknown"
+        ///  1: "Spa:Enum:ParamAvailability:no"
+        ///  2: "Spa:Enum:ParamAvailability:yes"
+        fn available(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Available, value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:info
+        /// returns: Struct
+        fn info(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Info, value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:classes
+        /// returns: Struct
+        fn classes(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Classes, value)
+        }
+        /// name: Spa:Pod:Object:Param:Profile:save
+        /// returns: Bool
+        fn save(&self, value: OwnedPod) {
+            self.set(SpaParamProfile::Save, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:PortConfig
+    #[derive(Debug)]
+    pub struct PortConfigBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> PortConfigBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamPortConfig, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:PortConfig:direction
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:Direction:Input"
+        ///  1: "Spa:Enum:Direction:Output"
+        fn direction(&self, value: OwnedPod) {
+            self.set(SpaParamPortConfig::Direction, value)
+        }
+        /// name: Spa:Pod:Object:Param:PortConfig:mode
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:ParamPortConfigMode:none"
+        ///  1: "Spa:Enum:ParamPortConfigMode:passthrough"
+        ///  2: "Spa:Enum:ParamPortConfigMode:convert"
+        ///  3: "Spa:Enum:ParamPortConfigMode:dsp"
+        fn mode(&self, value: OwnedPod) {
+            self.set(SpaParamPortConfig::Mode, value)
+        }
+        /// name: Spa:Pod:Object:Param:PortConfig:monitor
+        /// returns: Bool
+        fn monitor(&self, value: OwnedPod) {
+            self.set(SpaParamPortConfig::Monitor, value)
+        }
+        /// name: Spa:Pod:Object:Param:PortConfig:control
+        /// returns: Bool
+        fn control(&self, value: OwnedPod) {
+            self.set(SpaParamPortConfig::Control, value)
+        }
+        /// name: Spa:Pod:Object:Param:PortConfig:format
+        /// returns: ObjectFormat
+        fn format(&self, value: OwnedPod) {
+            self.set(SpaParamPortConfig::Format, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Route
+    #[derive(Debug)]
+    pub struct RouteBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> RouteBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamRoute, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:index
+        /// returns: Int
+        fn index(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Index, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:direction
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:Direction:Input"
+        ///  1: "Spa:Enum:Direction:Output"
+        fn direction(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Direction, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:device
+        /// returns: Int
+        fn device(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Device, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:name
+        /// returns: String
+        fn name(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Name, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:description
+        /// returns: String
+        fn description(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Description, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:priority
+        /// returns: Int
+        fn priority(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Priority, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:available
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:ParamAvailability:unknown"
+        ///  1: "Spa:Enum:ParamAvailability:no"
+        ///  2: "Spa:Enum:ParamAvailability:yes"
+        fn available(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Available, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:info
+        /// returns: Struct
+        fn info(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Info, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:profiles
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:intArray"
+        fn profiles(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Profiles, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:props
+        /// returns: ObjectProps
+        fn props(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Props, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:devices
+        /// returns: Array
+        /// values:
+        ///  0: "Spa:intArray"
+        fn devices(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Devices, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:profile
+        /// returns: Int
+        fn profile(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Profile, value)
+        }
+        /// name: Spa:Pod:Object:Param:Route:save
+        /// returns: Bool
+        fn save(&self, value: OwnedPod) {
+            self.set(SpaParamRoute::Save, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Profiler
+    #[derive(Debug)]
+    pub struct ProfilerBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> ProfilerBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaProfiler, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Profiler:info
+        /// returns: Struct
+        fn info(&self, value: OwnedPod) {
+            self.set(SpaProfiler::Info, value)
+        }
+        /// name: Spa:Pod:Object:Profiler:clock
+        /// returns: Struct
+        fn clock(&self, value: OwnedPod) {
+            self.set(SpaProfiler::Clock, value)
+        }
+        /// name: Spa:Pod:Object:Profiler:driverBlock
+        /// returns: Struct
+        fn driver_block(&self, value: OwnedPod) {
+            self.set(SpaProfiler::DriverBlock, value)
+        }
+        /// name: Spa:Pod:Object:Profiler:followerBlock
+        /// returns: Struct
+        fn follower_block(&self, value: OwnedPod) {
+            self.set(SpaProfiler::FollowerBlock, value)
+        }
+        /// name: Spa:Pod:Object:Profiler:followerClock
+        /// returns: Struct
+        fn follower_clock(&self, value: OwnedPod) {
+            self.set_raw(131074u32, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Latency
+    #[derive(Debug)]
+    pub struct LatencyBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> LatencyBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamLatency, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Latency:direction
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:Direction:Input"
+        ///  1: "Spa:Enum:Direction:Output"
+        fn direction(&self, value: OwnedPod) {
+            self.set(SpaParamLatency::Direction, value)
+        }
+        /// name: Spa:Pod:Object:Param:Latency:minQuantum
+        /// returns: Float
+        fn min_quantum(&self, value: OwnedPod) {
+            self.set(SpaParamLatency::MinQuantum, value)
+        }
+        /// name: Spa:Pod:Object:Param:Latency:maxQuantum
+        /// returns: Float
+        fn max_quantum(&self, value: OwnedPod) {
+            self.set(SpaParamLatency::MaxQuantum, value)
+        }
+        /// name: Spa:Pod:Object:Param:Latency:minRate
+        /// returns: Int
+        fn min_rate(&self, value: OwnedPod) {
+            self.set(SpaParamLatency::MinRate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Latency:maxRate
+        /// returns: Int
+        fn max_rate(&self, value: OwnedPod) {
+            self.set(SpaParamLatency::MaxRate, value)
+        }
+        /// name: Spa:Pod:Object:Param:Latency:minNs
+        /// returns: Long
+        fn min_ns(&self, value: OwnedPod) {
+            self.set(SpaParamLatency::MinNs, value)
+        }
+        /// name: Spa:Pod:Object:Param:Latency:maxNs
+        /// returns: Long
+        fn max_ns(&self, value: OwnedPod) {
+            self.set(SpaParamLatency::MaxNs, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:ProcessLatency
+    #[derive(Debug)]
+    pub struct ProcessLatencyBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> ProcessLatencyBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamProcessLatency, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:ProcessLatency:quantum
+        /// returns: Float
+        fn quantum(&self, value: OwnedPod) {
+            self.set(SpaParamProcessLatency::Quantum, value)
+        }
+        /// name: Spa:Pod:Object:Param:ProcessLatency:rate
+        /// returns: Int
+        fn rate(&self, value: OwnedPod) {
+            self.set(SpaParamProcessLatency::Rate, value)
+        }
+        /// name: Spa:Pod:Object:Param:ProcessLatency:ns
+        /// returns: Long
+        fn ns(&self, value: OwnedPod) {
+            self.set(SpaParamProcessLatency::Ns, value)
+        }
+    }
+
+    /// Spa:Pod:Object:Param:Tag
+    #[derive(Debug)]
+    pub struct TagBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
+    impl<'a> TagBuilder<'a> {
+        fn set_raw(&self, id: u32, value: OwnedPod) {
+            todo!("set {id} to {value:?}")
+        }
+        fn set(&self, key: SpaParamTag, value: OwnedPod) {
+            self.set_raw(key.to_u32().unwrap(), value)
+        }
+        /// name: Spa:Pod:Object:Param:Tag:direction
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:Direction:Input"
+        ///  1: "Spa:Enum:Direction:Output"
+        fn direction(&self, value: OwnedPod) {
+            self.set(SpaParamTag::Direction, value)
+        }
+        /// name: Spa:Pod:Object:Param:Tag:info
+        /// returns: Struct
+        fn info(&self, value: OwnedPod) {
+            self.set(SpaParamTag::Info, value)
+        }
+    }
+}
