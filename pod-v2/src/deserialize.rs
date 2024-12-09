@@ -155,7 +155,16 @@ impl<'a> PodDeserializer<'a> {
             SpaType::Long => Kind::Long(read_raw(self.body)),
             SpaType::Float => Kind::Float(read_raw(self.body)),
             SpaType::Double => Kind::Double(read_raw(self.body)),
-            SpaType::String => Kind::String(self.as_str().unwrap()),
+            SpaType::String => {
+                let bytes = &self.body[..self.size as usize];
+
+                let bytes = match bytes.iter().position(|b| *b == 0) {
+                    Some(end) => &bytes[..end],
+                    None => bytes,
+                };
+
+                Kind::String(BStr::new(bytes))
+            }
             SpaType::Bytes => Kind::Bytes(self.body),
             SpaType::Rectangle => Kind::Rectangle(SpaRectangle {
                 width: read_raw(self.body),
@@ -182,6 +191,25 @@ impl<'a> PodDeserializer<'a> {
         }
     }
 
+    // Not sure why, but None choice types are auto unwrapped:
+    // https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/31802d4994500c55416085a544a4543eb8aa04aa/spa/include/spa/pod/parser.h#L289-291
+    fn kind_unwrapped(&self) -> PodDeserializerKind<'a> {
+        let kind = self.kind();
+
+        match &kind {
+            PodDeserializerKind::Choice(c)
+                if c.choice_ty == SpaEnum::Value(SpaChoiceType::None) =>
+            {
+                if let Ok(v) = c.clone().pop_element() {
+                    return v.kind_unwrapped();
+                }
+            }
+            _ => {}
+        }
+
+        kind
+    }
+
     fn unexpected_type(&self, expected: SpaType) -> DeserializeError {
         DeserializeError::UnexpectedType {
             expected,
@@ -190,7 +218,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_id(&self) -> Result<u32> {
-        if let PodDeserializerKind::Id(v) = self.kind() {
+        if let PodDeserializerKind::Id(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Id))
@@ -198,7 +226,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_i32(&self) -> Result<i32> {
-        if let PodDeserializerKind::Int(v) = self.kind() {
+        if let PodDeserializerKind::Int(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Int))
@@ -210,7 +238,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_i64(&self) -> Result<i64> {
-        if let PodDeserializerKind::Long(v) = self.kind() {
+        if let PodDeserializerKind::Long(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Long))
@@ -222,7 +250,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_f32(&self) -> Result<f32> {
-        if let PodDeserializerKind::Float(v) = self.kind() {
+        if let PodDeserializerKind::Float(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Float))
@@ -230,7 +258,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_f64(&self) -> Result<f64> {
-        if let PodDeserializerKind::Double(v) = self.kind() {
+        if let PodDeserializerKind::Double(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Double))
@@ -238,7 +266,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_rectangle(&self) -> Result<SpaRectangle> {
-        if let PodDeserializerKind::Rectangle(v) = self.kind() {
+        if let PodDeserializerKind::Rectangle(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Rectangle))
@@ -246,7 +274,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_fraction(&self) -> Result<SpaFraction> {
-        if let PodDeserializerKind::Fraction(v) = self.kind() {
+        if let PodDeserializerKind::Fraction(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Fraction))
@@ -254,11 +282,11 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn is_none(&self) -> bool {
-        matches!(self.kind(), PodDeserializerKind::None)
+        matches!(self.kind_unwrapped(), PodDeserializerKind::None)
     }
 
     pub fn as_array(&self) -> Result<PodArrayDeserializer<'a>> {
-        if let PodDeserializerKind::Array(pod) = self.kind() {
+        if let PodDeserializerKind::Array(pod) = self.kind_unwrapped() {
             Ok(pod)
         } else {
             Err(self.unexpected_type(SpaType::Array))
@@ -274,7 +302,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_struct(&self) -> Result<PodStructDeserializer<'a>> {
-        if let PodDeserializerKind::Struct(pod) = self.kind() {
+        if let PodDeserializerKind::Struct(pod) = self.kind_unwrapped() {
             Ok(pod)
         } else {
             Err(self.unexpected_type(SpaType::Struct))
@@ -282,7 +310,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_sequence(&self) -> Result<PodSequenceDeserializer<'a>> {
-        if let PodDeserializerKind::Sequence(pod) = self.kind() {
+        if let PodDeserializerKind::Sequence(pod) = self.kind_unwrapped() {
             Ok(pod)
         } else {
             Err(self.unexpected_type(SpaType::Sequence))
@@ -290,7 +318,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_object(&self) -> Result<PodObjectDeserializer<'a>> {
-        if let PodDeserializerKind::Object(pod) = self.kind() {
+        if let PodDeserializerKind::Object(pod) = self.kind_unwrapped() {
             Ok(pod)
         } else {
             Err(self.unexpected_type(SpaType::Struct))
@@ -298,7 +326,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_bytes(&self) -> Result<&'a [u8]> {
-        if let PodDeserializerKind::Bytes(pod) = self.kind() {
+        if let PodDeserializerKind::Bytes(pod) = self.kind_unwrapped() {
             Ok(pod)
         } else {
             Err(self.unexpected_type(SpaType::Bytes))
@@ -306,39 +334,23 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_str(&self) -> Result<&'a BStr> {
-        if self.ty == SpaEnum::Value(SpaType::String) {
-            let bytes = &self.body[..self.size as usize];
-
-            let bytes = match bytes.iter().position(|b| *b == 0) {
-                Some(end) => &bytes[..end],
-                None => bytes,
-            };
-
-            Ok(BStr::new(bytes))
+        if let PodDeserializerKind::String(v) = self.kind_unwrapped() {
+            Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::String))
         }
     }
 
     pub fn as_str_or_none(&self) -> Result<Option<&'a BStr>> {
-        if self.ty == SpaEnum::Value(SpaType::String) {
-            let bytes = &self.body[..self.size as usize];
-
-            let bytes = match bytes.iter().position(|b| *b == 0) {
-                Some(end) => &bytes[..end],
-                None => bytes,
-            };
-
-            Ok(Some(BStr::new(bytes)))
-        } else if self.ty == SpaEnum::Value(SpaType::None) {
-            Ok(None)
-        } else {
-            Err(self.unexpected_type(SpaType::String))
+        match self.kind_unwrapped() {
+            PodDeserializerKind::String(v) => Ok(Some(v)),
+            PodDeserializerKind::None => Ok(None),
+            _ => Err(self.unexpected_type(SpaType::String)),
         }
     }
 
     pub fn as_fd(&self) -> Result<i64> {
-        if let PodDeserializerKind::Fd(v) = self.kind() {
+        if let PodDeserializerKind::Fd(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Fd))
@@ -346,7 +358,7 @@ impl<'a> PodDeserializer<'a> {
     }
 
     pub fn as_bool(&self) -> Result<bool> {
-        if let PodDeserializerKind::Bool(v) = self.kind() {
+        if let PodDeserializerKind::Bool(v) = self.kind_unwrapped() {
             Ok(v)
         } else {
             Err(self.unexpected_type(SpaType::Bool))
