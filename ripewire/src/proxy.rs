@@ -199,6 +199,18 @@ impl PwRegistry {
 
         I::from_id(ObjectId::new(data.new_id))
     }
+
+    pub fn destroy_global<D>(&self, context: &mut Context<D>, global: u32) {
+        context
+            .send_msg(
+                &protocol::create_msg(
+                    self.object_id.object_id,
+                    &pw_registry::methods::Destroy { id: global },
+                ),
+                &[],
+            )
+            .unwrap();
+    }
 }
 
 impl Proxy for PwRegistry {
