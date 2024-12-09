@@ -8,8 +8,13 @@ use std::{
 use crate::{
     connection::{Connection, Message, MessageBuffer},
     object_map::{Object, ObjectMap, ObjectType},
-    protocol::{pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry},
-    proxy::{ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwNode, PwRegistry},
+    protocol::{
+        pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node, pw_port, pw_registry,
+    },
+    proxy::{
+        ObjectId, Proxy, PwClient, PwClientNode, PwCore, PwDevice, PwLink, PwNode, PwPort,
+        PwRegistry,
+    },
 };
 
 struct CallbackArgs<'a, D> {
@@ -137,6 +142,22 @@ impl<D> Context<D> {
                     pw_node::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
 
                 let device = PwNode::from_id(id);
+                self.dispatch_event_inner(state, device, event);
+            }
+            ObjectType::Link => {
+                let mut pod = msg.body;
+                let event =
+                    pw_link::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+
+                let device = PwLink::from_id(id);
+                self.dispatch_event_inner(state, device, event);
+            }
+            ObjectType::Port => {
+                let mut pod = msg.body;
+                let event =
+                    pw_port::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+
+                let device = PwPort::from_id(id);
                 self.dispatch_event_inner(state, device, event);
             }
             ty => unimplemented!("{ty:?}"),

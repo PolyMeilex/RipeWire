@@ -4,7 +4,9 @@ use pod::{Object, Value};
 use crate::{
     context::Context,
     object_map::ObjectType,
-    protocol::{self, pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry},
+    protocol::{
+        self, pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node, pw_port, pw_registry,
+    },
 };
 
 pub trait Proxy {
@@ -77,6 +79,15 @@ impl PwCore {
             .unwrap();
 
         PwRegistry::new(data.new_id)
+    }
+
+    pub fn destroy_object<D>(&self, context: &mut Context<D>, object_id: ObjectId) {
+        let data = pw_core::methods::Destroy {
+            id: object_id.protocol_id(),
+        };
+        context
+            .send_msg(&protocol::create_msg(0, &data), &[])
+            .unwrap();
     }
 
     pub fn create_object<I: Proxy, D>(
@@ -316,5 +327,64 @@ impl Proxy for PwClientNode {
 impl PwClientNode {
     pub fn id(&self) -> ObjectId {
         self.object_id.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PwLink {
+    object_id: ObjectId,
+}
+
+impl Proxy for PwLink {
+    type Event = pw_link::Event;
+
+    fn from_id(object_id: ObjectId) -> Self {
+        Self { object_id }
+    }
+
+    fn id(&self) -> ObjectId {
+        self.object_id.clone()
+    }
+}
+
+impl PwLink {
+    pub fn id(&self) -> ObjectId {
+        self.object_id.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PwPort {
+    object_id: ObjectId,
+}
+
+impl Proxy for PwPort {
+    type Event = pw_port::Event;
+
+    fn from_id(object_id: ObjectId) -> Self {
+        Self { object_id }
+    }
+
+    fn id(&self) -> ObjectId {
+        self.object_id.clone()
+    }
+}
+
+impl PwPort {
+    pub fn id(&self) -> ObjectId {
+        self.object_id.clone()
+    }
+
+    pub fn enum_params<D>(&self, context: &mut Context<D>, id: SpaParamType) {
+        let msg = pw_device::methods::EnumParams {
+            seq: 0,
+            id: pod::utils::Id(id as u32),
+            index: 0,
+            num: 0,
+            filter: pod::Value::None,
+        };
+
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        context.send_msg(&msg, &[]).unwrap();
     }
 }
