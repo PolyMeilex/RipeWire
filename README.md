@@ -6,7 +6,10 @@
 
 ## WIP...
 
-Simple proof of concept (definitely not final API): 
+
+Real proof of concept: [helvum ported to RipeWire](https://github.com/PolyMeilex/helvum-ripewire)
+
+And simpler example (definitely not final API): 
 ```rs
 #[derive(Default)]
 struct State {
