@@ -54,7 +54,7 @@ fn print_entry_builder(entry: &json::Entry, out: &mut impl Write) {
         #[doc = #doc]
         #[derive(Debug)]
         pub struct #ident<'a>(pub std::marker::PhantomData<&'a ()>);
-        impl<'a> #ident<'a> {
+        impl #ident<'_> {
             #set_raw
             #set_typed
 
@@ -87,7 +87,7 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
 
         quote! {
             #doc
-            fn #ident(&self) -> Option<PodDeserializer> {
+            fn #ident(&self) -> Option<PodDeserializer<'a>> {
                 #get_call
             }
         }
@@ -96,14 +96,14 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
     let doc = format!(" {}", entry.name);
 
     let get_raw = quote! {
-        fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+        fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
             self.0.clone().find(|v| v.key == id).map(|v| v.value)
         }
     };
 
     let get_typed = crate::get_key_enum_type(obj_type).map(|key| {
         quote! {
-            fn get(&self, key: #key) -> Option<PodDeserializer> {
+            fn get(&self, key: #key) -> Option<PodDeserializer<'a>> {
                 self.get_raw(key.to_u32().unwrap())
             }
         }
