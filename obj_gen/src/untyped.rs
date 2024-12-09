@@ -187,6 +187,8 @@ pub fn run() {
     }
 
     println!("pub mod builder {{");
+    println!("use super::*;");
+    println!();
     for e in json.iter() {
         let mut code_gen = String::new();
         print_entry_builder(e, &mut code_gen);

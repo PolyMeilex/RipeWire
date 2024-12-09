@@ -1254,6 +1254,8 @@ impl<'a> Tag<'a> {
 }
 
 pub mod builder {
+    use super::*;
+
     /// Spa:Pod:Object:Param:PropInfo
     #[derive(Debug)]
     pub struct PropInfoBuilder<'a>(pub std::marker::PhantomData<&'a ()>);
