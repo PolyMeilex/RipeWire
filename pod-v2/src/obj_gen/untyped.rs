@@ -9,10 +9,10 @@ use super::*;
 #[derive(Debug)]
 pub struct PropInfo<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PropInfo<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaPropInfo) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaPropInfo) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:PropInfo:id
@@ -66,37 +66,37 @@ impl<'a> PropInfo<'a> {
     ///  131079: "Spa:Pod:Object:Param:Props:gain"
     ///  131080: "Spa:Pod:Object:Param:Props:sharpness"
     ///  524289: "Spa:Pod:Object:Param:Props:params"
-    fn id(&self) -> Option<PodDeserializer<'a>> {
+    pub fn id(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Id)
     }
     /// name: Spa:Pod:Object:Param:PropInfo:name
     /// returns: String
-    fn name(&self) -> Option<PodDeserializer<'a>> {
+    pub fn name(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Name)
     }
     /// name: Spa:Pod:Object:Param:PropInfo:type
     /// returns: Pod
-    fn ty(&self) -> Option<PodDeserializer<'a>> {
+    pub fn ty(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Type)
     }
     /// name: Spa:Pod:Object:Param:PropInfo:labels
     /// returns: Struct
-    fn labels(&self) -> Option<PodDeserializer<'a>> {
+    pub fn labels(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Labels)
     }
     /// name: Spa:Pod:Object:Param:PropInfo:container
     /// returns: Id
-    fn container(&self) -> Option<PodDeserializer<'a>> {
+    pub fn container(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Container)
     }
     /// name: Spa:Pod:Object:Param:PropInfo:params
     /// returns: Bool
-    fn params(&self) -> Option<PodDeserializer<'a>> {
+    pub fn params(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Params)
     }
     /// name: Spa:Pod:Object:Param:PropInfo:description
     /// returns: String
-    fn description(&self) -> Option<PodDeserializer<'a>> {
+    pub fn description(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Description)
     }
 }
@@ -105,75 +105,75 @@ impl<'a> PropInfo<'a> {
 #[derive(Debug)]
 pub struct Props<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Props<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaProp) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaProp) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Props:device
     /// returns: String
-    fn device(&self) -> Option<PodDeserializer<'a>> {
+    pub fn device(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Device)
     }
     /// name: Spa:Pod:Object:Param:Props:deviceName
     /// returns: String
-    fn device_name(&self) -> Option<PodDeserializer<'a>> {
+    pub fn device_name(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::DeviceName)
     }
     /// name: Spa:Pod:Object:Param:Props:deviceFd
     /// returns: Fd
-    fn device_fd(&self) -> Option<PodDeserializer<'a>> {
+    pub fn device_fd(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::DeviceFd)
     }
     /// name: Spa:Pod:Object:Param:Props:card
     /// returns: String
-    fn card(&self) -> Option<PodDeserializer<'a>> {
+    pub fn card(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Card)
     }
     /// name: Spa:Pod:Object:Param:Props:cardName
     /// returns: String
-    fn card_name(&self) -> Option<PodDeserializer<'a>> {
+    pub fn card_name(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::CardName)
     }
     /// name: Spa:Pod:Object:Param:Props:minLatency
     /// returns: Int
-    fn min_latency(&self) -> Option<PodDeserializer<'a>> {
+    pub fn min_latency(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::MinLatency)
     }
     /// name: Spa:Pod:Object:Param:Props:maxLatency
     /// returns: Int
-    fn max_latency(&self) -> Option<PodDeserializer<'a>> {
+    pub fn max_latency(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::MaxLatency)
     }
     /// name: Spa:Pod:Object:Param:Props:periods
     /// returns: Int
-    fn periods(&self) -> Option<PodDeserializer<'a>> {
+    pub fn periods(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Periods)
     }
     /// name: Spa:Pod:Object:Param:Props:periodSize
     /// returns: Int
-    fn period_size(&self) -> Option<PodDeserializer<'a>> {
+    pub fn period_size(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::PeriodSize)
     }
     /// name: Spa:Pod:Object:Param:Props:periodEvent
     /// returns: Bool
-    fn period_event(&self) -> Option<PodDeserializer<'a>> {
+    pub fn period_event(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::PeriodEvent)
     }
     /// name: Spa:Pod:Object:Param:Props:live
     /// returns: Bool
-    fn live(&self) -> Option<PodDeserializer<'a>> {
+    pub fn live(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Live)
     }
     /// name: Spa:Pod:Object:Param:Props:rate
     /// returns: Double
-    fn rate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn rate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Rate)
     }
     /// name: Spa:Pod:Object:Param:Props:quality
     /// returns: Int
-    fn quality(&self) -> Option<PodDeserializer<'a>> {
+    pub fn quality(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Quality)
     }
     /// name: Spa:Pod:Object:Param:Props:bluetoothAudioCodec
@@ -202,177 +202,177 @@ impl<'a> Props<'a> {
     ///  257: "Spa:Enum:BluetoothAudioCodec:msbc"
     ///  258: "Spa:Enum:BluetoothAudioCodec:lc3_swb"
     ///  512: "Spa:Enum:BluetoothAudioCodec:lc3"
-    fn bluetooth_audio_codec(&self) -> Option<PodDeserializer<'a>> {
+    pub fn bluetooth_audio_codec(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::BluetoothAudioCodec)
     }
     /// name: Spa:Pod:Object:Param:Props:bluetoothOffloadActive
     /// returns: Bool
-    fn bluetooth_offload_active(&self) -> Option<PodDeserializer<'a>> {
+    pub fn bluetooth_offload_active(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::BluetoothOffloadActive)
     }
     /// name: Spa:Pod:Object:Param:Props:waveType
     /// returns: Id
-    fn wave_type(&self) -> Option<PodDeserializer<'a>> {
+    pub fn wave_type(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::WaveType)
     }
     /// name: Spa:Pod:Object:Param:Props:frequency
     /// returns: Int
-    fn frequency(&self) -> Option<PodDeserializer<'a>> {
+    pub fn frequency(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Frequency)
     }
     /// name: Spa:Pod:Object:Param:Props:volume
     /// returns: Float
-    fn volume(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Volume)
     }
     /// name: Spa:Pod:Object:Param:Props:mute
     /// returns: Bool
-    fn mute(&self) -> Option<PodDeserializer<'a>> {
+    pub fn mute(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Mute)
     }
     /// name: Spa:Pod:Object:Param:Props:patternType
     /// returns: Id
-    fn pattern_type(&self) -> Option<PodDeserializer<'a>> {
+    pub fn pattern_type(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::PatternType)
     }
     /// name: Spa:Pod:Object:Param:Props:ditherType
     /// returns: Id
-    fn dither_type(&self) -> Option<PodDeserializer<'a>> {
+    pub fn dither_type(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::DitherType)
     }
     /// name: Spa:Pod:Object:Param:Props:truncate
     /// returns: Bool
-    fn truncate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn truncate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Truncate)
     }
     /// name: Spa:Pod:Object:Param:Props:channelVolumes
     /// returns: Array
     /// values:
     ///  0: "Spa:floatArray"
-    fn channel_volumes(&self) -> Option<PodDeserializer<'a>> {
+    pub fn channel_volumes(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::ChannelVolumes)
     }
     /// name: Spa:Pod:Object:Param:Props:volumeBase
     /// returns: Float
-    fn volume_base(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume_base(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::VolumeBase)
     }
     /// name: Spa:Pod:Object:Param:Props:volumeStep
     /// returns: Float
-    fn volume_step(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume_step(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::VolumeStep)
     }
     /// name: Spa:Pod:Object:Param:Props:channelMap
     /// returns: Array
     /// values:
     ///  0: "Spa:channelMap"
-    fn channel_map(&self) -> Option<PodDeserializer<'a>> {
+    pub fn channel_map(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::ChannelMap)
     }
     /// name: Spa:Pod:Object:Param:Props:monitorMute
     /// returns: Bool
-    fn monitor_mute(&self) -> Option<PodDeserializer<'a>> {
+    pub fn monitor_mute(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::MonitorMute)
     }
     /// name: Spa:Pod:Object:Param:Props:monitorVolumes
     /// returns: Array
     /// values:
     ///  0: "Spa:floatArray"
-    fn monitor_volumes(&self) -> Option<PodDeserializer<'a>> {
+    pub fn monitor_volumes(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::MonitorVolumes)
     }
     /// name: Spa:Pod:Object:Param:Props:latencyOffsetNsec
     /// returns: Long
-    fn latency_offset_nsec(&self) -> Option<PodDeserializer<'a>> {
+    pub fn latency_offset_nsec(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::LatencyOffsetNsec)
     }
     /// name: Spa:Pod:Object:Param:Props:softMute
     /// returns: Bool
-    fn soft_mute(&self) -> Option<PodDeserializer<'a>> {
+    pub fn soft_mute(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::SoftMute)
     }
     /// name: Spa:Pod:Object:Param:Props:softVolumes
     /// returns: Array
     /// values:
     ///  0: "Spa:floatArray"
-    fn soft_volumes(&self) -> Option<PodDeserializer<'a>> {
+    pub fn soft_volumes(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::SoftVolumes)
     }
     /// name: Spa:Pod:Object:Param:Props:iec958Codecs
     /// returns: Array
     /// values:
     ///  0: "Spa:iec958Codec"
-    fn iec958_codecs(&self) -> Option<PodDeserializer<'a>> {
+    pub fn iec958_codecs(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Iec958Codecs)
     }
     /// name: Spa:Pod:Object:Param:Props:volumeRampSamples
     /// returns: Int
-    fn volume_ramp_samples(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume_ramp_samples(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::VolumeRampSamples)
     }
     /// name: Spa:Pod:Object:Param:Props:volumeRampStepSamples
     /// returns: Int
-    fn volume_ramp_step_samples(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume_ramp_step_samples(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::VolumeRampStepSamples)
     }
     /// name: Spa:Pod:Object:Param:Props:volumeRampTime
     /// returns: Int
-    fn volume_ramp_time(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume_ramp_time(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::VolumeRampTime)
     }
     /// name: Spa:Pod:Object:Param:Props:volumeRampStepTime
     /// returns: Int
-    fn volume_ramp_step_time(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume_ramp_step_time(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::VolumeRampStepTime)
     }
     /// name: Spa:Pod:Object:Param:Props:volumeRampScale
     /// returns: Id
-    fn volume_ramp_scale(&self) -> Option<PodDeserializer<'a>> {
+    pub fn volume_ramp_scale(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::VolumeRampScale)
     }
     /// name: Spa:Pod:Object:Param:Props:brightness
     /// returns: Float
-    fn brightness(&self) -> Option<PodDeserializer<'a>> {
+    pub fn brightness(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Brightness)
     }
     /// name: Spa:Pod:Object:Param:Props:contrast
     /// returns: Float
-    fn contrast(&self) -> Option<PodDeserializer<'a>> {
+    pub fn contrast(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Contrast)
     }
     /// name: Spa:Pod:Object:Param:Props:saturation
     /// returns: Float
-    fn saturation(&self) -> Option<PodDeserializer<'a>> {
+    pub fn saturation(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Saturation)
     }
     /// name: Spa:Pod:Object:Param:Props:hue
     /// returns: Int
-    fn hue(&self) -> Option<PodDeserializer<'a>> {
+    pub fn hue(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Hue)
     }
     /// name: Spa:Pod:Object:Param:Props:gamma
     /// returns: Int
-    fn gamma(&self) -> Option<PodDeserializer<'a>> {
+    pub fn gamma(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Gamma)
     }
     /// name: Spa:Pod:Object:Param:Props:exposure
     /// returns: Int
-    fn exposure(&self) -> Option<PodDeserializer<'a>> {
+    pub fn exposure(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Exposure)
     }
     /// name: Spa:Pod:Object:Param:Props:gain
     /// returns: Float
-    fn gain(&self) -> Option<PodDeserializer<'a>> {
+    pub fn gain(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Gain)
     }
     /// name: Spa:Pod:Object:Param:Props:sharpness
     /// returns: Float
-    fn sharpness(&self) -> Option<PodDeserializer<'a>> {
+    pub fn sharpness(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Sharpness)
     }
     /// name: Spa:Pod:Object:Param:Props:params
     /// returns: Struct
-    fn params(&self) -> Option<PodDeserializer<'a>> {
+    pub fn params(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::Params)
     }
 }
@@ -381,10 +381,10 @@ impl<'a> Props<'a> {
 #[derive(Debug)]
 pub struct Format<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Format<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaFormat) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaFormat) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Format:mediaType
@@ -397,7 +397,7 @@ impl<'a> Format<'a> {
     ///  4: "Spa:Enum:MediaType:binary"
     ///  5: "Spa:Enum:MediaType:stream"
     ///  6: "Spa:Enum:MediaType:application"
-    fn media_type(&self) -> Option<PodDeserializer<'a>> {
+    pub fn media_type(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::MediaType)
     }
     /// name: Spa:Pod:Object:Param:Format:mediaSubtype
@@ -440,7 +440,7 @@ impl<'a> Format<'a> {
     ///  196609: "Spa:Enum:MediaSubtype:jpeg"
     ///  327681: "Spa:Enum:MediaSubtype:midi"
     ///  393217: "Spa:Enum:MediaSubtype:control"
-    fn media_subtype(&self) -> Option<PodDeserializer<'a>> {
+    pub fn media_subtype(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::MediaSubtype)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:format
@@ -516,7 +516,7 @@ impl<'a> Format<'a> {
     ///  284: "Spa:Enum:AudioFormat:F32OE"
     ///  285: "Spa:Enum:AudioFormat:F64"
     ///  286: "Spa:Enum:AudioFormat:F64OE"
-    fn audio_format(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_format(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioFormat)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:flags
@@ -524,24 +524,24 @@ impl<'a> Format<'a> {
     /// values:
     ///  0: "Spa:Flags:AudioFlags:none"
     ///  1: "Spa:Flags:AudioFlags:unpositioned"
-    fn audio_flags(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_flags(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioFlags)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:rate
     /// returns: Int
-    fn audio_rate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_rate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioRate)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:channels
     /// returns: Int
-    fn audio_channels(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_channels(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioChannels)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:position
     /// returns: Array
     /// values:
     ///  0: "Spa:channelMap"
-    fn audio_position(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_position(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioPosition)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:iec958Codec
@@ -556,7 +556,7 @@ impl<'a> Format<'a> {
     ///  6: "Spa:Enum:AudioIEC958Codec:EAC3"
     ///  7: "Spa:Enum:AudioIEC958Codec:TrueHD"
     ///  8: "Spa:Enum:AudioIEC958Codec:DTS-HD"
-    fn audio_iec958_codec(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_iec958_codec(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioIec958Codec)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:bitorder
@@ -565,22 +565,22 @@ impl<'a> Format<'a> {
     ///  0: "Spa:Enum:ParamBitorder:unknown"
     ///  1: "Spa:Enum:ParamBitorder:msb"
     ///  2: "Spa:Enum:ParamBitorder:lsb"
-    fn audio_bitorder(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_bitorder(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioBitorder)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:interleave
     /// returns: Int
-    fn audio_interleave(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_interleave(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioInterleave)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:bitrate
     /// returns: Int
-    fn audio_bitrate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_bitrate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioBitrate)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:blockAlign
     /// returns: Int
-    fn audio_block_align(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_block_align(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioBlockAlign)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:AAC:streamFormat
@@ -594,7 +594,7 @@ impl<'a> Format<'a> {
     ///  5: "Spa:Enum:AudioAACStreamFormat:MP4LATM"
     ///  6: "Spa:Enum:AudioAACStreamFormat:ADIF"
     ///  7: "Spa:Enum:AudioAACStreamFormat:MP4FF"
-    fn audio_aac_stream_format(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_aac_stream_format(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioAacStreamFormat)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:WMA:profile
@@ -608,7 +608,7 @@ impl<'a> Format<'a> {
     ///  5: "Spa:Enum:AudioWMAProfile:WMA9-Pro"
     ///  6: "Spa:Enum:AudioWMAProfile:WMA9-Lossless"
     ///  7: "Spa:Enum:AudioWMAProfile:WMA10-Lossless"
-    fn audio_wma_profile(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_wma_profile(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioWmaProfile)
     }
     /// name: Spa:Pod:Object:Param:Format:Audio:AMR:bandMode
@@ -617,7 +617,7 @@ impl<'a> Format<'a> {
     ///  0: "Spa:Enum:AudioAMRBandMode:UNKNOWN"
     ///  1: "Spa:Enum:AudioAMRBandMode:NB"
     ///  2: "Spa:Enum:AudioAMRBandMode:WB"
-    fn audio_amr_band_mode(&self) -> Option<PodDeserializer<'a>> {
+    pub fn audio_amr_band_mode(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::AudioAmrBandMode)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:format
@@ -711,32 +711,32 @@ impl<'a> Format<'a> {
     ///  85: "Spa:Enum:VideoFormat:ABGR_210LE"
     ///  86: "Spa:Enum:VideoFormat:RGBA_102LE"
     ///  87: "Spa:Enum:VideoFormat:BGRA_102LE"
-    fn video_format(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_format(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoFormat)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:modifier
     /// returns: Long
-    fn video_modifier(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_modifier(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoModifier)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:size
     /// returns: Rectangle
-    fn video_size(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_size(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoSize)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:framerate
     /// returns: Fraction
-    fn video_framerate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_framerate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoFramerate)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:maxFramerate
     /// returns: Fraction
-    fn video_max_framerate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_max_framerate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoMaxFramerate)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:views
     /// returns: Int
-    fn video_views(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_views(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoViews)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:interlaceMode
@@ -746,67 +746,67 @@ impl<'a> Format<'a> {
     ///  1: "Spa:Enum:VideoInterlaceMode:interleaved"
     ///  2: "Spa:Enum:VideoInterlaceMode:mixed"
     ///  3: "Spa:Enum:VideoInterlaceMode:fields"
-    fn video_interlace_mode(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_interlace_mode(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoInterlaceMode)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:pixelAspectRatio
     /// returns: Fraction
-    fn video_pixel_aspect_ratio(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_pixel_aspect_ratio(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoPixelAspectRatio)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:multiviewMode
     /// returns: Id
-    fn video_multiview_mode(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_multiview_mode(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoMultiviewMode)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:multiviewFlags
     /// returns: Id
-    fn video_multiview_flags(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_multiview_flags(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoMultiviewFlags)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:chromaSite
     /// returns: Id
-    fn video_chroma_site(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_chroma_site(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoChromaSite)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:colorRange
     /// returns: Id
-    fn video_color_range(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_color_range(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoColorRange)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:colorMatrix
     /// returns: Id
-    fn video_color_matrix(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_color_matrix(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoColorMatrix)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:transferFunction
     /// returns: Id
-    fn video_transfer_function(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_transfer_function(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoTransferFunction)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:colorPrimaries
     /// returns: Id
-    fn video_color_primaries(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_color_primaries(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoColorPrimaries)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:profile
     /// returns: Int
-    fn video_profile(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_profile(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoProfile)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:level
     /// returns: Int
-    fn video_level(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_level(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoLevel)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:H264:streamFormat
     /// returns: Id
-    fn video_h264_stream_format(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_h264_stream_format(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoH264StreamFormat)
     }
     /// name: Spa:Pod:Object:Param:Format:Video:H264:alignment
     /// returns: Id
-    fn video_h264_alignment(&self) -> Option<PodDeserializer<'a>> {
+    pub fn video_h264_alignment(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoH264Alignment)
     }
 }
@@ -815,45 +815,45 @@ impl<'a> Format<'a> {
 #[derive(Debug)]
 pub struct Buffers<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Buffers<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamBuffers) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamBuffers) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Buffers:buffers
     /// returns: Int
-    fn buffers(&self) -> Option<PodDeserializer<'a>> {
+    pub fn buffers(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamBuffers::Buffers)
     }
     /// name: Spa:Pod:Object:Param:Buffers:blocks
     /// returns: Int
-    fn blocks(&self) -> Option<PodDeserializer<'a>> {
+    pub fn blocks(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamBuffers::Blocks)
     }
     /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:size
     /// returns: Int
-    fn block_info_size(&self) -> Option<PodDeserializer<'a>> {
+    pub fn block_info_size(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamBuffers::Size)
     }
     /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:stride
     /// returns: Int
-    fn block_info_stride(&self) -> Option<PodDeserializer<'a>> {
+    pub fn block_info_stride(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamBuffers::Stride)
     }
     /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:align
     /// returns: Int
-    fn block_info_align(&self) -> Option<PodDeserializer<'a>> {
+    pub fn block_info_align(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamBuffers::Align)
     }
     /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:dataType
     /// returns: Int
-    fn block_info_data_type(&self) -> Option<PodDeserializer<'a>> {
+    pub fn block_info_data_type(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamBuffers::DataType)
     }
     /// name: Spa:Pod:Object:Param:Buffers:BlockInfo:metaType
     /// returns: Int
-    fn block_info_meta_type(&self) -> Option<PodDeserializer<'a>> {
+    pub fn block_info_meta_type(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamBuffers::MetaType)
     }
 }
@@ -862,10 +862,10 @@ impl<'a> Buffers<'a> {
 #[derive(Debug)]
 pub struct Meta<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Meta<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamMeta) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamMeta) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Meta:type
@@ -881,12 +881,12 @@ impl<'a> Meta<'a> {
     ///  7: "Spa:Pointer:Meta:Busy"
     ///  8: "Spa:Pointer:Meta:VideoTransform"
     ///  9: "Spa:Pointer:Meta:SyncTimeline"
-    fn ty(&self) -> Option<PodDeserializer<'a>> {
+    pub fn ty(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamMeta::Type)
     }
     /// name: Spa:Pod:Object:Param:Meta:size
     /// returns: Int
-    fn size(&self) -> Option<PodDeserializer<'a>> {
+    pub fn size(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamMeta::Size)
     }
 }
@@ -895,10 +895,10 @@ impl<'a> Meta<'a> {
 #[derive(Debug)]
 pub struct Io<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Io<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamIo) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamIo) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:IO:id
@@ -915,12 +915,12 @@ impl<'a> Io<'a> {
     ///  8: "Spa:Enum:IO:RateMatch"
     ///  9: "Spa:Enum:IO:Memory"
     ///  10: "Spa:Enum:IO:AsyncBuffers"
-    fn id(&self) -> Option<PodDeserializer<'a>> {
+    pub fn id(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamIo::Id)
     }
     /// name: Spa:Pod:Object:Param:IO:size
     /// returns: Int
-    fn size(&self) -> Option<PodDeserializer<'a>> {
+    pub fn size(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamIo::Size)
     }
 }
@@ -929,30 +929,30 @@ impl<'a> Io<'a> {
 #[derive(Debug)]
 pub struct Profile<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profile<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamProfile) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamProfile) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Profile:index
     /// returns: Int
-    fn index(&self) -> Option<PodDeserializer<'a>> {
+    pub fn index(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Index)
     }
     /// name: Spa:Pod:Object:Param:Profile:name
     /// returns: String
-    fn name(&self) -> Option<PodDeserializer<'a>> {
+    pub fn name(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Name)
     }
     /// name: Spa:Pod:Object:Param:Profile:description
     /// returns: String
-    fn description(&self) -> Option<PodDeserializer<'a>> {
+    pub fn description(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Description)
     }
     /// name: Spa:Pod:Object:Param:Profile:priority
     /// returns: Int
-    fn priority(&self) -> Option<PodDeserializer<'a>> {
+    pub fn priority(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Priority)
     }
     /// name: Spa:Pod:Object:Param:Profile:available
@@ -961,22 +961,22 @@ impl<'a> Profile<'a> {
     ///  0: "Spa:Enum:ParamAvailability:unknown"
     ///  1: "Spa:Enum:ParamAvailability:no"
     ///  2: "Spa:Enum:ParamAvailability:yes"
-    fn available(&self) -> Option<PodDeserializer<'a>> {
+    pub fn available(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Available)
     }
     /// name: Spa:Pod:Object:Param:Profile:info
     /// returns: Struct
-    fn info(&self) -> Option<PodDeserializer<'a>> {
+    pub fn info(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Info)
     }
     /// name: Spa:Pod:Object:Param:Profile:classes
     /// returns: Struct
-    fn classes(&self) -> Option<PodDeserializer<'a>> {
+    pub fn classes(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Classes)
     }
     /// name: Spa:Pod:Object:Param:Profile:save
     /// returns: Bool
-    fn save(&self) -> Option<PodDeserializer<'a>> {
+    pub fn save(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProfile::Save)
     }
 }
@@ -985,10 +985,10 @@ impl<'a> Profile<'a> {
 #[derive(Debug)]
 pub struct PortConfig<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PortConfig<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamPortConfig) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamPortConfig) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:PortConfig:direction
@@ -996,7 +996,7 @@ impl<'a> PortConfig<'a> {
     /// values:
     ///  0: "Spa:Enum:Direction:Input"
     ///  1: "Spa:Enum:Direction:Output"
-    fn direction(&self) -> Option<PodDeserializer<'a>> {
+    pub fn direction(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamPortConfig::Direction)
     }
     /// name: Spa:Pod:Object:Param:PortConfig:mode
@@ -1006,22 +1006,22 @@ impl<'a> PortConfig<'a> {
     ///  1: "Spa:Enum:ParamPortConfigMode:passthrough"
     ///  2: "Spa:Enum:ParamPortConfigMode:convert"
     ///  3: "Spa:Enum:ParamPortConfigMode:dsp"
-    fn mode(&self) -> Option<PodDeserializer<'a>> {
+    pub fn mode(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamPortConfig::Mode)
     }
     /// name: Spa:Pod:Object:Param:PortConfig:monitor
     /// returns: Bool
-    fn monitor(&self) -> Option<PodDeserializer<'a>> {
+    pub fn monitor(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamPortConfig::Monitor)
     }
     /// name: Spa:Pod:Object:Param:PortConfig:control
     /// returns: Bool
-    fn control(&self) -> Option<PodDeserializer<'a>> {
+    pub fn control(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamPortConfig::Control)
     }
     /// name: Spa:Pod:Object:Param:PortConfig:format
     /// returns: ObjectFormat
-    fn format(&self) -> Option<PodDeserializer<'a>> {
+    pub fn format(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamPortConfig::Format)
     }
 }
@@ -1030,15 +1030,15 @@ impl<'a> PortConfig<'a> {
 #[derive(Debug)]
 pub struct Route<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Route<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamRoute) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamRoute) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Route:index
     /// returns: Int
-    fn index(&self) -> Option<PodDeserializer<'a>> {
+    pub fn index(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Index)
     }
     /// name: Spa:Pod:Object:Param:Route:direction
@@ -1046,27 +1046,27 @@ impl<'a> Route<'a> {
     /// values:
     ///  0: "Spa:Enum:Direction:Input"
     ///  1: "Spa:Enum:Direction:Output"
-    fn direction(&self) -> Option<PodDeserializer<'a>> {
+    pub fn direction(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Direction)
     }
     /// name: Spa:Pod:Object:Param:Route:device
     /// returns: Int
-    fn device(&self) -> Option<PodDeserializer<'a>> {
+    pub fn device(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Device)
     }
     /// name: Spa:Pod:Object:Param:Route:name
     /// returns: String
-    fn name(&self) -> Option<PodDeserializer<'a>> {
+    pub fn name(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Name)
     }
     /// name: Spa:Pod:Object:Param:Route:description
     /// returns: String
-    fn description(&self) -> Option<PodDeserializer<'a>> {
+    pub fn description(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Description)
     }
     /// name: Spa:Pod:Object:Param:Route:priority
     /// returns: Int
-    fn priority(&self) -> Option<PodDeserializer<'a>> {
+    pub fn priority(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Priority)
     }
     /// name: Spa:Pod:Object:Param:Route:available
@@ -1075,41 +1075,41 @@ impl<'a> Route<'a> {
     ///  0: "Spa:Enum:ParamAvailability:unknown"
     ///  1: "Spa:Enum:ParamAvailability:no"
     ///  2: "Spa:Enum:ParamAvailability:yes"
-    fn available(&self) -> Option<PodDeserializer<'a>> {
+    pub fn available(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Available)
     }
     /// name: Spa:Pod:Object:Param:Route:info
     /// returns: Struct
-    fn info(&self) -> Option<PodDeserializer<'a>> {
+    pub fn info(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Info)
     }
     /// name: Spa:Pod:Object:Param:Route:profiles
     /// returns: Array
     /// values:
     ///  0: "Spa:intArray"
-    fn profiles(&self) -> Option<PodDeserializer<'a>> {
+    pub fn profiles(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Profiles)
     }
     /// name: Spa:Pod:Object:Param:Route:props
     /// returns: ObjectProps
-    fn props(&self) -> Option<PodDeserializer<'a>> {
+    pub fn props(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Props)
     }
     /// name: Spa:Pod:Object:Param:Route:devices
     /// returns: Array
     /// values:
     ///  0: "Spa:intArray"
-    fn devices(&self) -> Option<PodDeserializer<'a>> {
+    pub fn devices(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Devices)
     }
     /// name: Spa:Pod:Object:Param:Route:profile
     /// returns: Int
-    fn profile(&self) -> Option<PodDeserializer<'a>> {
+    pub fn profile(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Profile)
     }
     /// name: Spa:Pod:Object:Param:Route:save
     /// returns: Bool
-    fn save(&self) -> Option<PodDeserializer<'a>> {
+    pub fn save(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamRoute::Save)
     }
 }
@@ -1118,35 +1118,35 @@ impl<'a> Route<'a> {
 #[derive(Debug)]
 pub struct Profiler<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profiler<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaProfiler) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaProfiler) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Profiler:info
     /// returns: Struct
-    fn info(&self) -> Option<PodDeserializer<'a>> {
+    pub fn info(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProfiler::Info)
     }
     /// name: Spa:Pod:Object:Profiler:clock
     /// returns: Struct
-    fn clock(&self) -> Option<PodDeserializer<'a>> {
+    pub fn clock(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProfiler::Clock)
     }
     /// name: Spa:Pod:Object:Profiler:driverBlock
     /// returns: Struct
-    fn driver_block(&self) -> Option<PodDeserializer<'a>> {
+    pub fn driver_block(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProfiler::DriverBlock)
     }
     /// name: Spa:Pod:Object:Profiler:followerBlock
     /// returns: Struct
-    fn follower_block(&self) -> Option<PodDeserializer<'a>> {
+    pub fn follower_block(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProfiler::FollowerBlock)
     }
     /// name: Spa:Pod:Object:Profiler:followerClock
     /// returns: Struct
-    fn follower_clock(&self) -> Option<PodDeserializer<'a>> {
+    pub fn follower_clock(&self) -> Option<PodDeserializer<'a>> {
         self.get_raw(131074u32)
     }
 }
@@ -1155,10 +1155,10 @@ impl<'a> Profiler<'a> {
 #[derive(Debug)]
 pub struct Latency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Latency<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamLatency) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamLatency) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Latency:direction
@@ -1166,37 +1166,37 @@ impl<'a> Latency<'a> {
     /// values:
     ///  0: "Spa:Enum:Direction:Input"
     ///  1: "Spa:Enum:Direction:Output"
-    fn direction(&self) -> Option<PodDeserializer<'a>> {
+    pub fn direction(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamLatency::Direction)
     }
     /// name: Spa:Pod:Object:Param:Latency:minQuantum
     /// returns: Float
-    fn min_quantum(&self) -> Option<PodDeserializer<'a>> {
+    pub fn min_quantum(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamLatency::MinQuantum)
     }
     /// name: Spa:Pod:Object:Param:Latency:maxQuantum
     /// returns: Float
-    fn max_quantum(&self) -> Option<PodDeserializer<'a>> {
+    pub fn max_quantum(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamLatency::MaxQuantum)
     }
     /// name: Spa:Pod:Object:Param:Latency:minRate
     /// returns: Int
-    fn min_rate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn min_rate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamLatency::MinRate)
     }
     /// name: Spa:Pod:Object:Param:Latency:maxRate
     /// returns: Int
-    fn max_rate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn max_rate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamLatency::MaxRate)
     }
     /// name: Spa:Pod:Object:Param:Latency:minNs
     /// returns: Long
-    fn min_ns(&self) -> Option<PodDeserializer<'a>> {
+    pub fn min_ns(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamLatency::MinNs)
     }
     /// name: Spa:Pod:Object:Param:Latency:maxNs
     /// returns: Long
-    fn max_ns(&self) -> Option<PodDeserializer<'a>> {
+    pub fn max_ns(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamLatency::MaxNs)
     }
 }
@@ -1205,25 +1205,25 @@ impl<'a> Latency<'a> {
 #[derive(Debug)]
 pub struct ProcessLatency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> ProcessLatency<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamProcessLatency) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamProcessLatency) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:ProcessLatency:quantum
     /// returns: Float
-    fn quantum(&self) -> Option<PodDeserializer<'a>> {
+    pub fn quantum(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProcessLatency::Quantum)
     }
     /// name: Spa:Pod:Object:Param:ProcessLatency:rate
     /// returns: Int
-    fn rate(&self) -> Option<PodDeserializer<'a>> {
+    pub fn rate(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProcessLatency::Rate)
     }
     /// name: Spa:Pod:Object:Param:ProcessLatency:ns
     /// returns: Long
-    fn ns(&self) -> Option<PodDeserializer<'a>> {
+    pub fn ns(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamProcessLatency::Ns)
     }
 }
@@ -1232,10 +1232,10 @@ impl<'a> ProcessLatency<'a> {
 #[derive(Debug)]
 pub struct Tag<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Tag<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
+    pub fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamTag) -> Option<PodDeserializer<'a>> {
+    pub fn get(&self, key: SpaParamTag) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// name: Spa:Pod:Object:Param:Tag:direction
@@ -1243,12 +1243,12 @@ impl<'a> Tag<'a> {
     /// values:
     ///  0: "Spa:Enum:Direction:Input"
     ///  1: "Spa:Enum:Direction:Output"
-    fn direction(&self) -> Option<PodDeserializer<'a>> {
+    pub fn direction(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamTag::Direction)
     }
     /// name: Spa:Pod:Object:Param:Tag:info
     /// returns: Struct
-    fn info(&self) -> Option<PodDeserializer<'a>> {
+    pub fn info(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaParamTag::Info)
     }
 }
