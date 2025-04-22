@@ -14,7 +14,7 @@ pub mod reexports {
 }
 
 use nix::libc;
-use std::os::fd::RawFd;
+use std::{collections::HashMap, os::fd::RawFd};
 
 pub fn set_blocking(fd: RawFd, blocking: bool) {
     // Save the current flags
@@ -43,5 +43,19 @@ pub fn poll(fd: RawFd, timeout: i32) {
 
     unsafe {
         libc::poll(fds.as_mut_ptr(), fds.len() as u64, timeout);
+    }
+}
+
+pub trait HashMapExt {
+    fn from_dict<'a>(v: impl IntoIterator<Item = (&'a str, &'a str)>) -> HashMap<String, String>;
+}
+
+impl HashMapExt for HashMap<&str, &str> {
+    fn from_dict<'a>(v: impl IntoIterator<Item = (&'a str, &'a str)>) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        for (key, value) in v {
+            map.insert(key.into(), value.into());
+        }
+        map
     }
 }

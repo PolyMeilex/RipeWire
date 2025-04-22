@@ -1,7 +1,8 @@
-use pod::dictionary::Dictionary;
 use ripewire::connection::MessageBuffer;
 use ripewire::memory_registry::MemoryRegistry;
 use ripewire::object_map::ObjectType;
+use ripewire::HashMapExt;
+use std::collections::HashMap;
 use std::io;
 use std::os::fd::AsRawFd;
 use tokio::io::unix::AsyncFd;
@@ -121,7 +122,7 @@ async fn main() {
 
     ctx.client().update_properties(
         &mut ctx,
-        Dictionary::from([
+        HashMap::from_dict([
             ("application.name", "ripewire"),
             ("application.process.binary", "ripewire"),
         ]),

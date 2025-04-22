@@ -75,7 +75,7 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct UpdateProperties {
         /// Properties to update on the client
-        pub properties: pod::dictionary::Dictionary,
+        pub properties: HashMap<String, String>,
     }
 
     impl MethodSerialize for UpdateProperties {
@@ -83,8 +83,8 @@ pub mod methods {
         fn serialize(&self, mut buf: impl Write + Seek) {
             pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
                 b.push_struct_with(|b| {
-                    b.write_u32(self.properties.0.len() as u32);
-                    for (key, value) in self.properties.0.iter() {
+                    b.write_u32(self.properties.len() as u32);
+                    for (key, value) in self.properties.iter() {
                         b.write_str(key);
                         b.write_str(value);
                     }

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use libspa_consts::SpaParamType;
 use pod::{Object, Value};
 
@@ -137,7 +139,7 @@ impl PwClient {
     pub fn update_properties<D>(
         &self,
         context: &mut Context<D>,
-        properties: pod::dictionary::Dictionary,
+        properties: HashMap<String, String>,
     ) {
         let data = pw_client::methods::UpdateProperties { properties };
         context

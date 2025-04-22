@@ -1,5 +1,6 @@
 #![allow(clippy::single_match)]
 
+use std::collections::HashMap;
 use std::io::{self, Read};
 use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
 
@@ -19,9 +20,10 @@ use ripewire::protocol::{
     self, pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry, ParamFlags,
     ParamInfo,
 };
-use ripewire::proxy::{PwClient, PwClientNode, PwCore, PwDevice, PwNode, PwRegistry};
+use ripewire::proxy::{ObjectId, PwClient, PwClientNode, PwCore, PwDevice, PwNode, PwRegistry};
+use ripewire::HashMapExt;
 
-fn properties() -> Dictionary {
+fn properties() -> HashMap<String, String> {
     let host = nix::unistd::gethostname().unwrap();
     let host: &str = &host.to_string_lossy();
 
@@ -30,7 +32,7 @@ fn properties() -> Dictionary {
 
     let pid = nix::unistd::getpid().to_string();
 
-    Dictionary::from([
+    HashMap::from_dict([
         ("log.level", "0"),
         ("cpu.max-align", "32"),
         ("default.clock.rate", "48000"),
@@ -137,7 +139,7 @@ impl PipewireState {
         core: PwCore,
         core_event: pw_core::Event,
     ) {
-        dbg!(&core_event);
+        // dbg!(&core_event);
         match core_event {
             pw_core::Event::Done(done) => {
                 if done.id == Some(0) && done.seq == 0 {
@@ -153,6 +155,10 @@ impl PipewireState {
             pw_core::Event::Ping(ping) => {
                 core.pong(ctx, ping.id, ping.seq);
             }
+            pw_core::Event::Error(error) => {
+                dbg!(ctx.object_type(&ObjectId::new(error.id)));
+                dbg!(error);
+            }
             _ => {}
         }
     }
@@ -163,7 +169,7 @@ impl PipewireState {
         _client: PwClient,
         client_event: pw_client::Event,
     ) {
-        dbg!(&client_event);
+        // dbg!(&client_event);
     }
 
     pub fn node_event(
@@ -180,7 +186,7 @@ impl PipewireState {
                     }
                 }
 
-                println!("&node_event_info = {:?}", &msg);
+                // println!("&node_event_info = {:?}", &msg);
             }
             pw_node::Event::Param(msg) => {
                 let SpaEnum::Value(id) = msg.id else {
@@ -192,62 +198,62 @@ impl PipewireState {
                         let obj = pod_v2::obj_gen::typed::Format(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
                         let obj = pod_v2::obj_gen::typed::Route(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
                         let obj = pod_v2::obj_gen::typed::Profile(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Tag => {
                         // TODO: Well that's fun this type has multiple properties with the same key id
                         let obj = pod_v2::obj_gen::typed::Tag(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::PropInfo => {
                         let obj = pod_v2::obj_gen::typed::PropInfo(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Props => {
                         let obj = pod_v2::obj_gen::typed::Props(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Io => {
                         let obj = pod_v2::obj_gen::typed::Io(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::PortConfig | SpaParamType::EnumPortConfig) => {
                         let obj = pod_v2::obj_gen::typed::PortConfig(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Latency => {
                         let obj = pod_v2::obj_gen::typed::Latency(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::ProcessLatency => {
                         let obj = pod_v2::obj_gen::typed::ProcessLatency(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     _ => {
                         todo!("{:#?}", &node_event);
@@ -263,7 +269,7 @@ impl PipewireState {
         _client: PwClientNode,
         client_node_event: pw_client_node::Event,
     ) {
-        dbg!(&client_node_event);
+        // dbg!(&client_node_event);
 
         match client_node_event {
             pw_client_node::Event::Transport(msg) => {
@@ -295,7 +301,7 @@ impl PipewireState {
         _registry: PwRegistry,
         registry_event: pw_registry::Event,
     ) {
-        dbg!(&registry_event);
+        // dbg!(&registry_event);
         self.globals.handle_event(&registry_event);
     }
 
@@ -313,7 +319,7 @@ impl PipewireState {
                     }
                 }
 
-                println!("&device_event = {:?}", &msg);
+                // println!("&device_event = {:?}", &msg);
             }
             pw_device::Event::Param(msg) => {
                 let SpaEnum::Value(id) = msg.id else {
@@ -325,13 +331,13 @@ impl PipewireState {
                         let obj = pod_v2::obj_gen::typed::Route(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
                         let obj = pod_v2::obj_gen::typed::Profile(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
-                        println!("{ty:?}: {obj:?}");
+                        // println!("{ty:?}: {obj:?}");
                     }
                     _ => {
                         todo!("{:#?}", &device_event);
@@ -392,14 +398,14 @@ impl PipewireState {
             ctx.set_object_callback(&device, Self::device_event);
         }
 
-        {
+        if false {
             let client_node: PwClientNode = ctx.core().create_object(
                 ctx,
                 pw_core::methods::CreateObject {
                     factory_name: "client-node".into(),
                     interface: "PipeWire:Interface:ClientNode".into(),
                     version: 3,
-                    properties: Dictionary::from([
+                    properties: HashMap::from_dict([
                         ("application.name", "rustypipe"),
                         ("media.type", "Midi"),
                         ("format.dsp", "8 bit raw midi"),

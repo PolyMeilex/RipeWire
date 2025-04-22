@@ -1,9 +1,8 @@
-use pod::dictionary::Dictionary;
-use std::{io::Write as _, os::fd::AsRawFd};
+use std::{collections::HashMap, io::Write as _, os::fd::AsRawFd};
 
 use ripewire::{
     connection::MessageBuffer, context::Context, global_list::GlobalList, object_map::ObjectType,
-    protocol::pw_core, proxy::PwDevice,
+    protocol::pw_core, proxy::PwDevice, HashMapExt,
 };
 
 struct State {
@@ -21,7 +20,7 @@ fn main() {
     core.hello(&mut ctx);
     client.update_properties(
         &mut ctx,
-        Dictionary::from([
+        HashMap::from_dict([
             ("application.name", "ripewire"),
             ("application.process.binary", "ripewire"),
         ]),

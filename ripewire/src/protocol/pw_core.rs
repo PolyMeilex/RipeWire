@@ -137,7 +137,7 @@ pub mod methods {
         pub factory_name: String,
         pub interface: String,
         pub version: u32,
-        pub properties: pod::dictionary::Dictionary,
+        pub properties: HashMap<String, String>,
         pub new_id: u32,
     }
 
@@ -149,8 +149,8 @@ pub mod methods {
                 b.write_str(&self.interface);
                 b.write_u32(self.version);
                 b.push_struct_with(|b| {
-                    b.write_u32(self.properties.0.len() as u32);
-                    for (key, value) in self.properties.0.iter() {
+                    b.write_u32(self.properties.len() as u32);
+                    for (key, value) in self.properties.iter() {
                         b.write_str(key);
                         b.write_str(value);
                     }
