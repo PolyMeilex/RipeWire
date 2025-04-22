@@ -158,14 +158,14 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
     let doc = format!(" {}", entry.name);
 
     let get_raw = quote! {
-        fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+        fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
             self.0.clone().find(|v| v.key == id).map(|v| v.value)
         }
     };
 
     let get_typed = if let Some(key) = key_enum_type {
         quote! {
-            fn get(&self, key: #key) -> Option<PodDeserializer> {
+            fn get(&self, key: #key) -> Option<PodDeserializer<'a>> {
                 self.get_raw(key.to_u32().unwrap())
             }
         }
@@ -184,7 +184,7 @@ fn print_entry(entry: &json::Entry, out: &mut impl Write) {
         }
 
 
-        impl<'a> std::fmt::Debug for #ident<'a> {
+        impl std::fmt::Debug for #ident<'_> {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 let mut f = f.debug_struct(#ident_str);
                 obj_fmt!(f, self, #(#props_dbg),*);
@@ -336,7 +336,7 @@ fn spa_type_to_rs(parent: SpaType, info: &json::SpaTypeInfo) -> TokenStream {
         SpaType::Struct => quote!(PodStructDeserializer),
         SpaType::Object => quote!(PodObjectDeserializer),
         SpaType::Sequence => quote!(PodSequenceDeserializer),
-        SpaType::Pod => quote!(PodDeserializer),
+        SpaType::Pod => quote!(PodDeserializer<'a>),
         SpaType::ObjectFormat => quote!(Format),
         SpaType::ObjectProps => quote!(Props),
 

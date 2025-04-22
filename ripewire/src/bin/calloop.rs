@@ -226,14 +226,12 @@ impl PipewireState {
                         println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Io => {
-                        // Missing Choice type def
                         let obj = pod_v2::obj_gen::typed::Io(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::PortConfig | SpaParamType::EnumPortConfig) => {
-                        // Missing Choice type def
                         let obj = pod_v2::obj_gen::typed::PortConfig(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );

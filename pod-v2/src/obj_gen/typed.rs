@@ -14,10 +14,10 @@ macro_rules! obj_fmt {
 /// Spa:Pod:Object:Param:PropInfo
 pub struct PropInfo<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PropInfo<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaPropInfo) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaPropInfo) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:PropInfo:id
@@ -35,10 +35,8 @@ impl<'a> PropInfo<'a> {
             .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:PropInfo:name"))
             .ok()
     }
-    /** Spa:Pod:Object:Param:PropInfo:type
-        parent: Pod
-    */
-    fn ty(&self) -> Option<PodDeserializer> {
+    /// Spa:Pod:Object:Param:PropInfo:type
+    fn ty(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaPropInfo::Type)
     }
     /// Spa:Pod:Object:Param:PropInfo:labels
@@ -70,7 +68,7 @@ impl<'a> PropInfo<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for PropInfo<'a> {
+impl std::fmt::Debug for PropInfo<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("PropInfo");
         obj_fmt!(
@@ -91,10 +89,10 @@ impl<'a> std::fmt::Debug for PropInfo<'a> {
 /// Spa:Pod:Object:Param:Props
 pub struct Props<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Props<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaProp) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaProp) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:Props:device
@@ -452,7 +450,7 @@ impl<'a> Props<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Props<'a> {
+impl std::fmt::Debug for Props<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Props");
         obj_fmt!(
@@ -512,10 +510,10 @@ impl<'a> std::fmt::Debug for Props<'a> {
 /// Spa:Pod:Object:Param:Format
 pub struct Format<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Format<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaFormat) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaFormat) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:Format:mediaType
@@ -852,7 +850,7 @@ impl<'a> Format<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Format<'a> {
+impl std::fmt::Debug for Format<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Format");
         obj_fmt!(
@@ -901,10 +899,10 @@ impl<'a> std::fmt::Debug for Format<'a> {
 /// Spa:Pod:Object:Param:Buffers
 pub struct Buffers<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Buffers<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamBuffers) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamBuffers) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:Buffers:buffers
@@ -971,7 +969,7 @@ impl<'a> Buffers<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Buffers<'a> {
+impl std::fmt::Debug for Buffers<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Buffers");
         obj_fmt!(
@@ -992,10 +990,10 @@ impl<'a> std::fmt::Debug for Buffers<'a> {
 /// Spa:Pod:Object:Param:Meta
 pub struct Meta<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Meta<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamMeta) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamMeta) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /** Spa:Pod:Object:Param:Meta:type
@@ -1025,7 +1023,7 @@ impl<'a> Meta<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Meta<'a> {
+impl std::fmt::Debug for Meta<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Meta");
         obj_fmt!(f, self, ty, size);
@@ -1036,10 +1034,10 @@ impl<'a> std::fmt::Debug for Meta<'a> {
 /// Spa:Pod:Object:Param:IO
 pub struct Io<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Io<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamIo) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamIo) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /** Spa:Pod:Object:Param:IO:id
@@ -1070,7 +1068,7 @@ impl<'a> Io<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Io<'a> {
+impl std::fmt::Debug for Io<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Io");
         obj_fmt!(f, self, id, size);
@@ -1081,10 +1079,10 @@ impl<'a> std::fmt::Debug for Io<'a> {
 /// Spa:Pod:Object:Param:Profile
 pub struct Profile<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profile<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamProfile) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamProfile) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:Profile:index
@@ -1149,7 +1147,7 @@ impl<'a> Profile<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Profile<'a> {
+impl std::fmt::Debug for Profile<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Profile");
         obj_fmt!(
@@ -1171,10 +1169,10 @@ impl<'a> std::fmt::Debug for Profile<'a> {
 /// Spa:Pod:Object:Param:PortConfig
 pub struct PortConfig<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> PortConfig<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamPortConfig) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamPortConfig) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:PortConfig:direction
@@ -1216,7 +1214,7 @@ impl<'a> PortConfig<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for PortConfig<'a> {
+impl std::fmt::Debug for PortConfig<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("PortConfig");
         obj_fmt!(f, self, direction, mode, monitor, control, format);
@@ -1227,10 +1225,10 @@ impl<'a> std::fmt::Debug for PortConfig<'a> {
 /// Spa:Pod:Object:Param:Route
 pub struct Route<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Route<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamRoute) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamRoute) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:Route:index
@@ -1336,7 +1334,7 @@ impl<'a> Route<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Route<'a> {
+impl std::fmt::Debug for Route<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Route");
         obj_fmt!(
@@ -1363,10 +1361,10 @@ impl<'a> std::fmt::Debug for Route<'a> {
 /// Spa:Pod:Object:Profiler
 pub struct Profiler<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Profiler<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaProfiler) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaProfiler) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Profiler:info
@@ -1405,7 +1403,7 @@ impl<'a> Profiler<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Profiler<'a> {
+impl std::fmt::Debug for Profiler<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Profiler");
         obj_fmt!(
@@ -1424,10 +1422,10 @@ impl<'a> std::fmt::Debug for Profiler<'a> {
 /// Spa:Pod:Object:Param:Latency
 pub struct Latency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Latency<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamLatency) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamLatency) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:Latency:direction
@@ -1481,7 +1479,7 @@ impl<'a> Latency<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Latency<'a> {
+impl std::fmt::Debug for Latency<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Latency");
         obj_fmt!(
@@ -1502,10 +1500,10 @@ impl<'a> std::fmt::Debug for Latency<'a> {
 /// Spa:Pod:Object:Param:ProcessLatency
 pub struct ProcessLatency<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> ProcessLatency<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamProcessLatency) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamProcessLatency) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:ProcessLatency:quantum
@@ -1530,7 +1528,7 @@ impl<'a> ProcessLatency<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for ProcessLatency<'a> {
+impl std::fmt::Debug for ProcessLatency<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("ProcessLatency");
         obj_fmt!(f, self, quantum, rate, ns);
@@ -1541,10 +1539,10 @@ impl<'a> std::fmt::Debug for ProcessLatency<'a> {
 /// Spa:Pod:Object:Param:Tag
 pub struct Tag<'a>(pub PodObjectDeserializer<'a>);
 impl<'a> Tag<'a> {
-    fn get_raw(&self, id: u32) -> Option<PodDeserializer> {
+    fn get_raw(&self, id: u32) -> Option<PodDeserializer<'a>> {
         self.0.clone().find(|v| v.key == id).map(|v| v.value)
     }
-    fn get(&self, key: SpaParamTag) -> Option<PodDeserializer> {
+    fn get(&self, key: SpaParamTag) -> Option<PodDeserializer<'a>> {
         self.get_raw(key.to_u32().unwrap())
     }
     /// Spa:Pod:Object:Param:Tag:direction
@@ -1563,7 +1561,7 @@ impl<'a> Tag<'a> {
             .ok()
     }
 }
-impl<'a> std::fmt::Debug for Tag<'a> {
+impl std::fmt::Debug for Tag<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Tag");
         obj_fmt!(f, self, direction, info);
