@@ -172,9 +172,7 @@ impl PipewireState {
         node: PwNode,
         node_event: pw_node::Event,
     ) {
-        dbg!(&node_event);
-
-        match node_event {
+        match &node_event {
             pw_node::Event::Info(msg) => {
                 for param in msg.params.iter() {
                     if let SpaEnum::Value(id) = param.id {
@@ -182,7 +180,7 @@ impl PipewireState {
                     }
                 }
 
-                println!("&node_event = {:?}", &msg);
+                println!("&node_event_info = {:?}", &msg);
             }
             pw_node::Event::Param(msg) => {
                 let SpaEnum::Value(id) = msg.id else {
@@ -208,7 +206,54 @@ impl PipewireState {
                         );
                         println!("{ty:?}: {obj:?}");
                     }
-                    _ => {}
+                    ty @ SpaParamType::Tag => {
+                        // TODO: Well that's fun this type has multiple properties with the same key id
+                        let obj = pod_v2::obj_gen::typed::Tag(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ SpaParamType::PropInfo => {
+                        let obj = pod_v2::obj_gen::typed::PropInfo(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ SpaParamType::Props => {
+                        let obj = pod_v2::obj_gen::typed::Props(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ SpaParamType::Io => {
+                        // Missing Choice type def
+                        let obj = pod_v2::obj_gen::untyped::Io(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ (SpaParamType::PortConfig | SpaParamType::EnumPortConfig) => {
+                        // Missing Choice type def
+                        let obj = pod_v2::obj_gen::untyped::PortConfig(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ SpaParamType::Latency => {
+                        let obj = pod_v2::obj_gen::typed::Latency(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    ty @ SpaParamType::ProcessLatency => {
+                        let obj = pod_v2::obj_gen::typed::ProcessLatency(
+                            msg.params.as_deserializer().as_object().unwrap(),
+                        );
+                        println!("{ty:?}: {obj:?}");
+                    }
+                    _ => {
+                        todo!("{:#?}", &node_event);
+                    }
                 }
             }
         }
@@ -262,7 +307,7 @@ impl PipewireState {
         device: PwDevice,
         device_event: pw_device::Event,
     ) {
-        match device_event {
+        match &device_event {
             pw_device::Event::Info(msg) => {
                 for param in msg.params.iter() {
                     if let SpaEnum::Value(id) = param.id {
@@ -279,18 +324,20 @@ impl PipewireState {
 
                 match id {
                     ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
-                        let obj = pod_v2::obj_gen::untyped::Route(
+                        let obj = pod_v2::obj_gen::typed::Route(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
-                        let obj = pod_v2::obj_gen::untyped::Profile(
+                        let obj = pod_v2::obj_gen::typed::Profile(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         println!("{ty:?}: {obj:?}");
                     }
-                    _ => {}
+                    _ => {
+                        todo!("{:#?}", &device_event);
+                    }
                 }
             }
         }
