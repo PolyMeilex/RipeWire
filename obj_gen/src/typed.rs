@@ -21,6 +21,7 @@ static ID_TO_ENUM_MAP: &[(&str, &str)] = &[
     ("Spa:Enum:AudioWMAProfile", "SpaAudioWmaProfile"),
     ("Spa:Enum:AudioAACStreamFormat", "SpaAudioAacStreamFormat"),
     ("Spa:Enum:ParamBitorder", "SpaParamBitorder"),
+    ("Spa:Enum:Control", "SpaControlType"),
 ];
 
 static PROP_NAME_TYPE_OVERRIDE: &[(&str, SpaType)] = &[

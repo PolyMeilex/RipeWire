@@ -202,6 +202,7 @@ impl<'a> Props<'a> {
     ///  257: "Spa:Enum:BluetoothAudioCodec:msbc"
     ///  258: "Spa:Enum:BluetoothAudioCodec:lc3_swb"
     ///  512: "Spa:Enum:BluetoothAudioCodec:lc3"
+    ///  768: "Spa:Enum:BluetoothAudioCodec:g722"
     pub fn bluetooth_audio_codec(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaProp::BluetoothAudioCodec)
     }
@@ -809,6 +810,17 @@ impl<'a> Format<'a> {
     pub fn video_h264_alignment(&self) -> Option<PodDeserializer<'a>> {
         self.get(SpaFormat::VideoH264Alignment)
     }
+    /// name: Spa:Pod:Object:Param:Format:Control:types
+    /// returns: Id
+    /// values:
+    ///  0: "Spa:Enum:Control:Invalid"
+    ///  1: "Spa:Enum:Control:Properties"
+    ///  2: "Spa:Enum:Control:Midi"
+    ///  3: "Spa:Enum:Control:OSC"
+    ///  4: "Spa:Enum:Control:UMP"
+    pub fn control_types(&self) -> Option<PodDeserializer<'a>> {
+        self.get(SpaFormat::ControlTypes)
+    }
 }
 
 /// Spa:Pod:Object:Param:Buffers
@@ -1147,7 +1159,7 @@ impl<'a> Profiler<'a> {
     /// name: Spa:Pod:Object:Profiler:followerClock
     /// returns: Struct
     pub fn follower_clock(&self) -> Option<PodDeserializer<'a>> {
-        self.get_raw(131074u32)
+        self.get(SpaProfiler::FollowerClock)
     }
 }
 
@@ -1453,6 +1465,7 @@ pub mod builder {
         ///  257: "Spa:Enum:BluetoothAudioCodec:msbc"
         ///  258: "Spa:Enum:BluetoothAudioCodec:lc3_swb"
         ///  512: "Spa:Enum:BluetoothAudioCodec:lc3"
+        ///  768: "Spa:Enum:BluetoothAudioCodec:g722"
         fn bluetooth_audio_codec(&self, value: OwnedPod) {
             self.set(SpaProp::BluetoothAudioCodec, value)
         }
@@ -2060,6 +2073,17 @@ pub mod builder {
         fn video_h264_alignment(&self, value: OwnedPod) {
             self.set(SpaFormat::VideoH264Alignment, value)
         }
+        /// name: Spa:Pod:Object:Param:Format:Control:types
+        /// returns: Id
+        /// values:
+        ///  0: "Spa:Enum:Control:Invalid"
+        ///  1: "Spa:Enum:Control:Properties"
+        ///  2: "Spa:Enum:Control:Midi"
+        ///  3: "Spa:Enum:Control:OSC"
+        ///  4: "Spa:Enum:Control:UMP"
+        fn control_types(&self, value: OwnedPod) {
+            self.set(SpaFormat::ControlTypes, value)
+        }
     }
 
     /// Spa:Pod:Object:Param:Buffers
@@ -2398,7 +2422,7 @@ pub mod builder {
         /// name: Spa:Pod:Object:Profiler:followerClock
         /// returns: Struct
         fn follower_clock(&self, value: OwnedPod) {
-            self.set_raw(131074u32, value)
+            self.set(SpaProfiler::FollowerClock, value)
         }
     }
 

@@ -831,6 +831,14 @@ impl<'a> Format<'a> {
             })
             .ok()
     }
+    /// Spa:Pod:Object:Param:Format:Control:types
+    fn control_types(&self) -> Option<SpaEnum<SpaControlType>> {
+        self.get(SpaFormat::ControlTypes)?
+            .as_id()
+            .map(SpaEnum::from_raw)
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Control:types"))
+            .ok()
+    }
 }
 impl<'a> std::fmt::Debug for Format<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -871,7 +879,8 @@ impl<'a> std::fmt::Debug for Format<'a> {
             video_profile,
             video_level,
             video_h264_stream_format,
-            video_h264_alignment
+            video_h264_alignment,
+            control_types
         );
         f.finish()
     }
@@ -1378,7 +1387,7 @@ impl<'a> Profiler<'a> {
     }
     /// Spa:Pod:Object:Profiler:followerClock
     fn follower_clock(&self) -> Option<PodStructDeserializer> {
-        self.get_raw(131074u32)?
+        self.get(SpaProfiler::FollowerClock)?
             .as_struct()
             .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Profiler:followerClock"))
             .ok()
