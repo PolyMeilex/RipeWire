@@ -35,17 +35,20 @@ pub struct Permission {
 pub mod methods {
     use super::*;
 
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl HasOpCode for AddListener {
+    impl MethodSerialize for AddListener {
         const OPCODE: u8 = 0;
+        fn serialize(&self, buf: impl Write + Seek) {
+            unreachable!()
+        }
     }
 
     /// Is used to send an error to a client.
     ///
     /// This requires W and X permissions on the client.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct Error {
         /// A client proxy id to send the error to
         pub id: u32,
@@ -55,27 +58,45 @@ pub mod methods {
         pub error: String,
     }
 
-    impl HasOpCode for Error {
+    impl MethodSerialize for Error {
         const OPCODE: u8 = 1;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_u32(self.id);
+                b.write_u32(self.res);
+                b.write_str(&self.error);
+            });
+        }
     }
 
     /// Is used to update the properties of a client.
     ///
     /// This requires W and X permissions on the client.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct UpdateProperties {
         /// Properties to update on the client
         pub properties: pod::dictionary::Dictionary,
     }
 
-    impl HasOpCode for UpdateProperties {
+    impl MethodSerialize for UpdateProperties {
         const OPCODE: u8 = 2;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.push_struct_with(|b| {
+                    b.write_u32(self.properties.0.len() as u32);
+                    for (key, value) in self.properties.0.iter() {
+                        b.write_str(key);
+                        b.write_str(value);
+                    }
+                });
+            });
+        }
     }
 
     /// Get the currently configured permissions on the client.
     ///
     /// This requires W and X permissions on the client.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct GetPermissions {
         /// The start index of the permissions to get
         pub index: u32,
@@ -83,28 +104,33 @@ pub mod methods {
         pub num: u32,
     }
 
-    impl HasOpCode for GetPermissions {
+    impl MethodSerialize for GetPermissions {
         const OPCODE: u8 = 3;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_u32(self.index);
+                b.write_u32(self.num);
+            });
+        }
     }
 
     /// Update the permissions of the global objects using the provided array with permissions
     ///
     /// This requires W and X permissions on the client.
     #[derive(Debug, Clone)]
-    pub struct UpdatePermissions(pub pod::permissions::Permissions);
+    pub struct UpdatePermissions(pub Vec<Permission>);
 
-    impl pod::serialize::PodSerialize for UpdatePermissions {
-        fn serialize<O: std::io::Write + std::io::Seek>(
-            &self,
-            serializer: pod::serialize::PodSerializer<O>,
-            flatten: bool,
-        ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            self.0.serialize(serializer, flatten)
-        }
-    }
-
-    impl HasOpCode for UpdatePermissions {
+    impl MethodSerialize for UpdatePermissions {
         const OPCODE: u8 = 4;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_u32(self.0.len() as u32);
+                for Permission { id, permissions } in self.0.iter() {
+                    b.write_u32(*id);
+                    b.write_u32(permissions.bits());
+                }
+            });
+        }
     }
 }
 

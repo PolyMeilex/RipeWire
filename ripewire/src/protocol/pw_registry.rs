@@ -50,7 +50,7 @@ pub mod methods {
 
 pub mod events {
     use super::*;
-    use pod::permissions::PermissionFlags;
+    use crate::protocol::pw_client::PermissionFlags;
 
     const INTERFACE: &str = "Registry";
 
