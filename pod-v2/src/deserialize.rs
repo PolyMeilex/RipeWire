@@ -198,7 +198,15 @@ impl<'a> PodDeserializer<'a> {
 
         match &kind {
             PodDeserializerKind::Choice(c)
-                if c.choice_ty == SpaEnum::Value(SpaChoiceType::None) =>
+                if matches!(
+                    c.choice_ty,
+                    SpaEnum::Value(
+                        SpaChoiceType::None
+                            | SpaChoiceType::Range
+                            | SpaChoiceType::Step
+                            | SpaChoiceType::Enum
+                    )
+                ) =>
             {
                 if let Ok(v) = c.clone().pop_element() {
                     return v.kind_unwrapped();

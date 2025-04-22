@@ -25,23 +25,25 @@ static ID_TO_ENUM_MAP: &[(&str, &str)] = &[
 ];
 
 static PROP_NAME_TYPE_OVERRIDE: &[(&str, SpaType)] = &[
+    // Those are now handled by parser itself by picing the default choice
+
     // Sometimes Choice sometimes Id
-    ("Spa:Pod:Object:Param:Format:Audio:format", SpaType::Pod),
+    // ("Spa:Pod:Object:Param:Format:Audio:format", SpaType::Pod),
     // Sometimes Choice sometimes Int
-    ("Spa:Pod:Object:Param:Format:Audio:rate", SpaType::Pod),
+    // ("Spa:Pod:Object:Param:Format:Audio:rate", SpaType::Pod),
     // Sometimes Choice sometimes Int
-    ("Spa:Pod:Object:Param:Format:Audio:channels", SpaType::Pod),
+    // ("Spa:Pod:Object:Param:Format:Audio:channels", SpaType::Pod),
     // Sometimes Choice sometimes Id
-    ("Spa:Pod:Object:Param:Format:mediaType", SpaType::Pod),
+    // ("Spa:Pod:Object:Param:Format:mediaType", SpaType::Pod),
     // Sometimes Choice sometimes Id (TODO)
-    ("Spa:Pod:Object:Param:Format:mediaSubtype", SpaType::Pod),
+    // ("Spa:Pod:Object:Param:Format:mediaSubtype", SpaType::Pod),
     // Sometimes Choice sometimes Id (TODO)
-    ("Spa:Pod:Object:Param:Format:Audio:position", SpaType::Pod),
+    // ("Spa:Pod:Object:Param:Format:Audio:position", SpaType::Pod),
     // Sometimes Choice sometimes Id (TODO)
-    (
-        "Spa:Pod:Object:Param:Format:Audio:iec958Codec",
-        SpaType::Choice,
-    ),
+    // (
+    //     "Spa:Pod:Object:Param:Format:Audio:iec958Codec",
+    //     SpaType::Choice,
+    // ),
 ];
 
 static PROP_NAME_TO_ENUM_MAP: &[(&str, &str)] = &[

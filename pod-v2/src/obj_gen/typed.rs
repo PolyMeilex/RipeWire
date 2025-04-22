@@ -518,23 +518,29 @@ impl<'a> Format<'a> {
     fn get(&self, key: SpaFormat) -> Option<PodDeserializer> {
         self.get_raw(key.to_u32().unwrap())
     }
-    /** Spa:Pod:Object:Param:Format:mediaType
-        parent: Pod
-    */
-    fn media_type(&self) -> Option<PodDeserializer> {
-        self.get(SpaFormat::MediaType)
+    /// Spa:Pod:Object:Param:Format:mediaType
+    fn media_type(&self) -> Option<SpaEnum<SpaMediaType>> {
+        self.get(SpaFormat::MediaType)?
+            .as_id()
+            .map(SpaEnum::from_raw)
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:mediaType"))
+            .ok()
     }
-    /** Spa:Pod:Object:Param:Format:mediaSubtype
-        parent: Pod
-    */
-    fn media_subtype(&self) -> Option<PodDeserializer> {
-        self.get(SpaFormat::MediaSubtype)
+    /// Spa:Pod:Object:Param:Format:mediaSubtype
+    fn media_subtype(&self) -> Option<SpaEnum<SpaMediaSubtype>> {
+        self.get(SpaFormat::MediaSubtype)?
+            .as_id()
+            .map(SpaEnum::from_raw)
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:mediaSubtype"))
+            .ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:format
-        parent: Pod
-    */
-    fn audio_format(&self) -> Option<PodDeserializer> {
-        self.get(SpaFormat::AudioFormat)
+    /// Spa:Pod:Object:Param:Format:Audio:format
+    fn audio_format(&self) -> Option<SpaEnum<SpaAudioFormat>> {
+        self.get(SpaFormat::AudioFormat)?
+            .as_id()
+            .map(SpaEnum::from_raw)
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:format"))
+            .ok()
     }
     /** Spa:Pod:Object:Param:Format:Audio:flags
         enum: Spa:Flags:AudioFlags
@@ -547,28 +553,34 @@ impl<'a> Format<'a> {
             .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:flags"))
             .ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:rate
-        parent: Pod
-    */
-    fn audio_rate(&self) -> Option<PodDeserializer> {
-        self.get(SpaFormat::AudioRate)
+    /// Spa:Pod:Object:Param:Format:Audio:rate
+    fn audio_rate(&self) -> Option<i32> {
+        self.get(SpaFormat::AudioRate)?
+            .as_i32()
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:rate"))
+            .ok()
     }
-    /** Spa:Pod:Object:Param:Format:Audio:channels
-        parent: Pod
-    */
-    fn audio_channels(&self) -> Option<PodDeserializer> {
-        self.get(SpaFormat::AudioChannels)
+    /// Spa:Pod:Object:Param:Format:Audio:channels
+    fn audio_channels(&self) -> Option<i32> {
+        self.get(SpaFormat::AudioChannels)?
+            .as_i32()
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:channels"))
+            .ok()
     }
     /** Spa:Pod:Object:Param:Format:Audio:position
-        parent: Pod
+        parent: Array<Spa:channelMap>
     */
-    fn audio_position(&self) -> Option<PodDeserializer> {
-        self.get(SpaFormat::AudioPosition)
+    fn audio_position(&self) -> Option<PodArrayDeserializer> {
+        self.get(SpaFormat::AudioPosition)?
+            .as_array()
+            .map_err(|err| unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:position"))
+            .ok()
     }
     /// Spa:Pod:Object:Param:Format:Audio:iec958Codec
-    fn audio_iec958_codec(&self) -> Option<PodChoiceDeserializer> {
+    fn audio_iec958_codec(&self) -> Option<SpaEnum<SpaAudioIec958Codec>> {
         self.get(SpaFormat::AudioIec958Codec)?
-            .as_choice()
+            .as_id()
+            .map(SpaEnum::from_raw)
             .map_err(|err| {
                 unreachable!("{}: {err}", "Spa:Pod:Object:Param:Format:Audio:iec958Codec")
             })
