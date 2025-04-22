@@ -89,14 +89,16 @@ pub enum SpaDataType {
 )]
 pub enum SpaControlType {
     Invalid = 0,
-    #[doc = "< data contains a SPA_TYPE_OBJECT_Props"]
+    #[doc = "< SPA_TYPE_OBJECT_Props"]
     Properties = 1,
-    #[doc = "< data contains a spa_pod_bytes with raw midi data"]
+    #[doc = "< spa_pod_bytes with raw midi data (deprecated, use SPA_CONTROL_UMP)"]
     Midi = 2,
-    #[doc = "< data contains a spa_pod_bytes with an OSC packet"]
+    #[doc = "< spa_pod_bytes with an OSC packet"]
     Osc = 3,
+    #[doc = "< spa_pod_bytes with raw UMP (universal MIDI packet)\n  data. The UMP 32 bit words are stored in native endian\n  format."]
+    Ump = 4,
     #[doc = "< not part of ABI"]
-    _SPA_CONTROL_LAST = 4,
+    _SPA_CONTROL_LAST = 5,
 }
 #[repr(u32)]
 #[doc = " Different IO area types"]
@@ -727,6 +729,8 @@ pub enum SpaFormat {
     StartBinary = 262144,
     StartStream = 327680,
     StartApplication = 393216,
+    #[doc = "< possible control types (flags choice Int,\n  mask of enum spa_control_type)"]
+    ControlTypes = 393217,
 }
 impl SpaAudioFormat {
     pub const DspS32: SpaAudioFormat = SpaAudioFormat::S2432p;
@@ -964,6 +968,7 @@ pub enum SpaBluetoothAudioCodec {
     Msbc = 257,
     Lc3Swb = 258,
     Lc3 = 512,
+    G722 = 768,
 }
 #[repr(i32)]
 #[doc = " All possible stereoscopic 3D and multiview representations.\n In conjunction with \\ref spa_video_multiview_flags, describes how\n multiview content is being transported in the stream."]
@@ -1230,7 +1235,7 @@ pub enum SpaProfiler {
     StartDriver = 65536,
     #[doc = "< Generic info, counter and CPU load,\n (Struct(\n      Long : counter,\n      Float : cpu_load fast,\n      Float : cpu_load medium,\n      Float : cpu_load slow),\n      Int : xrun-count))"]
     Info = 65537,
-    #[doc = "< clock information\n  (Struct(\n      Int : clock flags,\n      Int : clock id,\n      String: clock name,\n      Long : clock nsec,\n      Fraction : clock rate,\n      Long : clock position,\n      Long : clock duration,\n      Long : clock delay,\n      Double : clock rate_diff,\n      Long : clock next_nsec,\n      Int : transport_state))"]
+    #[doc = "< clock information\n  (Struct(\n      Int : clock flags,\n      Int : clock id,\n      String: clock name,\n      Long : clock nsec,\n      Fraction : clock rate,\n      Long : clock position,\n      Long : clock duration,\n      Long : clock delay,\n      Double : clock rate_diff,\n      Long : clock next_nsec,\n      Int : transport_state,\n      Int : clock cycle,\n      Long : xrun duration))"]
     Clock = 65538,
     #[doc = "< generic driver info block\n  (Struct(\n      Int : driver_id,\n      String : name,\n      Long : driver prev_signal,\n      Long : driver signal,\n      Long : driver awake,\n      Long : driver finish,\n      Int : driver status,\n      Fraction : latency,\n      Int : xrun_count))"]
     DriverBlock = 65539,
@@ -1238,6 +1243,8 @@ pub enum SpaProfiler {
     StartFollower = 131072,
     #[doc = "< generic follower info block\n  (Struct(\n      Int : id,\n      String : name,\n      Long : prev_signal,\n      Long : signal,\n      Long : awake,\n      Long : finish,\n      Int : status,\n      Fraction : latency,\n      Int : xrun_count))"]
     FollowerBlock = 131073,
+    #[doc = "< follower clock information\n  (Struct(\n      Int : clock id,\n      String: clock name,\n      Long : clock nsec,\n      Fraction : clock rate,\n      Long : clock position,\n      Long : clock duration,\n      Long : clock delay,\n      Double : clock rate_diff,\n      Long : clock next_nsec,\n      Long : xrun duration))"]
+    FollowerClock = 131074,
     StartCustom = 16777216,
 }
 #[repr(u32)]
