@@ -95,6 +95,16 @@ where
         self
     }
 
+    pub fn write_i32(&mut self, v: i32) -> &mut Self {
+        self.write_int(v);
+        self
+    }
+
+    pub fn write_u32(&mut self, v: u32) -> &mut Self {
+        self.write_int(v as i32);
+        self
+    }
+
     pub fn write_long(&mut self, v: i64) -> &mut Self {
         self.write_primitive(8, SpaType::Long, &v.to_ne_bytes());
         self

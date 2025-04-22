@@ -7,17 +7,31 @@ pub const OBJECT_ID: u32 = 0;
 pub mod methods {
     use super::*;
 
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(0)]
+    #[derive(Debug, Clone)]
     pub struct AddListener {}
+
+    impl MethodSerialize for AddListener {
+        const OPCODE: u8 = 0;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            unreachable!()
+        }
+    }
 
     /// Start a conversation with the server. This will send
     /// the core info and will destroy all resources for the client
     /// (except the core and client resource).
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(1)]
+    #[derive(Debug, Clone)]
     pub struct Hello {
         pub version: u32,
+    }
+
+    impl MethodSerialize for Hello {
+        const OPCODE: u8 = 1;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+                b.write_u32(self.version);
+            });
+        }
     }
 
     /// Do server roundtrip
@@ -29,60 +43,87 @@ pub mod methods {
     /// methods and the resulting events have been handled.
     ///
     /// seq - the seq number passed to the done event
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(2)]
+    #[derive(Debug, Clone)]
     pub struct Sync {
         pub id: u32,
-        pub seq: i32,
+        pub seq: u32,
+    }
+
+    impl MethodSerialize for Sync {
+        const OPCODE: u8 = 2;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+                b.write_u32(self.id);
+                b.write_u32(self.seq);
+            });
+        }
     }
 
     /// Reply to a server ping event.
     ///
-    /// Reply to the server ping event with the same seq.
-    ///
-    /// seq - the seq number received in the ping event
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(3)]
+    /// Is sent from the client to the server when the server emits the Ping event.
+    /// The id and seq should be copied from the Ping event.
+    #[derive(Debug, Clone)]
     pub struct Pong {
         pub id: u32,
-        pub seq: i32,
+        /// The seq number received in the ping event
+        pub seq: u32,
     }
 
-    /// Fatal error event
-    ///
-    /// The error method is sent out when a fatal (non-recoverable)
-    /// error has occurred. The id argument is the proxy object where
-    /// the error occurred, most often in response to an event on that
-    /// object. The message is a brief description of the error,
-    /// for (debugging) convenience.
-    ///
-    /// This method is usually also emitted on the resource object with
-    /// id.
-    ///
-    /// id - object where the error occurred
-    /// res - error code
-    /// message - error description
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(4)]
+    impl MethodSerialize for Pong {
+        const OPCODE: u8 = 3;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+                b.write_u32(self.id);
+                b.write_u32(self.seq);
+            });
+        }
+    }
+
+    /// An error occurred in an object on the client.
+    #[derive(Debug, Clone)]
     pub struct Error {
+        /// The id of the proxy that is in error.
         pub id: u32,
-        pub seq: i32,
-        pub res: i32,
-        pub error: String,
+        /// A seq number from the failing request (if any)
+        pub seq: u32,
+        /// A negative errno style error code
+        pub res: u32,
+        /// An error message
+        pub message: String,
     }
 
-    /// Get the registry object
+    impl MethodSerialize for Error {
+        const OPCODE: u8 = 4;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+                b.write_u32(self.id);
+                b.write_u32(self.seq);
+                b.write_u32(self.res);
+                b.write_str(&self.message);
+            });
+        }
+    }
+    /// A client requests to bind to the registry object and list the available objects on the server.
     ///
-    /// Create a registry object that allows the client to list and bind
-    /// the global objects available from the PipeWire server
-    ///
-    /// version - the client version
-    /// user_data_size - extra size
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(5)]
+    /// Like with all bindings, first the client allocates a new proxy id and puts this as the new_id field.
+    /// Methods and Events can then be sent and received on the new_id (in the message Id field).
+    #[derive(Debug, Clone)]
     pub struct GetRegistry {
+        /// The version of the registry interface used on the client
         pub version: u32,
+        /// The id of the new proxy with the registry interface
         pub new_id: u32,
+    }
+
+    impl MethodSerialize for GetRegistry {
+        const OPCODE: u8 = 5;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+                b.write_u32(self.version);
+                b.write_u32(self.new_id);
+            });
+        }
     }
 
     /// Create a new object on the PipeWire server from a factory.
@@ -91,8 +132,7 @@ pub mod methods {
     /// interface - the interface to bind to
     /// version - the version of the interface
     /// properties - extra properties
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(6)]
+    #[derive(Debug, Clone)]
     pub struct CreateObject {
         pub factory_name: String,
         pub interface: String,
@@ -101,15 +141,42 @@ pub mod methods {
         pub new_id: u32,
     }
 
+    impl MethodSerialize for CreateObject {
+        const OPCODE: u8 = 6;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+                b.write_str(&self.factory_name);
+                b.write_str(&self.interface);
+                b.write_u32(self.version);
+                b.push_struct_with(|b| {
+                    b.write_u32(self.properties.0.len() as u32);
+                    for (key, value) in self.properties.0.iter() {
+                        b.write_str(key);
+                        b.write_str(value);
+                    }
+                });
+                b.write_u32(self.new_id);
+            });
+        }
+    }
+
     /// Destroy an resource
     ///
     /// Destroy the server resource
     ///
     /// id - id of object to destroy
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
-    #[op_code(7)]
+    #[derive(Debug, Clone)]
     pub struct Destroy {
         pub id: u32,
+    }
+
+    impl MethodSerialize for Destroy {
+        const OPCODE: u8 = 7;
+        fn serialize(&self, mut buff: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+                b.write_u32(self.id);
+            });
+        }
     }
 }
 
@@ -217,7 +284,7 @@ pub mod events {
     #[derive(Debug, Clone)]
     pub struct Ping {
         pub id: u32,
-        pub seq: i32,
+        pub seq: u32,
     }
 
     impl EventDeserialize for Ping {
@@ -230,7 +297,7 @@ pub mod events {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
-                seq: pod.pop_field()?.as_i32()?,
+                seq: pod.pop_field()?.as_u32()?,
             })
         }
     }

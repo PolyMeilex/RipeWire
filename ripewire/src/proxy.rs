@@ -50,21 +50,21 @@ impl PwCore {
     pub fn hello<D>(&self, context: &mut Context<D>) {
         let data = pw_core::methods::Hello { version: 3 };
         context
-            .send_msg(&protocol::create_msg(0, &data), &[])
+            .send_msg(&protocol::create_msg2(0, &data), &[])
             .unwrap();
     }
 
-    pub fn sync<D>(&self, context: &mut Context<D>, id: u32, seq: i32) {
+    pub fn sync<D>(&self, context: &mut Context<D>, id: u32, seq: u32) {
         let data = pw_core::methods::Sync { id, seq };
         context
-            .send_msg(&protocol::create_msg(0, &data), &[])
+            .send_msg(&protocol::create_msg2(0, &data), &[])
             .unwrap();
     }
 
-    pub fn pong<D>(&self, context: &mut Context<D>, id: u32, seq: i32) {
+    pub fn pong<D>(&self, context: &mut Context<D>, id: u32, seq: u32) {
         let data = pw_core::methods::Pong { id, seq };
         context
-            .send_msg(&protocol::create_msg(0, &data), &[])
+            .send_msg(&protocol::create_msg2(0, &data), &[])
             .unwrap();
     }
 
@@ -75,7 +75,7 @@ impl PwCore {
         };
 
         context
-            .send_msg(&protocol::create_msg(0, &data), &[])
+            .send_msg(&protocol::create_msg2(0, &data), &[])
             .unwrap();
 
         PwRegistry::new(data.new_id)
@@ -86,7 +86,7 @@ impl PwCore {
             id: object_id.protocol_id(),
         };
         context
-            .send_msg(&protocol::create_msg(0, &data), &[])
+            .send_msg(&protocol::create_msg2(0, &data), &[])
             .unwrap();
     }
 
@@ -99,7 +99,7 @@ impl PwCore {
         data.new_id = new_id.object_id;
 
         context
-            .send_msg(&protocol::create_msg(0, &data), &[])
+            .send_msg(&protocol::create_msg2(0, &data), &[])
             .unwrap();
 
         I::from_id(new_id)

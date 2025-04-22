@@ -7,7 +7,26 @@ use pod_v2::{
     deserialize::{OwnedPod, PodStructDeserializer},
     PodDeserializer,
 };
-use std::{collections::HashMap, io::Cursor, os::fd::RawFd};
+use std::{
+    collections::HashMap,
+    io::{Cursor, Seek, Write},
+    os::fd::RawFd,
+};
+
+pub trait MethodSerialize: Sized {
+    const OPCODE: u8;
+    fn serialize(&self, buf: impl Write + Seek);
+}
+
+pub trait Serialize: Sized {
+    fn serialize(&self, buf: impl Write + Seek);
+}
+
+impl<T: MethodSerialize> Serialize for T {
+    fn serialize(&self, buf: impl Write + Seek) {
+        <T as MethodSerialize>::serialize(&self, buf);
+    }
+}
 
 pub trait HasOpCode {
     const OPCODE: u8;
@@ -130,6 +149,35 @@ pub mod pw_module;
 pub mod pw_node;
 pub mod pw_port;
 pub mod pw_registry;
+
+pub fn create_msg2<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
+where
+    MSG: MethodSerialize,
+{
+    manual_create_msg2(object_id, MSG::OPCODE, value)
+}
+
+pub fn manual_create_msg2<MSG>(object_id: u32, opcode: u8, value: &MSG) -> Vec<u8>
+where
+    MSG: Serialize,
+{
+    let mut buff = std::io::Cursor::new(vec![]);
+    value.serialize(&mut buff);
+    let mut pod = buff.into_inner();
+
+    let header = crate::connection::Header {
+        object_id,
+        opcode,
+        len: pod.len() as u32,
+        seq: 0,
+        n_fds: 0,
+    };
+
+    let mut msg = header.serialize().to_vec();
+    msg.append(&mut pod);
+
+    msg
+}
 
 pub fn create_msg<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
 where
