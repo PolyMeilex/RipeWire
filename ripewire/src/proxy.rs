@@ -255,10 +255,12 @@ impl PwDevice {
             id: pod::utils::Id(id as u32),
             index: 0,
             num: 0,
-            filter: pod::Value::None,
+            filter: pod_v2::Builder::with(|b| {
+                b.write_none();
+            }),
         };
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 
@@ -266,10 +268,12 @@ impl PwDevice {
         let msg = pw_device::methods::SetParam {
             id: pod::utils::Id(value.id),
             flags: 0,
-            param: Value::Object(value),
+            param: pod_v2::serialize::OwnedPod(pod::PodSerializer::serialize2(&Value::Object(
+                value,
+            ))),
         };
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 }
@@ -395,10 +399,12 @@ impl PwPort {
             id: pod::utils::Id(id as u32),
             index: 0,
             num: 0,
-            filter: pod::Value::None,
+            filter: pod_v2::Builder::with(|b| {
+                b.write_none();
+            }),
         };
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 }

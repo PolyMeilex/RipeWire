@@ -14,6 +14,9 @@ pub trait TypedPod {
 pub trait Primitive: TypedPod + PodWrite {}
 impl<T: PodWrite + TypedPod> Primitive for T {}
 
+#[derive(Clone, Debug)]
+pub struct OwnedPod(pub Vec<u8>);
+
 #[derive(Clone, Copy)]
 struct BuilderFrame {
     array_mode: bool,
@@ -32,6 +35,25 @@ impl Default for BuilderFrame {
 pub struct Builder<Buff> {
     buff: Buff,
     frame: BuilderFrame,
+}
+
+impl Builder<std::io::Cursor<Vec<u8>>> {
+    pub fn new_vec() -> Self {
+        Self {
+            buff: std::io::Cursor::new(vec![]),
+            frame: BuilderFrame::default(),
+        }
+    }
+
+    pub fn with(f: impl FnOnce(&mut Self)) -> OwnedPod {
+        let mut b = Self::new_vec();
+        f(&mut b);
+        b.into_owned_pod()
+    }
+
+    pub fn into_owned_pod(self) -> OwnedPod {
+        OwnedPod(self.buff.into_inner())
+    }
 }
 
 impl<Buff> Builder<Buff>
@@ -173,6 +195,11 @@ where
         let mut builder = StructBuilder::new(self);
         cb(&mut builder);
         builder.done().unwrap();
+        self
+    }
+
+    pub fn write_pod(&mut self, v: &OwnedPod) -> &mut Self {
+        self.buff.write_all(&v.0).unwrap();
         self
     }
 }

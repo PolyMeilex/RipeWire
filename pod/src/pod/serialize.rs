@@ -264,6 +264,18 @@ pub struct PodSerializer<O: Write + Seek> {
     out: Option<O>,
 }
 
+impl PodSerializer<std::io::Cursor<Vec<u8>>> {
+    pub fn serialize2<P>(pod: &P) -> Vec<u8>
+    where
+        P: PodSerialize + ?Sized,
+    {
+        Self::serialize(std::io::Cursor::new(vec![]), pod)
+            .unwrap()
+            .0
+            .into_inner()
+    }
+}
+
 impl<O: Write + Seek> PodSerializer<O> {
     /// Serialize the provided POD into the raw pod format, writing it into `out`.
     ///
