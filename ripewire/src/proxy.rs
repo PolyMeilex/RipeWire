@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use libspa_consts::SpaParamType;
+use libspa_consts::{SpaEnum, SpaParamType};
 use pod::{Object, Value};
 
 use crate::{
@@ -265,12 +265,22 @@ impl PwDevice {
     }
 
     pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
+        let param = pod_v2::Builder::with(|b| {
+            b.write_object_with(SpaEnum::Unknown(value.type_ as u32), value.id, |b| {
+                for v in value.properties {
+                    b.write_property(v.key, v.flags.bits(), |b| {
+                        b.write_pod(&pod_v2::serialize::OwnedPod(
+                            pod::PodSerializer::serialize2(&v.value),
+                        ));
+                    });
+                }
+            });
+        });
+
         let msg = pw_device::methods::SetParam {
             id: pod::utils::Id(value.id),
             flags: 0,
-            param: pod_v2::serialize::OwnedPod(pod::PodSerializer::serialize2(&Value::Object(
-                value,
-            ))),
+            param,
         };
 
         let msg = protocol::create_msg2(self.object_id.object_id, &msg);

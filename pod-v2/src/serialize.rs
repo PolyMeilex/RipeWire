@@ -200,7 +200,7 @@ where
 
     pub fn write_object_with(
         &mut self,
-        object_ty: SpaEnum<SpaType>,
+        object_ty: impl Into<SpaEnum<SpaType>>,
         object_id: u32,
         cb: impl FnOnce(&mut ObjcetBuilder<'_, Buff>),
     ) -> &mut Self {
@@ -363,14 +363,18 @@ impl<'a, Buff> ObjcetBuilder<'a, Buff>
 where
     Buff: io::Write + io::Seek,
 {
-    fn new(builder: &'a mut Builder<Buff>, object_ty: SpaEnum<SpaType>, object_id: u32) -> Self {
+    fn new(
+        builder: &'a mut Builder<Buff>,
+        object_ty: impl Into<SpaEnum<SpaType>>,
+        object_id: u32,
+    ) -> Self {
         let header_start = builder.buff.stream_position().unwrap();
         builder.write_header(0, SpaType::Object).unwrap();
         let body_start = builder.buff.stream_position().unwrap();
 
         builder
             .buff
-            .write_all(&object_ty.as_raw().to_ne_bytes())
+            .write_all(&object_ty.into().as_raw().to_ne_bytes())
             .unwrap();
         builder.buff.write_all(&object_id.to_ne_bytes()).unwrap();
 
