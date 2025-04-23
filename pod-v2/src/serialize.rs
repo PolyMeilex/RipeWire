@@ -1,5 +1,5 @@
 use super::pad_to_8;
-use libspa_consts::SpaType;
+use libspa_consts::{SpaEnum, SpaType};
 use std::io;
 
 pub trait PodWrite {
@@ -198,6 +198,18 @@ where
         self
     }
 
+    pub fn write_object_with(
+        &mut self,
+        object_ty: SpaEnum<SpaType>,
+        object_id: u32,
+        cb: impl FnOnce(&mut ObjcetBuilder<'_, Buff>),
+    ) -> &mut Self {
+        let mut builder = ObjcetBuilder::new(self, object_ty, object_id);
+        cb(&mut builder);
+        builder.done().unwrap();
+        self
+    }
+
     pub fn write_pod(&mut self, v: &OwnedPod) -> &mut Self {
         self.buff.write_all(&v.0).unwrap();
         self
@@ -323,6 +335,84 @@ where
 
         self.builder.frame = self.parent_frame;
         self.builder.write_padding(pad_to_8(size)).unwrap();
+
+        Ok(())
+    }
+}
+
+pub struct ObjcetBuilder<'a, Buff> {
+    builder: &'a mut Builder<Buff>,
+    header_start: u64,
+    body_start: u64,
+    parent_frame: BuilderFrame,
+}
+
+impl<Buff> std::ops::Deref for ObjcetBuilder<'_, Buff> {
+    type Target = Builder<Buff>;
+    fn deref(&self) -> &Self::Target {
+        self.builder
+    }
+}
+impl<Buff> std::ops::DerefMut for ObjcetBuilder<'_, Buff> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.builder
+    }
+}
+
+impl<'a, Buff> ObjcetBuilder<'a, Buff>
+where
+    Buff: io::Write + io::Seek,
+{
+    fn new(builder: &'a mut Builder<Buff>, object_ty: SpaEnum<SpaType>, object_id: u32) -> Self {
+        let header_start = builder.buff.stream_position().unwrap();
+        builder.write_header(0, SpaType::Object).unwrap();
+        let body_start = builder.buff.stream_position().unwrap();
+
+        builder
+            .buff
+            .write_all(&object_ty.as_raw().to_ne_bytes())
+            .unwrap();
+        builder.buff.write_all(&object_id.to_ne_bytes()).unwrap();
+
+        let parent_frame = std::mem::take(&mut builder.frame);
+        builder.frame.is_first = false;
+        builder.frame.array_mode = false;
+
+        Self {
+            builder,
+            header_start,
+            body_start,
+            parent_frame,
+        }
+    }
+
+    pub fn write_array_with(&mut self, _cb: impl FnOnce(&mut ArrayBuilder<'_, Buff>)) -> &mut Self {
+        todo!()
+    }
+
+    pub fn push_struct_with(
+        &mut self,
+        _cb: impl FnOnce(&mut StructBuilder<'_, Buff>),
+    ) -> &mut Self {
+        todo!()
+    }
+
+    pub fn write_property<F>(&mut self, key: u32, flags: u32, f: F) -> &mut Self
+    where
+        F: FnOnce(&mut Builder<Buff>),
+    {
+        self.builder.buff.write_all(&key.to_ne_bytes()).unwrap();
+        self.builder.buff.write_all(&flags.to_ne_bytes()).unwrap();
+        f(self.builder);
+        self
+    }
+
+    fn done(self) -> io::Result<()> {
+        let pos = self.builder.buff.stream_position()?;
+        let size = (pos - self.body_start) as u32;
+        lazy_init_size(self.header_start, &mut self.builder.buff, size)?;
+
+        self.builder.frame = self.parent_frame;
 
         Ok(())
     }

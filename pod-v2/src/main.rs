@@ -1,6 +1,24 @@
 use std::io::Cursor;
 
+use libspa_consts::{SpaEnum, SpaFormat, SpaMediaType, SpaType};
+
 fn main() {
+    {
+        let mut builder = pod_v2::Builder::new(Cursor::new(vec![]));
+
+        builder.write_object_with(SpaEnum::Value(SpaType::ObjectFormat), 0, |b| {
+            b.write_property(SpaFormat::MediaType as u32, 0, |b| {
+                b.write_u32(SpaMediaType::Audio as u32);
+            });
+            b.write_property(SpaFormat::AudioFlags as u32, 0, |b| {
+                b.write_u32(5);
+            });
+        });
+
+        let builder = builder.into_inner().into_inner();
+        pod_v2::dbg_print::dbg_print(&builder);
+    }
+
     let mut builder = pod_v2::Builder::new(Cursor::new(vec![]));
 
     builder.push_struct_with(|b| {
