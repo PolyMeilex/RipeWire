@@ -3,11 +3,14 @@ use super::*;
 pub mod methods {
     use super::*;
 
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl HasOpCode for AddListener {
+    impl MethodSerialize for AddListener {
         const OPCODE: u8 = 0;
+        fn serialize(&self, buf: impl Write + Seek) {
+            unreachable!()
+        }
     }
 
     /// Bind to a global object
@@ -18,17 +21,25 @@ pub mod methods {
     /// - id: the global id to bind to
     /// - type: the interface type to bind to
     /// - version: the interface version to use
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct Bind {
         pub id: u32,
-        // TODO: ObjectType here
+        // TODO: ObjectType here?
         pub interface: String,
         pub version: u32,
         pub new_id: u32,
     }
 
-    impl HasOpCode for Bind {
+    impl MethodSerialize for Bind {
         const OPCODE: u8 = 1;
+        fn serialize(&self, buf: impl Write + Seek) {
+            pod_v2::Builder::new(buf).push_struct_with(|b| {
+                b.write_u32(self.id);
+                b.write_str(&self.interface);
+                b.write_u32(self.version);
+                b.write_u32(self.new_id);
+            });
+        }
     }
 
     /// Attempt to destroy a global object
@@ -38,13 +49,18 @@ pub mod methods {
     /// - id: the global id to destroy.
     ///
     /// The client needs X permissions on the global.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct Destroy {
         pub id: u32,
     }
 
-    impl HasOpCode for Destroy {
+    impl MethodSerialize for Destroy {
         const OPCODE: u8 = 2;
+        fn serialize(&self, buf: impl Write + Seek) {
+            pod_v2::Builder::new(buf).push_struct_with(|b| {
+                b.write_u32(self.id);
+            });
+        }
     }
 }
 
