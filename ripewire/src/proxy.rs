@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use libspa_consts::SpaParamType;
-use pod::Object;
+use libspa_consts::{SpaEnum, SpaParamType};
+use pod::{Object, Value};
 
 use crate::{
     context::Context,
@@ -196,7 +196,7 @@ impl PwRegistry {
         };
 
         context
-            .send_msg(&protocol::create_msg2(self.object_id.object_id, &data), &[])
+            .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
             .unwrap();
 
         I::from_id(ObjectId::new(data.new_id))
@@ -205,7 +205,7 @@ impl PwRegistry {
     pub fn destroy_global<D>(&self, context: &mut Context<D>, global: u32) {
         context
             .send_msg(
-                &protocol::create_msg2(
+                &protocol::create_msg(
                     self.object_id.object_id,
                     &pw_registry::methods::Destroy { id: global },
                 ),
@@ -266,7 +266,7 @@ impl PwDevice {
 
     pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
         let param = pod_v2::Builder::with(|b| {
-            b.write_object_with(value.type_, value.id, |b| {
+            b.write_object_with(SpaEnum::Unknown(value.type_ as u32), value.id, |b| {
                 for v in value.properties {
                     b.write_property(v.key, v.flags.bits(), |b| {
                         b.write_pod(&pod_v2::serialize::OwnedPod(
@@ -316,12 +316,10 @@ impl PwNode {
             id: pod::utils::Id(id as u32),
             index: 0,
             num: 0,
-            filter: pod_v2::Builder::with(|b| {
-                b.write_none();
-            }),
+            filter: pod::Value::None,
         };
 
-        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 
@@ -329,20 +327,10 @@ impl PwNode {
         let msg = pw_node::methods::SetParam {
             id: pod::utils::Id(value.id),
             flags: 0,
-            param: pod_v2::Builder::with(|b| {
-                b.write_object_with(value.type_, value.id, |b| {
-                    for v in value.properties {
-                        b.write_property(v.key, v.flags.bits(), |b| {
-                            b.write_pod(&pod_v2::serialize::OwnedPod(
-                                pod::PodSerializer::serialize2(&v.value),
-                            ));
-                        });
-                    }
-                });
-            }),
+            param: Value::Object(value),
         };
 
-        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 }

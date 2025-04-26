@@ -3,14 +3,11 @@ use super::*;
 pub mod methods {
     use super::*;
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, pod_derive :: PodSerialize)]
     pub struct AddListener {}
 
-    impl MethodSerialize for AddListener {
+    impl HasOpCode for AddListener {
         const OPCODE: u8 = 0;
-        fn serialize(&self, buf: impl Write + Seek) {
-            unreachable!()
-        }
     }
 
     /// Subscribe to parameter changes
@@ -21,22 +18,13 @@ pub mod methods {
     /// n_ids - the number of ids in `ids`
     ///
     /// This requires X permissions on the node.
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, pod_derive :: PodSerialize)]
     pub struct SubscribeParams {
-        pub ids: Vec<pod::utils::Id>,
+        pub ids: pod::array::Array<pod::utils::Id>,
     }
 
-    impl MethodSerialize for SubscribeParams {
+    impl HasOpCode for SubscribeParams {
         const OPCODE: u8 = 1;
-        fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
-                b.write_array_with(|b| {
-                    for id in self.ids.iter() {
-                        b.write_id(id.0);
-                    }
-                });
-            });
-        }
     }
 
     /// Enumerate node parameters
@@ -50,26 +38,17 @@ pub mod methods {
     /// filter - a param filter or NULL
     ///
     /// This requires X permissions on the node.
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, pod_derive :: PodSerialize)]
     pub struct EnumParams {
         pub seq: i32,
         pub id: pod::utils::Id,
         pub index: u32,
         pub num: u32,
-        pub filter: pod_v2::serialize::OwnedPod,
+        pub filter: pod::Value,
     }
 
-    impl MethodSerialize for EnumParams {
+    impl HasOpCode for EnumParams {
         const OPCODE: u8 = 2;
-        fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
-                b.write_i32(self.seq);
-                b.write_id(self.id.0);
-                b.write_u32(self.index);
-                b.write_u32(self.num);
-                b.write_pod(&self.filter);
-            });
-        }
     }
 
     /// Set a parameter on the node
@@ -79,22 +58,15 @@ pub mod methods {
     /// param - the parameter to set
     ///
     /// This requires W and X permissions on the node.
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, pod_derive :: PodSerialize)]
     pub struct SetParam {
         pub id: pod::utils::Id,
         pub flags: u32,
-        pub param: pod_v2::serialize::OwnedPod,
+        pub param: pod::Value,
     }
 
-    impl MethodSerialize for SetParam {
+    impl HasOpCode for SetParam {
         const OPCODE: u8 = 3;
-        fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
-                b.write_id(self.id.0);
-                b.write_u32(self.flags);
-                b.write_pod(&self.param);
-            });
-        }
     }
 
     /// Send a command to the node
@@ -102,18 +74,13 @@ pub mod methods {
     /// command - the command to send
     ///
     /// This requires X and W permissions on the node.
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, pod_derive::PodSerialize)]
     pub struct SendCommand {
-        pub command: pod_v2::serialize::OwnedPod,
+        pub command: pod::Value,
     }
 
-    impl MethodSerialize for SendCommand {
+    impl HasOpCode for SendCommand {
         const OPCODE: u8 = 4;
-        fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
-                b.write_pod(&self.command);
-            });
-        }
     }
 }
 

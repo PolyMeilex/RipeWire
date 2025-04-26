@@ -24,7 +24,7 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct SubscribeParams {
         /// Array of param Id to subscribe to
-        pub ids: Vec<pod::utils::Id>,
+        pub ids: pod::array::Array<pod::utils::Id>,
     }
 
     impl MethodSerialize for SubscribeParams {
@@ -32,7 +32,7 @@ pub mod methods {
         fn serialize(&self, buf: impl Write + Seek) {
             pod_v2::Builder::new(buf).push_struct_with(|b| {
                 b.write_array_with(|b| {
-                    for id in self.ids.iter() {
+                    for id in self.ids.0.iter() {
                         b.write_id(id.0);
                     }
                 });
