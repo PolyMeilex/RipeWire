@@ -18,6 +18,7 @@ use bitflags::bitflags;
 use cookie_factory::{
     bytes::{ne_f32, ne_f64, ne_i32, ne_i64, ne_u32},
     gen_simple,
+    lib::std::io,
     sequence::pair,
     GenError,
 };
@@ -614,6 +615,18 @@ impl Object {
                 .map(|mut pod| Property::deserialize_v2(&mut pod))
                 .collect(),
         }
+    }
+
+    pub fn serialize_v2<Buff: io::Write + io::Seek>(&self, b: &mut pod_v2::Builder<Buff>) {
+        b.write_object_with(self.type_, self.id, |b| {
+            for v in self.properties.iter() {
+                b.write_property(v.key, v.flags.bits(), |b| {
+                    b.write_pod(&pod_v2::serialize::OwnedPod(
+                        crate::PodSerializer::serialize2(&v.value),
+                    ));
+                });
+            }
+        });
     }
 }
 
