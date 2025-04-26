@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use libspa_consts::{SpaEnum, SpaParamType};
-use pod::{Object, Value};
+use pod::Object;
 
 use crate::{
     context::Context,

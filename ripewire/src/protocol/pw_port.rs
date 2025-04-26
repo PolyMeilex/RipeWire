@@ -3,11 +3,14 @@ use super::*;
 pub mod methods {
     use super::*;
 
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl HasOpCode for AddListener {
+    impl MethodSerialize for AddListener {
         const OPCODE: u8 = 0;
+        fn serialize(&self, buf: impl Write + Seek) {
+            unreachable!()
+        }
     }
 
     /// Subscribe to parameter changes
@@ -18,13 +21,22 @@ pub mod methods {
     /// n_ids - the number of ids in `ids`
     ///
     /// This requires X permissions on the port.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct SubscribeParams {
-        pub ids: pod::array::Array<pod::utils::Id>,
+        pub ids: Vec<pod::utils::Id>,
     }
 
-    impl HasOpCode for SubscribeParams {
+    impl MethodSerialize for SubscribeParams {
         const OPCODE: u8 = 1;
+        fn serialize(&self, buf: impl Write + Seek) {
+            pod_v2::Builder::new(buf).push_struct_with(|b| {
+                b.write_array_with(|b| {
+                    for id in self.ids.iter() {
+                        b.write_id(id.0);
+                    }
+                });
+            });
+        }
     }
 
     /// Enumerate node parameters
@@ -38,17 +50,26 @@ pub mod methods {
     /// filter - a param filter or NULL
     ///
     /// This requires X permissions on the port.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct EnumParams {
         pub seq: i32,
         pub id: pod::utils::Id,
         pub index: u32,
         pub num: u32,
-        pub filter: pod::Value,
+        pub filter: pod_v2::serialize::OwnedPod,
     }
 
-    impl HasOpCode for EnumParams {
+    impl MethodSerialize for EnumParams {
         const OPCODE: u8 = 2;
+        fn serialize(&self, buf: impl Write + Seek) {
+            pod_v2::Builder::new(buf).push_struct_with(|b| {
+                b.write_i32(self.seq);
+                b.write_id(self.id.0);
+                b.write_u32(self.index);
+                b.write_u32(self.num);
+                b.write_pod(&self.filter);
+            });
+        }
     }
 }
 
