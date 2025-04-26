@@ -316,10 +316,12 @@ impl PwNode {
             id: pod::utils::Id(id as u32),
             index: 0,
             num: 0,
-            filter: pod::Value::None,
+            filter: pod_v2::Builder::with(|b| {
+                b.write_none();
+            }),
         };
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 
@@ -327,10 +329,20 @@ impl PwNode {
         let msg = pw_node::methods::SetParam {
             id: pod::utils::Id(value.id),
             flags: 0,
-            param: Value::Object(value),
+            param: pod_v2::Builder::with(|b| {
+                b.write_object_with(value.type_, value.id, |b| {
+                    for v in value.properties {
+                        b.write_property(v.key, v.flags.bits(), |b| {
+                            b.write_pod(&pod_v2::serialize::OwnedPod(
+                                pod::PodSerializer::serialize2(&v.value),
+                            ));
+                        });
+                    }
+                });
+            }),
         };
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 }
