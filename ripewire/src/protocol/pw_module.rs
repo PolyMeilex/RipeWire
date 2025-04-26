@@ -3,11 +3,14 @@ use super::*;
 pub mod methods {
     use super::*;
 
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl HasOpCode for AddListener {
+    impl MethodSerialize for AddListener {
         const OPCODE: u8 = 0;
+        fn serialize(&self, buf: impl Write + Seek) {
+            unreachable!()
+        }
     }
 }
 

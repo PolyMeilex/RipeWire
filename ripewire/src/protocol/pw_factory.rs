@@ -6,8 +6,11 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl HasOpCode for AddListener {
+    impl MethodSerialize for AddListener {
         const OPCODE: u8 = 0;
+        fn serialize(&self, buf: impl Write + Seek) {
+            unreachable!()
+        }
     }
 }
 
