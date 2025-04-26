@@ -196,7 +196,7 @@ impl PwRegistry {
         };
 
         context
-            .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
+            .send_msg(&protocol::create_msg2(self.object_id.object_id, &data), &[])
             .unwrap();
 
         I::from_id(ObjectId::new(data.new_id))
@@ -205,7 +205,7 @@ impl PwRegistry {
     pub fn destroy_global<D>(&self, context: &mut Context<D>, global: u32) {
         context
             .send_msg(
-                &protocol::create_msg(
+                &protocol::create_msg2(
                     self.object_id.object_id,
                     &pw_registry::methods::Destroy { id: global },
                 ),
