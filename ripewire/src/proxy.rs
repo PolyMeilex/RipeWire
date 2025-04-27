@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use libspa_consts::SpaParamType;
-use pod::Object;
 use pod_v2::Id;
 
 use crate::{
@@ -317,11 +316,14 @@ impl PwNode {
         context.send_msg(&msg, &[]).unwrap();
     }
 
-    pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
+    pub fn set_param<D>(&self, context: &mut Context<D>, param: pod_v2::serialize::OwnedPod) {
+        let (obj, _) = pod_v2::PodDeserializer::new(&param.0);
+        let id = obj.as_object().unwrap().object_id();
+
         let msg = pw_node::methods::SetParam {
-            id: Id(value.id),
+            id: Id(id),
             flags: 0,
-            param: pod_v2::Builder::with(|b| value.serialize_v2(b)),
+            param,
         };
 
         let msg = protocol::create_msg2(self.object_id.object_id, &msg);
