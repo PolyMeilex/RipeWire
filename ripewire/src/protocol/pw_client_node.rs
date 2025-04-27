@@ -412,20 +412,23 @@ pub mod methods {
         pub buffers: Vec<Vec<PortBufferDataPlane>>,
     }
 
-    impl MethodSerialize for PortBuffers {
+    impl MethodSerializeWithFd for PortBuffers {
         const OPCODE: u8 = 6;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+
+        fn serialize_with_fds(&self, mut buf: impl Write + Seek, fds: &mut Vec<RawFd>) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.direction.as_raw());
                 b.write_u32(self.port_id);
                 b.write_u32(self.mix_id);
                 b.write_u32(self.buffers.len() as u32);
                 for buff in self.buffers.iter() {
-                    #[allow(unreachable_code)]
                     for data in buff {
                         b.write_id(data.type_.as_raw());
-                        todo!("fd");
-                        // b.write_id(data.type_.as_raw());
+
+                        let fd_id = fds.len() as u64;
+                        fds.push(data.memfd);
+                        b.write_fd(fd_id);
+
                         b.write_u32(data.flags);
                         b.write_u32(data.mapoffset);
                         b.write_u32(data.maxsize);

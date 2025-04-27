@@ -144,6 +144,11 @@ where
         self
     }
 
+    pub fn write_fd(&mut self, fd_id: u64) -> &mut Self {
+        self.write_primitive(8, SpaType::Fd, &fd_id.to_ne_bytes());
+        self
+    }
+
     pub fn write_float(&mut self, v: f32) -> &mut Self {
         self.write_primitive(4, SpaType::Float, &v.to_ne_bytes());
         self

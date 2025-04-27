@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use libspa_consts::SpaParamType;
+use libspa_consts::{SpaDirection, SpaEnum, SpaParamType};
 use pod::Id;
 
 use crate::{
@@ -351,6 +351,24 @@ impl Proxy for PwClientNode {
 impl PwClientNode {
     pub fn id(&self) -> ObjectId {
         self.object_id.clone()
+    }
+
+    pub fn port_buffers<D>(
+        &self,
+        context: &mut Context<D>,
+        direction: SpaDirection,
+        port_id: u32,
+        mix_id: u32,
+    ) {
+        let msg = pw_client_node::methods::PortBuffers {
+            direction: SpaEnum::Value(direction),
+            port_id,
+            mix_id,
+            buffers: vec![],
+        };
+
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &msg);
+        context.send_msg(&msg, &fds).unwrap();
     }
 }
 

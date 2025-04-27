@@ -17,6 +17,11 @@ pub trait MethodSerialize: Sized {
     fn serialize(&self, buf: impl Write + Seek);
 }
 
+pub trait MethodSerializeWithFd: Sized {
+    const OPCODE: u8;
+    fn serialize_with_fds(&self, buf: impl Write + Seek, fds: &mut Vec<RawFd>);
+}
+
 pub trait Serialize: Sized {
     fn serialize(&self, buf: impl Write + Seek);
 }
@@ -24,6 +29,13 @@ pub trait Serialize: Sized {
 impl<T: MethodSerialize> Serialize for T {
     fn serialize(&self, buf: impl Write + Seek) {
         <T as MethodSerialize>::serialize(self, buf);
+    }
+}
+
+impl<T: MethodSerialize> MethodSerializeWithFd for T {
+    const OPCODE: u8 = T::OPCODE;
+    fn serialize_with_fds(&self, buf: impl Write + Seek, _fds: &mut Vec<RawFd>) {
+        T::serialize(self, buf);
     }
 }
 
@@ -138,27 +150,29 @@ pub fn create_msg<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
 where
     MSG: MethodSerialize,
 {
-    manual_create_msg(object_id, MSG::OPCODE, value)
+    create_msg_with_fds(object_id, value).0
 }
 
-pub fn manual_create_msg<MSG>(object_id: u32, opcode: u8, value: &MSG) -> Vec<u8>
+pub fn create_msg_with_fds<MSG>(object_id: u32, value: &MSG) -> (Vec<u8>, Vec<RawFd>)
 where
-    MSG: Serialize,
+    MSG: MethodSerializeWithFd,
 {
+    let mut fds = vec![];
     let mut buff = std::io::Cursor::new(vec![]);
-    value.serialize(&mut buff);
+    value.serialize_with_fds(&mut buff, &mut fds);
+
     let mut pod = buff.into_inner();
 
     let header = crate::connection::Header {
         object_id,
-        opcode,
+        opcode: MSG::OPCODE,
         len: pod.len() as u32,
         seq: 0,
-        n_fds: 0,
+        n_fds: fds.len() as u32,
     };
 
     let mut msg = header.serialize().to_vec();
     msg.append(&mut pod);
 
-    msg
+    (msg, fds)
 }
