@@ -134,14 +134,14 @@ pub mod pw_node;
 pub mod pw_port;
 pub mod pw_registry;
 
-pub fn create_msg2<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
+pub fn create_msg<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
 where
     MSG: MethodSerialize,
 {
-    manual_create_msg2(object_id, MSG::OPCODE, value)
+    manual_create_msg(object_id, MSG::OPCODE, value)
 }
 
-pub fn manual_create_msg2<MSG>(object_id: u32, opcode: u8, value: &MSG) -> Vec<u8>
+pub fn manual_create_msg<MSG>(object_id: u32, opcode: u8, value: &MSG) -> Vec<u8>
 where
     MSG: Serialize,
 {

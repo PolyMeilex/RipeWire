@@ -480,11 +480,11 @@ impl PipewireState {
                 }),
             };
 
-            let msg = protocol::create_msg2(id, &msg);
+            let msg = protocol::create_msg(id, &msg);
 
             ctx.send_msg(&msg, &[]).unwrap();
 
-            let msg = protocol::create_msg2(
+            let msg = protocol::create_msg(
                 id,
                 &pw_client_node::methods::PortUpdate {
                     direction: SpaEnum::Value(SpaDirection::Output),
@@ -570,7 +570,7 @@ impl PipewireState {
             ctx.send_msg(&msg, &[]).unwrap();
 
             let msg =
-                protocol::create_msg2(id, &pw_client_node::methods::SetActive { active: true });
+                protocol::create_msg(id, &pw_client_node::methods::SetActive { active: true });
             ctx.send_msg(&msg, &[]).unwrap();
         }
     }

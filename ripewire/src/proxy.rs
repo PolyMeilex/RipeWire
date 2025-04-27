@@ -52,21 +52,21 @@ impl PwCore {
     pub fn hello<D>(&self, context: &mut Context<D>) {
         let data = pw_core::methods::Hello { version: 3 };
         context
-            .send_msg(&protocol::create_msg2(0, &data), &[])
+            .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
     }
 
     pub fn sync<D>(&self, context: &mut Context<D>, id: u32, seq: u32) {
         let data = pw_core::methods::Sync { id, seq };
         context
-            .send_msg(&protocol::create_msg2(0, &data), &[])
+            .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
     }
 
     pub fn pong<D>(&self, context: &mut Context<D>, id: u32, seq: u32) {
         let data = pw_core::methods::Pong { id, seq };
         context
-            .send_msg(&protocol::create_msg2(0, &data), &[])
+            .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
     }
 
@@ -77,7 +77,7 @@ impl PwCore {
         };
 
         context
-            .send_msg(&protocol::create_msg2(0, &data), &[])
+            .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
 
         PwRegistry::new(data.new_id)
@@ -88,7 +88,7 @@ impl PwCore {
             id: object_id.protocol_id(),
         };
         context
-            .send_msg(&protocol::create_msg2(0, &data), &[])
+            .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
     }
 
@@ -101,7 +101,7 @@ impl PwCore {
         data.new_id = new_id.object_id;
 
         context
-            .send_msg(&protocol::create_msg2(0, &data), &[])
+            .send_msg(&protocol::create_msg(0, &data), &[])
             .unwrap();
 
         I::from_id(new_id)
@@ -143,14 +143,14 @@ impl PwClient {
     ) {
         let data = pw_client::methods::UpdateProperties { properties };
         context
-            .send_msg(&protocol::create_msg2(1, &data), &[])
+            .send_msg(&protocol::create_msg(1, &data), &[])
             .unwrap();
     }
 
     pub fn get_permissions<D>(&self, context: &mut Context<D>, index: u32, num: u32) {
         let data = pw_client::methods::GetPermissions { index, num };
         context
-            .send_msg(&protocol::create_msg2(self.object_id.object_id, &data), &[])
+            .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
             .unwrap();
     }
 }
@@ -196,7 +196,7 @@ impl PwRegistry {
         };
 
         context
-            .send_msg(&protocol::create_msg2(self.object_id.object_id, &data), &[])
+            .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
             .unwrap();
 
         I::from_id(ObjectId::new(data.new_id))
@@ -205,7 +205,7 @@ impl PwRegistry {
     pub fn destroy_global<D>(&self, context: &mut Context<D>, global: u32) {
         context
             .send_msg(
-                &protocol::create_msg2(
+                &protocol::create_msg(
                     self.object_id.object_id,
                     &pw_registry::methods::Destroy { id: global },
                 ),
@@ -260,7 +260,7 @@ impl PwDevice {
             }),
         };
 
-        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 
@@ -274,7 +274,7 @@ impl PwDevice {
             param,
         };
 
-        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 }
@@ -312,7 +312,7 @@ impl PwNode {
             }),
         };
 
-        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 
@@ -326,7 +326,7 @@ impl PwNode {
             param,
         };
 
-        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 }
@@ -410,7 +410,7 @@ impl PwPort {
             }),
         };
 
-        let msg = protocol::create_msg2(self.object_id.object_id, &msg);
+        let msg = protocol::create_msg(self.object_id.object_id, &msg);
         context.send_msg(&msg, &[]).unwrap();
     }
 }
