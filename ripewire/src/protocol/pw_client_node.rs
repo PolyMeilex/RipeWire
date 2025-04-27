@@ -3,8 +3,6 @@ use libspa_consts::SpaDirection;
 
 pub mod methods {
     use super::*;
-    use bitflags::Flags;
-    use pod::dictionary;
 
     #[derive(Debug, Clone)]
     pub struct AddListener {}
@@ -72,7 +70,7 @@ pub mod methods {
         pub max_output_ports: u32,
         pub change_mask: NodeInfoChangeMask,
         pub flags: NodeFlags,
-        pub props: pod::dictionary::Dictionary,
+        pub props: HashMap<String, String>,
         pub params: Vec<ParamInfo>,
     }
 
@@ -83,7 +81,7 @@ pub mod methods {
                 max_output_ports: pod.pop_field()?.as_u32()?,
                 change_mask: NodeInfoChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
                 flags: NodeFlags::from_bits_retain(pod.pop_field()?.as_u64()?),
-                props: pod::dictionary::Dictionary(parse_dict(pod)?),
+                props: parse_dict(pod)?,
                 params: parse_params(pod)?,
             })
         }
@@ -95,8 +93,8 @@ pub mod methods {
                 b.write_u64(self.change_mask.bits());
                 b.write_u64(self.flags.bits());
 
-                b.write_u32(self.props.0.len() as u32);
-                for (key, value) in self.props.0.iter() {
+                b.write_u32(self.props.len() as u32);
+                for (key, value) in self.props.iter() {
                     b.write_str(key);
                     b.write_str(value);
                 }
@@ -233,7 +231,7 @@ pub mod methods {
         /// Updated rate denominator, when info.change_mask has (1<<1)
         pub rate_denom: u32,
         /// Updated properties, valid when info.change_mask has (1<<2)
-        pub items: pod::dictionary::Dictionary,
+        pub items: HashMap<String, String>,
         /// Updated struct spa_param_info, valid when info.change_mask has (1<<3)
         pub params: Vec<ParamInfo>,
     }
@@ -245,7 +243,7 @@ pub mod methods {
                 flags: PortFlags::from_bits_retain(pod.pop_field()?.as_u64()?),
                 rate_num: pod.pop_field()?.as_u32()?,
                 rate_denom: pod.pop_field()?.as_u32()?,
-                items: pod::dictionary::Dictionary(parse_dict(pod)?),
+                items: parse_dict(pod)?,
                 params: parse_params(pod)?,
             })
         }
@@ -257,8 +255,8 @@ pub mod methods {
                 b.write_u32(self.rate_num);
                 b.write_u32(self.rate_denom);
 
-                b.write_u32(self.items.0.len() as u32);
-                for (key, value) in self.items.0.iter() {
+                b.write_u32(self.items.len() as u32);
+                for (key, value) in self.items.iter() {
                     b.write_str(key);
                     b.write_str(value);
                 }
@@ -397,7 +395,7 @@ pub mod methods {
     impl MethodSerialize for PortBuffers {
         const OPCODE: u8 = 6;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|_b| {
                 todo!();
             });
         }
@@ -476,7 +474,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -505,7 +503,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -529,7 +527,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -550,7 +548,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -575,7 +573,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -600,7 +598,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -630,7 +628,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -738,7 +736,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -782,7 +780,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
@@ -858,7 +856,7 @@ pub mod events {
 
         fn deserialize(
             pod: &mut PodDeserializer,
-            fds: &[RawFd],
+            _fds: &[RawFd],
         ) -> pod_v2::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {

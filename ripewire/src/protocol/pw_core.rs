@@ -12,7 +12,7 @@ pub mod methods {
 
     impl MethodSerialize for AddListener {
         const OPCODE: u8 = 0;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize(&self, buff: impl Write + Seek) {
             unreachable!()
         }
     }

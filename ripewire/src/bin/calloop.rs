@@ -6,7 +6,7 @@ use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
 use libspa_consts::{SpaDirection, SpaEnum, SpaParamType};
-use pod::{dictionary::Dictionary, Value};
+use pod::Value;
 
 use ripewire::connection::MessageBuffer;
 use ripewire::context::Context;
@@ -429,7 +429,7 @@ impl PipewireState {
                         | NodeInfoChangeMask::PROPS
                         | NodeInfoChangeMask::PARAMS,
                     flags: pw_client_node::methods::NodeFlags::RT,
-                    props: Dictionary::from([
+                    props: HashMap::from_dict([
                         ("object.register", "false"),
                         ("media.type", "Midi"),
                         ("media.category", "Filter"),
@@ -491,7 +491,7 @@ impl PipewireState {
                         flags: pw_client_node::methods::PortFlags::empty(),
                         rate_num: 0,
                         rate_denom: 1,
-                        items: pod::dictionary::Dictionary::from([
+                        items: HashMap::from_dict([
                             ("format.dsp", "8 bit raw midi"),
                             ("port.name", "output"),
                             ("port.id", "0"),

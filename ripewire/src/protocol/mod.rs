@@ -1,3 +1,5 @@
+#![allow(unused_variables)]
+
 use crate::object_map::ObjectType;
 use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
 use pod_v2::{
