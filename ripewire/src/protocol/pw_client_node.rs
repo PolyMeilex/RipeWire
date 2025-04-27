@@ -382,19 +382,55 @@ pub mod methods {
         }
     }
 
+    #[derive(Debug, Clone)]
+    pub struct PortBufferDataPlane {
+        /// The plane memory type:
+        /// - SPA_DATA_MemId to reference a memfd from Core:AddMem
+        /// - SPA_DATA_MemPtr to reference this buffer memid
+        pub type_: SpaEnum<SpaDataType>,
+        /// The plane memfd
+        pub memfd: RawFd,
+        /// Extra flags for the data
+        pub flags: u32,
+        /// The start offset of where the buffer memory starts
+        pub mapoffset: u32,
+        /// The maximum size of the memory.
+        pub maxsize: u32,
+    }
+
     /// This method is used by the client when it has allocated buffers for a port.
     ///
     /// It is usually called right after the UseBuffers event to let the server know about the the newly allocated buffer memory.
     #[derive(Debug, Clone)]
     pub struct PortBuffers {
-        // TODO:
+        /// The port direction
+        pub direction: SpaEnum<SpaDirection>,
+        /// The port id
+        pub port_id: u32,
+        /// The mix id of the port
+        pub mix_id: u32,
+        pub buffers: Vec<Vec<PortBufferDataPlane>>,
     }
 
     impl MethodSerialize for PortBuffers {
         const OPCODE: u8 = 6;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod::Builder::new(&mut buf).push_struct_with(|_b| {
-                todo!();
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_u32(self.direction.as_raw());
+                b.write_u32(self.port_id);
+                b.write_u32(self.mix_id);
+                b.write_u32(self.buffers.len() as u32);
+                for buff in self.buffers.iter() {
+                    #[allow(unreachable_code)]
+                    for data in buff {
+                        b.write_id(data.type_.as_raw());
+                        todo!("fd");
+                        // b.write_id(data.type_.as_raw());
+                        b.write_u32(data.flags);
+                        b.write_u32(data.mapoffset);
+                        b.write_u32(data.maxsize);
+                    }
+                }
             });
         }
     }
