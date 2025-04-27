@@ -6,7 +6,7 @@ pub mod methods {
     use bitflags::Flags;
     use pod::dictionary;
 
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct AddListener {}
 
     impl HasOpCode for AddListener {
@@ -15,7 +15,7 @@ pub mod methods {
 
     /// Get the node object associated with the client-node.
     /// This binds to the server side Node object.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct GetNode {
         /// The Node version to bind as
         pub version: u32,
@@ -23,8 +23,14 @@ pub mod methods {
         pub new_id: u32,
     }
 
-    impl HasOpCode for GetNode {
+    impl MethodSerialize for GetNode {
         const OPCODE: u8 = 1;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_u32(self.version);
+                b.write_u32(self.new_id);
+            });
+        }
     }
 
     bitflags::bitflags! {
@@ -81,31 +87,26 @@ pub mod methods {
                 params: parse_params(pod)?,
             })
         }
-    }
 
-    impl pod::serialize::PodSerialize for NodeInfo {
-        fn serialize<O: std::io::Write + std::io::Seek>(
-            &self,
-            mut serializer: pod::serialize::PodSerializer<O>,
-            flatten: bool,
-        ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            let mut s = serializer.serialize_struct(flatten)?;
+        fn serialize2(&self, b: &mut pod_v2::Builder<impl Write + Seek>) {
+            b.push_struct_with(|b| {
+                b.write_u32(self.max_input_ports);
+                b.write_u32(self.max_output_ports);
+                b.write_u64(self.change_mask.bits());
+                b.write_u64(self.flags.bits());
 
-            s.serialize_field(&self.max_input_ports)?;
-            s.serialize_field(&self.max_output_ports)?;
-            s.serialize_field(&self.change_mask.bits())?;
-            s.serialize_field(&self.flags.bits())?;
+                b.write_u32(self.props.0.len() as u32);
+                for (key, value) in self.props.0.iter() {
+                    b.write_str(key);
+                    b.write_str(value);
+                }
 
-            s.serialize_flattened(&self.props)?;
-
-            s.serialize_field(&(self.params.len() as i32))?;
-
-            for ParamInfo { id, flags } in self.params.iter() {
-                s.serialize_field(&id.as_raw())?;
-                s.serialize_field(&flags.bits())?;
-            }
-
-            s.end()
+                b.write_u32(self.params.len() as u32);
+                for ParamInfo { id, flags } in self.params.iter() {
+                    b.write_id(id.as_raw());
+                    b.write_u32(flags.bits());
+                }
+            });
         }
     }
 
@@ -123,37 +124,27 @@ pub mod methods {
         /// A bitfield of changed items
         pub change_mask: UpdateChangeMask,
         /// Number of update params, valid when change_mask has (1<<0)
-        pub params: Vec<OwnedPod>,
-        // An updated param
+        pub params: Vec<pod_v2::serialize::OwnedPod>,
+        // TODO: I don't remember why this is an Option
+        /// An updated param
         pub info: Option<NodeInfo>,
     }
 
-    impl HasOpCode for Update {
+    impl MethodSerialize for Update {
         const OPCODE: u8 = 2;
-    }
-
-    impl pod::serialize::PodSerialize for Update {
-        fn serialize<O: std::io::Write + std::io::Seek>(
-            &self,
-            mut serializer: pod::serialize::PodSerializer<O>,
-            flatten: bool,
-        ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            let mut s = serializer.serialize_struct(flatten)?;
-            s.serialize_field(&self.change_mask.bits())?;
-            if !self.params.is_empty() {
-                // s.serialize_field(&self.n_params)?;
-                todo!()
-            } else {
-                s.serialize_field(&0u32)?;
-            }
-
-            if let Some(info) = self.info.as_ref() {
-                s.serialize_field(info)?;
-            } else {
-                s.serialize_field(&pod::Value::None)?;
-            }
-
-            s.end()
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_u32(self.change_mask.bits());
+                b.write_u32(self.params.len() as u32);
+                for param in self.params.iter() {
+                    b.write_pod(param);
+                }
+                if let Some(info) = self.info.as_ref() {
+                    info.serialize2(b);
+                } else {
+                    b.write_none();
+                }
+            });
         }
     }
 
@@ -168,7 +159,7 @@ pub mod methods {
                     if let Ok(n_params) = usize::try_from(n_params) {
                         let mut params = Vec::with_capacity(n_params);
                         for _ in 0..n_params {
-                            params.push(pod.pop_field()?.to_owned());
+                            params.push(pod.pop_field()?.to_owned().to_serialize());
                         }
                         params
                     } else {
@@ -247,32 +238,6 @@ pub mod methods {
         pub params: Vec<ParamInfo>,
     }
 
-    impl pod::serialize::PodSerialize for PortInfo {
-        fn serialize<O: std::io::Write + std::io::Seek>(
-            &self,
-            mut serializer: pod::serialize::PodSerializer<O>,
-            flatten: bool,
-        ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            let mut s = serializer.serialize_struct(flatten)?;
-
-            s.serialize_field(&self.change_mask.bits())?;
-            s.serialize_field(&self.flags.bits())?;
-            s.serialize_field(&self.rate_num)?;
-            s.serialize_field(&self.rate_denom)?;
-
-            s.serialize_flattened(&self.items)?;
-
-            s.serialize_field(&(self.params.len() as i32))?;
-
-            for ParamInfo { id, flags } in self.params.iter() {
-                s.serialize_field(&id.as_raw())?;
-                s.serialize_field(&flags.bits())?;
-            }
-
-            s.end()
-        }
-    }
-
     impl PortInfo {
         pub fn deserialize(pod: &mut PodStructDeserializer) -> pod_v2::deserialize::Result<Self> {
             Ok(Self {
@@ -283,6 +248,27 @@ pub mod methods {
                 items: pod::dictionary::Dictionary(parse_dict(pod)?),
                 params: parse_params(pod)?,
             })
+        }
+
+        pub fn serialize2(&self, b: &mut pod_v2::Builder<impl Write + Seek>) {
+            b.push_struct_with(|b| {
+                b.write_u64(self.change_mask.bits());
+                b.write_u64(self.flags.bits());
+                b.write_u32(self.rate_num);
+                b.write_u32(self.rate_denom);
+
+                b.write_u32(self.items.0.len() as u32);
+                for (key, value) in self.items.0.iter() {
+                    b.write_str(key);
+                    b.write_str(value);
+                }
+
+                b.write_u32(self.params.len() as u32);
+                for ParamInfo { id, flags } in self.params.iter() {
+                    b.write_id(id.as_raw());
+                    b.write_u32(flags.bits());
+                }
+            });
         }
     }
 
@@ -312,30 +298,25 @@ pub mod methods {
         pub info: Option<PortInfo>,
     }
 
-    impl pod::serialize::PodSerialize for PortUpdate {
-        fn serialize<O: std::io::Write + std::io::Seek>(
-            &self,
-            serializer: pod::serialize::PodSerializer<O>,
-            flatten: bool,
-        ) -> Result<pod::serialize::SerializeSuccess<O>, pod::serialize::GenError> {
-            let mut s = serializer.serialize_struct(flatten)?;
-            s.serialize_field(&self.direction.as_raw())?;
-            s.serialize_field(&self.port_id)?;
-            s.serialize_field(&self.change_mask.bits())?;
+    impl MethodSerialize for PortUpdate {
+        const OPCODE: u8 = 3;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_u32(self.direction.as_raw());
+                b.write_u32(self.port_id);
+                b.write_u32(self.change_mask.bits());
 
-            s.serialize_field(&(self.params.len() as i32))?;
+                b.write_u32(self.params.len() as u32);
+                for param in self.params.iter() {
+                    b.write_pod(&param.serialize_v2());
+                }
 
-            for param in self.params.iter() {
-                s.serialize_field(param)?;
-            }
-
-            if let Some(info) = self.info.as_ref() {
-                s.serialize_field(info)?;
-            } else {
-                s.serialize_field(&pod::Value::None)?;
-            }
-
-            s.end()
+                if let Some(info) = self.info.as_ref() {
+                    info.serialize2(b);
+                } else {
+                    b.write_none();
+                }
+            });
         }
     }
 
@@ -372,42 +353,54 @@ pub mod methods {
             })
         }
     }
-    impl HasOpCode for PortUpdate {
-        const OPCODE: u8 = 3;
-    }
 
     /// Set the node active or inactive.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct SetActive {
         /// The new state of the node
         pub active: bool,
     }
 
-    impl HasOpCode for SetActive {
+    impl MethodSerialize for SetActive {
         const OPCODE: u8 = 4;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_bool(self.active);
+            });
+        }
     }
 
     /// Emit an event on the node.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct Event {
         /// the event to emit. See enum spa_node_event
         event: pod::Value,
     }
 
-    impl HasOpCode for Event {
+    impl MethodSerialize for Event {
         const OPCODE: u8 = 5;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                b.write_pod(&self.event.serialize_v2());
+            });
+        }
     }
 
     /// This method is used by the client when it has allocated buffers for a port.
     ///
     /// It is usually called right after the UseBuffers event to let the server know about the the newly allocated buffer memory.
-    #[derive(Debug, Clone, pod_derive::PodSerialize)]
+    #[derive(Debug, Clone)]
     pub struct PortBuffers {
         // TODO:
     }
 
-    impl HasOpCode for PortBuffers {
+    impl MethodSerialize for PortBuffers {
         const OPCODE: u8 = 6;
+        fn serialize(&self, mut buf: impl Write + Seek) {
+            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+                todo!();
+            });
+        }
     }
 }
 

@@ -132,6 +132,16 @@ where
         self
     }
 
+    pub fn write_i64(&mut self, v: i64) -> &mut Self {
+        self.write_long(v);
+        self
+    }
+
+    pub fn write_u64(&mut self, v: u64) -> &mut Self {
+        self.write_long(v as i64);
+        self
+    }
+
     pub fn write_float(&mut self, v: f32) -> &mut Self {
         self.write_primitive(4, SpaType::Float, &v.to_ne_bytes());
         self

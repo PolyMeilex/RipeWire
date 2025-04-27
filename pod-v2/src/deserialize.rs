@@ -76,6 +76,10 @@ impl OwnedPod {
         buff
     }
 
+    pub fn to_serialize(&self) -> super::serialize::OwnedPod {
+        super::serialize::OwnedPod(self.to_raw())
+    }
+
     pub fn as_deserializer(&self) -> PodDeserializer<'_> {
         PodDeserializer {
             size: self.size,

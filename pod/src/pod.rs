@@ -11,7 +11,7 @@ pub mod serialize;
 
 use std::{
     ffi::c_void,
-    io::{Seek, Write},
+    io::{Cursor, Seek, Write},
 };
 
 use bitflags::bitflags;
@@ -396,6 +396,13 @@ impl Value {
             }
             pod_v2::PodDeserializerKind::Unknown(_) => todo!("unknown value"),
         }
+    }
+
+    pub fn serialize_v2(&self) -> pod_v2::serialize::OwnedPod {
+        let (out, _) =
+            crate::serialize::PodSerializer::serialize(Cursor::new(vec![]), self).unwrap();
+
+        pod_v2::serialize::OwnedPod(out.into_inner())
     }
 }
 
