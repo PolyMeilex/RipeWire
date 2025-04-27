@@ -1,15 +1,12 @@
-#![allow(unused)]
-
 use crate::object_map::ObjectType;
 use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
-use pod::serialize::{PodSerialize, PodSerializer};
 use pod_v2::{
     deserialize::{OwnedPod, PodStructDeserializer},
-    PodDeserializer,
+    Id, PodDeserializer,
 };
 use std::{
     collections::HashMap,
-    io::{Cursor, Seek, Write},
+    io::{Seek, Write},
     os::fd::RawFd,
 };
 
@@ -24,7 +21,7 @@ pub trait Serialize: Sized {
 
 impl<T: MethodSerialize> Serialize for T {
     fn serialize(&self, buf: impl Write + Seek) {
-        <T as MethodSerialize>::serialize(&self, buf);
+        <T as MethodSerialize>::serialize(self, buf);
     }
 }
 
@@ -66,21 +63,6 @@ pub trait Deserialize: Sized {
         deserializer: &mut PodDeserializer,
         fds: &[RawFd],
     ) -> pod_v2::deserialize::Result<Self>;
-}
-
-macro_rules! parse {
-    ($pod: expr, Self ( $(|$a: ident| $b: expr),* $(,)? )) => {{
-        let mut pod = $pod.as_struct()?;
-        Self {
-            $(
-                $a: {
-                    pod.pop_field().and_then(|$a| {
-                        Ok($b)
-                    })?
-                },
-            )*
-        }
-    }};
 }
 
 fn parse_dict(
@@ -164,34 +146,6 @@ where
     let mut buff = std::io::Cursor::new(vec![]);
     value.serialize(&mut buff);
     let mut pod = buff.into_inner();
-
-    let header = crate::connection::Header {
-        object_id,
-        opcode,
-        len: pod.len() as u32,
-        seq: 0,
-        n_fds: 0,
-    };
-
-    let mut msg = header.serialize().to_vec();
-    msg.append(&mut pod);
-
-    msg
-}
-
-pub fn create_msg<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
-where
-    MSG: PodSerialize + HasOpCode,
-{
-    manual_create_msg(object_id, MSG::OPCODE, value)
-}
-
-pub fn manual_create_msg<MSG>(object_id: u32, opcode: u8, value: &MSG) -> Vec<u8>
-where
-    MSG: PodSerialize,
-{
-    let (pod, _size) = PodSerializer::serialize(Cursor::new(Vec::new()), value).unwrap();
-    let mut pod = pod.into_inner();
 
     let header = crate::connection::Header {
         object_id,

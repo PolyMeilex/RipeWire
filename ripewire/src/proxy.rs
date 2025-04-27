@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use libspa_consts::SpaParamType;
 use pod::Object;
+use pod_v2::Id;
 
 use crate::{
     context::Context,
@@ -252,7 +253,7 @@ impl PwDevice {
     pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
         let msg = pw_device::methods::EnumParams {
             seq: 0,
-            id: pod::utils::Id(id as u32),
+            id: Id(id as u32),
             index: 0,
             num: 0,
             filter: pod_v2::Builder::with(|b| {
@@ -268,7 +269,7 @@ impl PwDevice {
         let param = pod_v2::Builder::with(|b| value.serialize_v2(b));
 
         let msg = pw_device::methods::SetParam {
-            id: pod::utils::Id(value.id),
+            id: Id(value.id),
             flags: 0,
             param,
         };
@@ -303,7 +304,7 @@ impl PwNode {
     pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
         let msg = pw_node::methods::EnumParams {
             seq: 0,
-            id: pod::utils::Id(id as u32),
+            id: Id(id as u32),
             index: 0,
             num: 0,
             filter: pod_v2::Builder::with(|b| {
@@ -317,7 +318,7 @@ impl PwNode {
 
     pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
         let msg = pw_node::methods::SetParam {
-            id: pod::utils::Id(value.id),
+            id: Id(value.id),
             flags: 0,
             param: pod_v2::Builder::with(|b| value.serialize_v2(b)),
         };
@@ -398,7 +399,7 @@ impl PwPort {
     pub fn enum_params<D>(&self, context: &mut Context<D>, id: SpaParamType) {
         let msg = pw_device::methods::EnumParams {
             seq: 0,
-            id: pod::utils::Id(id as u32),
+            id: Id(id as u32),
             index: 0,
             num: 0,
             filter: pod_v2::Builder::with(|b| {

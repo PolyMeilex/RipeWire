@@ -24,7 +24,7 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct SubscribeParams {
         /// Array of param Id to subscribe to
-        pub ids: Vec<pod::utils::Id>,
+        pub ids: Vec<Id>,
     }
 
     impl MethodSerialize for SubscribeParams {
@@ -33,7 +33,7 @@ pub mod methods {
             pod_v2::Builder::new(buf).push_struct_with(|b| {
                 b.write_array_with(|b| {
                     for id in self.ids.iter() {
-                        b.write_id(id.0);
+                        b.write_id(id);
                     }
                 });
             });
@@ -54,7 +54,7 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct EnumParams {
         pub seq: i32,
-        pub id: pod::utils::Id,
+        pub id: Id,
         pub index: u32,
         pub num: u32,
         pub filter: pod_v2::serialize::OwnedPod,
@@ -65,7 +65,7 @@ pub mod methods {
         fn serialize(&self, buf: impl Write + Seek) {
             pod_v2::Builder::new(buf).push_struct_with(|b| {
                 b.write_i32(self.seq);
-                b.write_id(self.id.0);
+                b.write_id(self.id);
                 b.write_u32(self.index);
                 b.write_u32(self.num);
                 b.write_pod(&self.filter);
@@ -82,7 +82,7 @@ pub mod methods {
     /// This requires W and X permissions on the device.
     #[derive(Debug, Clone)]
     pub struct SetParam {
-        pub id: pod::utils::Id,
+        pub id: Id,
         pub flags: u32,
         pub param: pod_v2::serialize::OwnedPod,
     }
@@ -91,7 +91,7 @@ pub mod methods {
         const OPCODE: u8 = 3;
         fn serialize(&self, buf: impl Write + Seek) {
             pod_v2::Builder::new(buf).push_struct_with(|b| {
-                b.write_id(self.id.0);
+                b.write_id(self.id);
                 b.write_u32(self.flags);
                 b.write_pod(&self.param);
             });

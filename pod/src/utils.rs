@@ -9,9 +9,7 @@ pub use spa_sys::SpaRectangle;
 
 use crate::pod::CanonicalFixedSizedPod;
 
-/// An enumerated value in a pod
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct Id(pub u32);
+pub(crate) use pod_v2::Id;
 
 /// A file descriptor in a pod
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

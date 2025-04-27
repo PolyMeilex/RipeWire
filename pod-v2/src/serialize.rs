@@ -1,3 +1,5 @@
+use crate::Id;
+
 use super::pad_to_8;
 use libspa_consts::{SpaEnum, SpaType};
 use std::io;
@@ -107,8 +109,8 @@ where
         self
     }
 
-    pub fn write_id(&mut self, v: u32) -> &mut Self {
-        self.write_primitive(4, SpaType::Id, &v.to_ne_bytes());
+    pub fn write_id(&mut self, v: impl Into<Id>) -> &mut Self {
+        self.write_primitive(4, SpaType::Id, &v.into().0.to_ne_bytes());
         self
     }
 

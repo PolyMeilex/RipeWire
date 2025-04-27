@@ -16,3 +16,19 @@ fn pad_to_8(size: u32) -> u32 {
         8 - (size % 8)
     }
 }
+
+/// An enumerated value in a pod
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct Id(pub u32);
+
+impl From<&Id> for Id {
+    fn from(value: &Id) -> Self {
+        *value
+    }
+}
+
+impl From<u32> for Id {
+    fn from(value: u32) -> Self {
+        Self(value)
+    }
+}
