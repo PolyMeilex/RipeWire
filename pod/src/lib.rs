@@ -5,7 +5,6 @@
 //! [libspa](https://gitlab.freedesktop.org/pipewire/pipewire/-/tree/master/doc/spa).
 
 pub mod array;
-pub mod params;
 pub mod pod;
 pub mod utils;
 

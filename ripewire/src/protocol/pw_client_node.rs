@@ -291,7 +291,7 @@ pub mod methods {
         /// A bitfield of changed items
         pub change_mask: PortUpdateChangeMask,
         /// Updated params
-        pub params: Vec<pod::Value>,
+        pub params: Vec<pod_v2::serialize::OwnedPod>,
         /// An updated [`PortInfo`], valid when change_mask has (1<<1)
         pub info: Option<PortInfo>,
     }
@@ -306,7 +306,7 @@ pub mod methods {
 
                 b.write_u32(self.params.len() as u32);
                 for param in self.params.iter() {
-                    b.write_pod(&param.serialize_v2());
+                    b.write_pod(param);
                 }
 
                 if let Some(info) = self.info.as_ref() {
@@ -331,9 +331,7 @@ pub mod methods {
                     if let Ok(n_params) = usize::try_from(n_params) {
                         let mut params = Vec::with_capacity(n_params);
                         for _ in 0..n_params {
-                            let mut pod = pod.pop_field()?;
-                            let pod = pod::Value::deserialize_v2(&mut pod);
-                            params.push(pod);
+                            params.push(pod.pop_field()?.to_owned().to_serialize());
                         }
                         params
                     } else {
@@ -372,14 +370,14 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct Event {
         /// the event to emit. See enum spa_node_event
-        event: pod::Value,
+        event: pod_v2::serialize::OwnedPod,
     }
 
     impl MethodSerialize for Event {
         const OPCODE: u8 = 5;
         fn serialize(&self, mut buf: impl Write + Seek) {
             pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
-                b.write_pod(&self.event.serialize_v2());
+                b.write_pod(&self.event);
             });
         }
     }

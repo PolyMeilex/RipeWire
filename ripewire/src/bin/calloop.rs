@@ -5,8 +5,10 @@ use std::io::{self, Read};
 use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
-use libspa_consts::{SpaDirection, SpaEnum, SpaParamRoute, SpaParamType, SpaProp, SpaType};
-use pod::Value;
+use libspa_consts::{
+    SpaDirection, SpaEnum, SpaFormat, SpaIoType, SpaMediaSubtype, SpaMediaType, SpaParamIo,
+    SpaParamRoute, SpaParamType, SpaProp, SpaType,
+};
 
 use ripewire::connection::MessageBuffer;
 use ripewire::context::Context;
@@ -488,20 +490,38 @@ impl PipewireState {
                     direction: SpaEnum::Value(SpaDirection::Output),
                     port_id: 0,
                     change_mask: PortUpdateChangeMask::PARAMS | PortUpdateChangeMask::INFO,
-                    params: vec![
-                        Value::Object(
-                            pod::params::FormatParamBuilder::enum_format()
-                                .media_type(libspa_consts::SpaMediaType::Application)
-                                .media_subtype(libspa_consts::SpaMediaSubtype::Control)
-                                .build(),
-                        ),
-                        Value::Object(
-                            pod::params::IoParamBuilder::io()
-                                .id(libspa_consts::SpaIoType::Buffers)
-                                .size(8)
-                                .build(),
-                        ),
-                    ],
+                    params: {
+                        let format = pod_v2::Builder::with(|b| {
+                            b.write_object_with(
+                                SpaType::ObjectFormat,
+                                SpaParamType::EnumFormat as u32,
+                                |b| {
+                                    b.write_property(SpaFormat::MediaType as u32, 0, |b| {
+                                        b.write_id(SpaMediaType::Application as u32);
+                                    });
+                                    b.write_property(SpaFormat::MediaSubtype as u32, 0, |b| {
+                                        b.write_id(SpaMediaSubtype::Control as u32);
+                                    });
+                                },
+                            );
+                        });
+                        let io = pod_v2::Builder::with(|b| {
+                            b.write_object_with(
+                                SpaType::ObjectParamIo,
+                                SpaParamType::Io as u32,
+                                |b| {
+                                    b.write_property(SpaParamIo::Id as u32, 0, |b| {
+                                        b.write_id(SpaIoType::Buffers as u32);
+                                    });
+                                    b.write_property(SpaParamIo::Size as u32, 0, |b| {
+                                        b.write_u32(8);
+                                    });
+                                },
+                            );
+                        });
+
+                        vec![format, io]
+                    },
                     info: Some(pw_client_node::methods::PortInfo {
                         change_mask: PortInfoChangeMask::FLAGS
                             | PortInfoChangeMask::RATE
