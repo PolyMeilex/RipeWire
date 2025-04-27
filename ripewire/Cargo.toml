@@ -12,7 +12,6 @@ num-traits = "0.2"
 num-derive = "0.4"
 thiserror = "1"
 libspa-consts = { path = "../libspa-consts" }
-pod = { path = "../pod" }
 pod-v2 = { path = "../pod-v2" }
 pod-derive = { path = "../pod-derive" }
 quick-xml = "0.28.0"

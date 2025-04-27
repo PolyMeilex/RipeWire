@@ -9,7 +9,6 @@ pub mod proxy;
 pub mod reexports {
     pub use libspa_consts;
     pub use nix;
-    pub use pod;
     pub use pod_v2;
 }
 

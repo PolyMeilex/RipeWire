@@ -1,5 +1,7 @@
 pub mod dbg_print;
 pub mod serialize;
+use std::os::fd::RawFd;
+
 pub use serialize::Builder;
 
 pub mod deserialize;
@@ -30,5 +32,22 @@ impl From<&Id> for Id {
 impl From<u32> for Id {
     fn from(value: u32) -> Self {
         Self(value)
+    }
+}
+
+/// A file descriptor in a pod
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct Fd {
+    pub id: i64,
+    pub fd: Option<RawFd>,
+}
+
+impl Fd {
+    pub fn new(id: i64) -> Self {
+        Self { id, fd: None }
+    }
+
+    pub fn get(&self) -> RawFd {
+        self.id as RawFd
     }
 }

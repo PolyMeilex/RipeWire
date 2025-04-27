@@ -415,9 +415,9 @@ pub mod events {
     #[derive(Debug, Clone)]
     pub struct Transport {
         /// The eventfd to start processing
-        pub readfd: pod::utils::Fd,
+        pub readfd: Fd,
         /// The eventfd to signal when the driver completes and profiling is enabled.
-        pub writefd: pod::utils::Fd,
+        pub writefd: Fd,
         /// The index of the memfd of the activation record
         pub memid: u32,
         /// The offset in memfd of the start of the activation record
@@ -437,14 +437,14 @@ pub mod events {
             Ok(Self {
                 readfd: {
                     let id = pod.pop_field()?.as_fd()?;
-                    pod::utils::Fd {
+                    Fd {
                         id,
                         fd: fds.get(id as usize).copied(),
                     }
                 },
                 writefd: {
                     let id = pod.pop_field()?.as_fd()?;
-                    pod::utils::Fd {
+                    Fd {
                         id,
                         fd: fds.get(id as usize).copied(),
                     }
@@ -800,7 +800,7 @@ pub mod events {
         /// The node_id of the peer node
         pub node_id: u32,
         /// The eventfd of the peer node
-        pub signalfd: pod::utils::Fd,
+        pub signalfd: Fd,
         /// The memid of the activation record of the peer from Core:AddMem
         pub memid: u32,
         /// The offset in memid
@@ -821,7 +821,7 @@ pub mod events {
                 node_id: pod.pop_field()?.as_u32()?,
                 signalfd: {
                     let id = pod.pop_field()?.as_fd()?;
-                    pod::utils::Fd {
+                    Fd {
                         id,
                         fd: usize::try_from(id).ok().and_then(|id| fds.get(id)).copied(),
                     }

@@ -392,7 +392,7 @@ pub mod events {
     pub struct AddMem {
         pub id: u32,
         pub ty: SpaEnum<SpaDataType>,
-        pub fd: pod::utils::Fd,
+        pub fd: Fd,
         pub flags: MemblockFlags,
     }
 
@@ -409,7 +409,7 @@ pub mod events {
                 ty: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 fd: {
                     let id = pod.pop_field()?.as_fd()?;
-                    pod::utils::Fd {
+                    Fd {
                         id,
                         fd: fds.get(id as usize).copied(),
                     }

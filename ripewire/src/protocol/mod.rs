@@ -4,7 +4,7 @@ use crate::object_map::ObjectType;
 use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
 use pod_v2::{
     deserialize::{OwnedPod, PodStructDeserializer},
-    Id, PodDeserializer,
+    Fd, Id, PodDeserializer,
 };
 use std::{
     collections::HashMap,
