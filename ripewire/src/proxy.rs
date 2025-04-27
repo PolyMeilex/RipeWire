@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use libspa_consts::SpaParamType;
-use pod_v2::Id;
+use pod::Id;
 
 use crate::{
     context::Context,
@@ -255,7 +255,7 @@ impl PwDevice {
             id: Id(id as u32),
             index: 0,
             num: 0,
-            filter: pod_v2::Builder::with(|b| {
+            filter: pod::Builder::with(|b| {
                 b.write_none();
             }),
         };
@@ -264,8 +264,8 @@ impl PwDevice {
         context.send_msg(&msg, &[]).unwrap();
     }
 
-    pub fn set_param<D>(&self, context: &mut Context<D>, param: pod_v2::serialize::OwnedPod) {
-        let (obj, _) = pod_v2::PodDeserializer::new(&param.0);
+    pub fn set_param<D>(&self, context: &mut Context<D>, param: pod::serialize::OwnedPod) {
+        let (obj, _) = pod::PodDeserializer::new(&param.0);
         let id = obj.as_object().unwrap().object_id();
 
         let msg = pw_device::methods::SetParam {
@@ -307,7 +307,7 @@ impl PwNode {
             id: Id(id as u32),
             index: 0,
             num: 0,
-            filter: pod_v2::Builder::with(|b| {
+            filter: pod::Builder::with(|b| {
                 b.write_none();
             }),
         };
@@ -316,8 +316,8 @@ impl PwNode {
         context.send_msg(&msg, &[]).unwrap();
     }
 
-    pub fn set_param<D>(&self, context: &mut Context<D>, param: pod_v2::serialize::OwnedPod) {
-        let (obj, _) = pod_v2::PodDeserializer::new(&param.0);
+    pub fn set_param<D>(&self, context: &mut Context<D>, param: pod::serialize::OwnedPod) {
+        let (obj, _) = pod::PodDeserializer::new(&param.0);
         let id = obj.as_object().unwrap().object_id();
 
         let msg = pw_node::methods::SetParam {
@@ -405,7 +405,7 @@ impl PwPort {
             id: Id(id as u32),
             index: 0,
             num: 0,
-            filter: pod_v2::Builder::with(|b| {
+            filter: pod::Builder::with(|b| {
                 b.write_none();
             }),
         };

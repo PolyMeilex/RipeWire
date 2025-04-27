@@ -197,62 +197,62 @@ impl PipewireState {
 
                 match id {
                     ty @ (SpaParamType::Format | SpaParamType::EnumFormat) => {
-                        let obj = pod_v2::obj_gen::typed::Format(
+                        let obj = pod::obj_gen::typed::Format(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
-                        let obj = pod_v2::obj_gen::typed::Route(
+                        let obj = pod::obj_gen::typed::Route(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
-                        let obj = pod_v2::obj_gen::typed::Profile(
+                        let obj = pod::obj_gen::typed::Profile(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Tag => {
                         // TODO: Well that's fun this type has multiple properties with the same key id
-                        let obj = pod_v2::obj_gen::typed::Tag(
+                        let obj = pod::obj_gen::typed::Tag(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::PropInfo => {
-                        let obj = pod_v2::obj_gen::typed::PropInfo(
+                        let obj = pod::obj_gen::typed::PropInfo(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Props => {
-                        let obj = pod_v2::obj_gen::typed::Props(
+                        let obj = pod::obj_gen::typed::Props(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Io => {
-                        let obj = pod_v2::obj_gen::typed::Io(
+                        let obj = pod::obj_gen::typed::Io(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::PortConfig | SpaParamType::EnumPortConfig) => {
-                        let obj = pod_v2::obj_gen::typed::PortConfig(
+                        let obj = pod::obj_gen::typed::PortConfig(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::Latency => {
-                        let obj = pod_v2::obj_gen::typed::Latency(
+                        let obj = pod::obj_gen::typed::Latency(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ SpaParamType::ProcessLatency => {
-                        let obj = pod_v2::obj_gen::typed::ProcessLatency(
+                        let obj = pod::obj_gen::typed::ProcessLatency(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
@@ -330,13 +330,13 @@ impl PipewireState {
 
                 match id {
                     ty @ (SpaParamType::Route | SpaParamType::EnumRoute) => {
-                        let obj = pod_v2::obj_gen::typed::Route(
+                        let obj = pod::obj_gen::typed::Route(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
                     }
                     ty @ (SpaParamType::Profile | SpaParamType::EnumProfile) => {
-                        let obj = pod_v2::obj_gen::typed::Profile(
+                        let obj = pod::obj_gen::typed::Profile(
                             msg.params.as_deserializer().as_object().unwrap(),
                         );
                         // println!("{ty:?}: {obj:?}");
@@ -386,7 +386,7 @@ impl PipewireState {
             device.set_param(
                 ctx,
                 // TODO: Not very fun to write
-                pod_v2::Builder::with(|b| {
+                pod::Builder::with(|b| {
                     b.write_object_with(
                         SpaType::ObjectParamRoute,
                         SpaParamType::Route as u32,
@@ -491,7 +491,7 @@ impl PipewireState {
                     port_id: 0,
                     change_mask: PortUpdateChangeMask::PARAMS | PortUpdateChangeMask::INFO,
                     params: {
-                        let format = pod_v2::Builder::with(|b| {
+                        let format = pod::Builder::with(|b| {
                             b.write_object_with(
                                 SpaType::ObjectFormat,
                                 SpaParamType::EnumFormat as u32,
@@ -505,7 +505,7 @@ impl PipewireState {
                                 },
                             );
                         });
-                        let io = pod_v2::Builder::with(|b| {
+                        let io = pod::Builder::with(|b| {
                             b.write_object_with(
                                 SpaType::ObjectParamIo,
                                 SpaParamType::Io as u32,

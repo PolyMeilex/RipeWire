@@ -51,7 +51,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,

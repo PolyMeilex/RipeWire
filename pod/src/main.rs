@@ -4,7 +4,7 @@ use libspa_consts::{SpaEnum, SpaFormat, SpaMediaType, SpaType};
 
 fn main() {
     {
-        let mut builder = pod_v2::Builder::new(Cursor::new(vec![]));
+        let mut builder = pod::Builder::new(Cursor::new(vec![]));
 
         builder.write_object_with(SpaEnum::Value(SpaType::ObjectFormat), 0, |b| {
             b.write_property(SpaFormat::MediaType as u32, 0, |b| {
@@ -16,10 +16,10 @@ fn main() {
         });
 
         let builder = builder.into_inner().into_inner();
-        pod_v2::dbg_print::dbg_print(&builder);
+        pod::dbg_print::dbg_print(&builder);
     }
 
-    let mut builder = pod_v2::Builder::new(Cursor::new(vec![]));
+    let mut builder = pod::Builder::new(Cursor::new(vec![]));
 
     builder.push_struct_with(|b| {
         b.write_none()
@@ -66,7 +66,7 @@ fn main() {
     // dbg!(&value);
 
     dbg!(builder_out.len());
-    pod_v2::dbg_print::dbg_print(&builder_out);
+    pod::dbg_print::dbg_print(&builder_out);
 
     let builder_out = vec![
         72, 1, 0, 0, 14, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 76, 1, 0, 64, 0, 0, 0, 0, 4, 0, 0, 0, 3,
@@ -84,7 +84,7 @@ fn main() {
     ];
 
     dbg!(builder_out.len());
-    pod_v2::dbg_print::dbg_print(&builder_out);
+    pod::dbg_print::dbg_print(&builder_out);
 
     // for _ in 0..1000 {
     //     println!("{:?} => {}", deserializer.ty(), deserializer.size());

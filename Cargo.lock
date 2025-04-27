@@ -409,21 +409,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
+name = "pod"
+version = "0.1.0"
+dependencies = [
+ "bstr",
+ "libspa-consts",
+ "thiserror",
+]
+
+[[package]]
 name = "pod-derive"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "pod-v2"
-version = "0.1.0"
-dependencies = [
- "bstr",
- "libspa-consts",
- "thiserror",
 ]
 
 [[package]]
@@ -502,8 +502,8 @@ dependencies = [
  "nix 0.26.4",
  "num-derive",
  "num-traits",
+ "pod",
  "pod-derive",
- "pod-v2",
  "quick-xml",
  "ron",
  "serde",

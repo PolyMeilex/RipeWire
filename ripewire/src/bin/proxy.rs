@@ -13,7 +13,7 @@ use std::{
 };
 
 use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
-use pod_v2::deserialize::PodDeserializerKind;
+use pod::deserialize::PodDeserializerKind;
 use ripewire::{connection::Message, object_map::ObjectType};
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
@@ -96,7 +96,7 @@ fn main() {
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
                 reader = rest;
                 inspect_method(&objects, &interfaces, &msg);
-                // pod_v2::dbg_print::dbg_print(&msg.body);
+                // pod::dbg_print::dbg_print(&msg.body);
             }
 
             sendmsg(&server, bytes, &cmsgs);
@@ -117,7 +117,7 @@ fn main() {
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
                 reader = rest;
                 inspect_event(&objects, &interfaces, &msg);
-                // pod_v2::dbg_print::dbg_print(&msg.body);
+                // pod::dbg_print::dbg_print(&msg.body);
             }
 
             sendmsg(&client, bytes, &cmsgs);

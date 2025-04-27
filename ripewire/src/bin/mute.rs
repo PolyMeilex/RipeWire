@@ -127,7 +127,7 @@ fn main() {
         device.set_param(
             &mut ctx,
             // TODO: Not very fun to write
-            pod_v2::Builder::with(|b| {
+            pod::Builder::with(|b| {
                 b.write_object_with(SpaType::ObjectParamRoute, SpaParamType::Route as u32, |b| {
                     b.write_property(SpaParamRoute::Index as u32, 0, |b| {
                         b.write_u32(4);

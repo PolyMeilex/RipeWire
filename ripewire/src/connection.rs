@@ -10,7 +10,7 @@ use std::{
 };
 
 use nix::sys::socket::{self, ControlMessage, MsgFlags};
-use pod_v2::PodDeserializer;
+use pod::PodDeserializer;
 
 pub const MAX_FDS_OUT: usize = 28;
 
@@ -170,11 +170,11 @@ fn read_body_and_footer<'a>(
         let body = &buff[..header.len as usize];
         debug_assert_eq!(body.len(), header.len as usize);
 
-        let (body, footer) = pod_v2::PodDeserializer::new(body);
+        let (body, footer) = pod::PodDeserializer::new(body);
         let footer = if footer.is_empty() {
             None
         } else {
-            let (footer, rest) = pod_v2::PodDeserializer::new(footer);
+            let (footer, rest) = pod::PodDeserializer::new(footer);
             debug_assert!(rest.is_empty());
             Some(footer)
         };

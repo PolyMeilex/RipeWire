@@ -28,7 +28,7 @@ pub mod methods {
     impl MethodSerialize for Hello {
         const OPCODE: u8 = 1;
         fn serialize(&self, mut buff: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+            pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.version);
             });
         }
@@ -52,7 +52,7 @@ pub mod methods {
     impl MethodSerialize for Sync {
         const OPCODE: u8 = 2;
         fn serialize(&self, mut buff: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+            pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.seq);
             });
@@ -73,7 +73,7 @@ pub mod methods {
     impl MethodSerialize for Pong {
         const OPCODE: u8 = 3;
         fn serialize(&self, mut buff: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+            pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.seq);
             });
@@ -96,7 +96,7 @@ pub mod methods {
     impl MethodSerialize for Error {
         const OPCODE: u8 = 4;
         fn serialize(&self, mut buff: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+            pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.seq);
                 b.write_u32(self.res);
@@ -119,7 +119,7 @@ pub mod methods {
     impl MethodSerialize for GetRegistry {
         const OPCODE: u8 = 5;
         fn serialize(&self, mut buff: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+            pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.version);
                 b.write_u32(self.new_id);
             });
@@ -144,7 +144,7 @@ pub mod methods {
     impl MethodSerialize for CreateObject {
         const OPCODE: u8 = 6;
         fn serialize(&self, mut buff: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+            pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_str(&self.factory_name);
                 b.write_str(&self.interface);
                 b.write_u32(self.version);
@@ -173,7 +173,7 @@ pub mod methods {
     impl MethodSerialize for Destroy {
         const OPCODE: u8 = 7;
         fn serialize(&self, mut buff: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buff).push_struct_with(|b| {
+            pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
             });
         }
@@ -231,9 +231,9 @@ pub mod events {
         const OPCODE: u8 = 0;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -260,9 +260,9 @@ pub mod events {
         const OPCODE: u8 = 1;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: {
@@ -291,9 +291,9 @@ pub mod events {
         const OPCODE: u8 = 2;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -321,9 +321,9 @@ pub mod events {
         const OPCODE: u8 = 3;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -348,9 +348,9 @@ pub mod events {
         const OPCODE: u8 = 4;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -371,9 +371,9 @@ pub mod events {
         const OPCODE: u8 = 5;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -400,9 +400,9 @@ pub mod events {
         const OPCODE: u8 = 6;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -429,9 +429,9 @@ pub mod events {
         const OPCODE: u8 = 7;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -451,9 +451,9 @@ pub mod events {
         const OPCODE: u8 = 8;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,

@@ -12,7 +12,7 @@ num-traits = "0.2"
 num-derive = "0.4"
 thiserror = "1"
 libspa-consts = { path = "../libspa-consts" }
-pod-v2 = { path = "../pod-v2" }
+pod = { path = "../pod" }
 pod-derive = { path = "../pod-derive" }
 quick-xml = "0.28.0"
 tokio = { version = "1", features = [

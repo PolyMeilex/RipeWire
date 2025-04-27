@@ -2,7 +2,7 @@
 
 use crate::object_map::ObjectType;
 use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
-use pod_v2::{
+use pod::{
     deserialize::{OwnedPod, PodStructDeserializer},
     Fd, Id, PodDeserializer,
 };
@@ -36,7 +36,7 @@ pub trait HasOpCode {
 pub struct EventDeserializeError {
     pub interface: &'static str,
     pub event: &'static str,
-    pub error: pod_v2::DeserializeError,
+    pub error: pod::DeserializeError,
 }
 
 pub trait HasInterface {
@@ -48,14 +48,14 @@ trait EventDeserialize: Sized {
     fn deserialize(
         deserializer: &mut PodDeserializer,
         fds: &[RawFd],
-    ) -> pod_v2::deserialize::Result<Self>;
+    ) -> pod::deserialize::Result<Self>;
 }
 
 impl<T: EventDeserialize> Deserialize for T {
     fn deserialize(
         deserializer: &mut PodDeserializer,
         fds: &[RawFd],
-    ) -> pod_v2::deserialize::Result<Self> {
+    ) -> pod::deserialize::Result<Self> {
         <T as EventDeserialize>::deserialize(deserializer, fds)
     }
 }
@@ -64,12 +64,12 @@ pub trait Deserialize: Sized {
     fn deserialize(
         deserializer: &mut PodDeserializer,
         fds: &[RawFd],
-    ) -> pod_v2::deserialize::Result<Self>;
+    ) -> pod::deserialize::Result<Self>;
 }
 
 fn parse_dict(
     pod: &mut PodStructDeserializer,
-) -> pod_v2::deserialize::Result<HashMap<String, String>> {
+) -> pod::deserialize::Result<HashMap<String, String>> {
     let count = pod.pop_field()?;
     let count = count.as_i32()?;
 
@@ -101,7 +101,7 @@ pub struct ParamInfo {
     pub flags: ParamFlags,
 }
 
-fn parse_params(pod: &mut PodStructDeserializer) -> pod_v2::deserialize::Result<Vec<ParamInfo>> {
+fn parse_params(pod: &mut PodStructDeserializer) -> pod::deserialize::Result<Vec<ParamInfo>> {
     let len = pod.pop_field()?.as_i32()?;
 
     if len <= 0 {

@@ -24,7 +24,7 @@ pub mod methods {
     impl MethodSerialize for GetNode {
         const OPCODE: u8 = 1;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.version);
                 b.write_u32(self.new_id);
             });
@@ -75,7 +75,7 @@ pub mod methods {
     }
 
     impl NodeInfo {
-        fn deserialize(pod: &mut PodStructDeserializer) -> pod_v2::deserialize::Result<Self> {
+        fn deserialize(pod: &mut PodStructDeserializer) -> pod::deserialize::Result<Self> {
             Ok(Self {
                 max_input_ports: pod.pop_field()?.as_u32()?,
                 max_output_ports: pod.pop_field()?.as_u32()?,
@@ -86,7 +86,7 @@ pub mod methods {
             })
         }
 
-        fn serialize2(&self, b: &mut pod_v2::Builder<impl Write + Seek>) {
+        fn serialize2(&self, b: &mut pod::Builder<impl Write + Seek>) {
             b.push_struct_with(|b| {
                 b.write_u32(self.max_input_ports);
                 b.write_u32(self.max_output_ports);
@@ -122,7 +122,7 @@ pub mod methods {
         /// A bitfield of changed items
         pub change_mask: UpdateChangeMask,
         /// Number of update params, valid when change_mask has (1<<0)
-        pub params: Vec<pod_v2::serialize::OwnedPod>,
+        pub params: Vec<pod::serialize::OwnedPod>,
         // TODO: I don't remember why this is an Option
         /// An updated param
         pub info: Option<NodeInfo>,
@@ -131,7 +131,7 @@ pub mod methods {
     impl MethodSerialize for Update {
         const OPCODE: u8 = 2;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.change_mask.bits());
                 b.write_u32(self.params.len() as u32);
                 for param in self.params.iter() {
@@ -147,7 +147,7 @@ pub mod methods {
     }
 
     impl Update {
-        pub fn deserialize(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Self> {
+        pub fn deserialize(pod: &mut PodDeserializer) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 change_mask: UpdateChangeMask::from_bits_retain(pod.pop_field()?.as_u32()?),
@@ -237,7 +237,7 @@ pub mod methods {
     }
 
     impl PortInfo {
-        pub fn deserialize(pod: &mut PodStructDeserializer) -> pod_v2::deserialize::Result<Self> {
+        pub fn deserialize(pod: &mut PodStructDeserializer) -> pod::deserialize::Result<Self> {
             Ok(Self {
                 change_mask: PortInfoChangeMask::from_bits_retain(pod.pop_field()?.as_u64()?),
                 flags: PortFlags::from_bits_retain(pod.pop_field()?.as_u64()?),
@@ -248,7 +248,7 @@ pub mod methods {
             })
         }
 
-        pub fn serialize2(&self, b: &mut pod_v2::Builder<impl Write + Seek>) {
+        pub fn serialize2(&self, b: &mut pod::Builder<impl Write + Seek>) {
             b.push_struct_with(|b| {
                 b.write_u64(self.change_mask.bits());
                 b.write_u64(self.flags.bits());
@@ -291,7 +291,7 @@ pub mod methods {
         /// A bitfield of changed items
         pub change_mask: PortUpdateChangeMask,
         /// Updated params
-        pub params: Vec<pod_v2::serialize::OwnedPod>,
+        pub params: Vec<pod::serialize::OwnedPod>,
         /// An updated [`PortInfo`], valid when change_mask has (1<<1)
         pub info: Option<PortInfo>,
     }
@@ -299,7 +299,7 @@ pub mod methods {
     impl MethodSerialize for PortUpdate {
         const OPCODE: u8 = 3;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.direction.as_raw());
                 b.write_u32(self.port_id);
                 b.write_u32(self.change_mask.bits());
@@ -319,7 +319,7 @@ pub mod methods {
     }
 
     impl PortUpdate {
-        pub fn deserialize(pod: &mut PodDeserializer) -> pod_v2::deserialize::Result<Self> {
+        pub fn deserialize(pod: &mut PodDeserializer) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
@@ -360,7 +360,7 @@ pub mod methods {
     impl MethodSerialize for SetActive {
         const OPCODE: u8 = 4;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_bool(self.active);
             });
         }
@@ -370,13 +370,13 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct Event {
         /// the event to emit. See enum spa_node_event
-        event: pod_v2::serialize::OwnedPod,
+        event: pod::serialize::OwnedPod,
     }
 
     impl MethodSerialize for Event {
         const OPCODE: u8 = 5;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_pod(&self.event);
             });
         }
@@ -393,7 +393,7 @@ pub mod methods {
     impl MethodSerialize for PortBuffers {
         const OPCODE: u8 = 6;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|_b| {
+            pod::Builder::new(&mut buf).push_struct_with(|_b| {
                 todo!();
             });
         }
@@ -429,10 +429,7 @@ pub mod events {
     impl EventDeserialize for Transport {
         const OPCODE: u8 = 0;
 
-        fn deserialize(
-            pod: &mut PodDeserializer,
-            fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        fn deserialize(pod: &mut PodDeserializer, fds: &[RawFd]) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 readfd: {
@@ -473,7 +470,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
@@ -502,7 +499,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_id()?,
@@ -526,7 +523,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 event: pod.pop_field()?.to_owned(),
@@ -547,7 +544,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 command: pod.pop_field()?.to_owned(),
@@ -572,7 +569,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
@@ -597,7 +594,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
@@ -627,7 +624,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
@@ -658,8 +655,8 @@ pub mod events {
 
     impl PortBufferData {
         fn deserialize(
-            pod: &mut pod_v2::deserialize::PodStructDeserializer,
-        ) -> pod_v2::deserialize::Result<Self> {
+            pod: &mut pod::deserialize::PodStructDeserializer,
+        ) -> pod::deserialize::Result<Self> {
             Ok(Self {
                 type_: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 data: pod.pop_field()?.as_u32()?,
@@ -687,8 +684,8 @@ pub mod events {
 
     impl PortBuffer {
         fn deserialize(
-            pod: &mut pod_v2::deserialize::PodStructDeserializer,
-        ) -> pod_v2::deserialize::Result<Self> {
+            pod: &mut pod::deserialize::PodStructDeserializer,
+        ) -> pod::deserialize::Result<Self> {
             Ok(Self {
                 mem_id: pod.pop_field()?.as_u32()?,
                 offset: pod.pop_field()?.as_u32()?,
@@ -735,7 +732,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
@@ -779,7 +776,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),
@@ -812,10 +809,7 @@ pub mod events {
     impl EventDeserialize for SetActivation {
         const OPCODE: u8 = 10;
 
-        fn deserialize(
-            pod: &mut PodDeserializer,
-            fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        fn deserialize(pod: &mut PodDeserializer, fds: &[RawFd]) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 node_id: pod.pop_field()?.as_u32()?,
@@ -855,7 +849,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 direction: SpaEnum::from_raw(pod.pop_field()?.as_u32()?),

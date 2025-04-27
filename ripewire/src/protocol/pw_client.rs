@@ -61,7 +61,7 @@ pub mod methods {
     impl MethodSerialize for Error {
         const OPCODE: u8 = 1;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.res);
                 b.write_str(&self.error);
@@ -81,7 +81,7 @@ pub mod methods {
     impl MethodSerialize for UpdateProperties {
         const OPCODE: u8 = 2;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.push_struct_with(|b| {
                     b.write_u32(self.properties.len() as u32);
                     for (key, value) in self.properties.iter() {
@@ -107,7 +107,7 @@ pub mod methods {
     impl MethodSerialize for GetPermissions {
         const OPCODE: u8 = 3;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.index);
                 b.write_u32(self.num);
             });
@@ -123,7 +123,7 @@ pub mod methods {
     impl MethodSerialize for UpdatePermissions {
         const OPCODE: u8 = 4;
         fn serialize(&self, mut buf: impl Write + Seek) {
-            pod_v2::Builder::new(&mut buf).push_struct_with(|b| {
+            pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.0.len() as u32);
                 for Permission { id, permissions } in self.0.iter() {
                     b.write_u32(*id);
@@ -146,8 +146,8 @@ pub mod events {
     }
 
     fn parse_permissions(
-        deserializer: &mut pod_v2::PodDeserializer,
-    ) -> pod_v2::deserialize::Result<Vec<Permission>> {
+        deserializer: &mut pod::PodDeserializer,
+    ) -> pod::deserialize::Result<Vec<Permission>> {
         let mut pod = deserializer.as_struct()?;
 
         let len = pod.pop_field()?.as_u32()?;
@@ -182,9 +182,9 @@ pub mod events {
         const OPCODE: u8 = 0;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -207,9 +207,9 @@ pub mod events {
         const OPCODE: u8 = 1;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 index: pod.pop_field()?.as_u32()?,

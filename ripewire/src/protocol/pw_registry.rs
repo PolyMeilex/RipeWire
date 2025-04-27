@@ -33,7 +33,7 @@ pub mod methods {
     impl MethodSerialize for Bind {
         const OPCODE: u8 = 1;
         fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
+            pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_str(&self.interface);
                 b.write_u32(self.version);
@@ -57,7 +57,7 @@ pub mod methods {
     impl MethodSerialize for Destroy {
         const OPCODE: u8 = 2;
         fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
+            pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_u32(self.id);
             });
         }
@@ -92,9 +92,9 @@ pub mod events {
         const OPCODE: u8 = 0;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -121,9 +121,9 @@ pub mod events {
         const OPCODE: u8 = 1;
 
         fn deserialize(
-            pod: &mut pod_v2::PodDeserializer,
+            pod: &mut pod::PodDeserializer,
             _fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,

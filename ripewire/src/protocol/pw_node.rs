@@ -29,7 +29,7 @@ pub mod methods {
     impl MethodSerialize for SubscribeParams {
         const OPCODE: u8 = 1;
         fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
+            pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_array_with(|b| {
                     for id in self.ids.iter() {
                         b.write_id(id);
@@ -56,13 +56,13 @@ pub mod methods {
         pub id: Id,
         pub index: u32,
         pub num: u32,
-        pub filter: pod_v2::serialize::OwnedPod,
+        pub filter: pod::serialize::OwnedPod,
     }
 
     impl MethodSerialize for EnumParams {
         const OPCODE: u8 = 2;
         fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
+            pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_i32(self.seq);
                 b.write_id(self.id);
                 b.write_u32(self.index);
@@ -83,13 +83,13 @@ pub mod methods {
     pub struct SetParam {
         pub id: Id,
         pub flags: u32,
-        pub param: pod_v2::serialize::OwnedPod,
+        pub param: pod::serialize::OwnedPod,
     }
 
     impl MethodSerialize for SetParam {
         const OPCODE: u8 = 3;
         fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
+            pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_id(self.id);
                 b.write_u32(self.flags);
                 b.write_pod(&self.param);
@@ -104,13 +104,13 @@ pub mod methods {
     /// This requires X and W permissions on the node.
     #[derive(Debug, Clone)]
     pub struct SendCommand {
-        pub command: pod_v2::serialize::OwnedPod,
+        pub command: pod::serialize::OwnedPod,
     }
 
     impl MethodSerialize for SendCommand {
         const OPCODE: u8 = 4;
         fn serialize(&self, buf: impl Write + Seek) {
-            pod_v2::Builder::new(buf).push_struct_with(|b| {
+            pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_pod(&self.command);
             });
         }
@@ -157,7 +157,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -198,7 +198,7 @@ pub mod events {
         fn deserialize(
             pod: &mut PodDeserializer,
             fds: &[RawFd],
-        ) -> pod_v2::deserialize::Result<Self> {
+        ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 seq: pod.pop_field()?.as_i32()?,
