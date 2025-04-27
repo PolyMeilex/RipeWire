@@ -265,11 +265,12 @@ impl PwDevice {
         context.send_msg(&msg, &[]).unwrap();
     }
 
-    pub fn set_param<D>(&self, context: &mut Context<D>, value: Object) {
-        let param = pod_v2::Builder::with(|b| value.serialize_v2(b));
+    pub fn set_param<D>(&self, context: &mut Context<D>, param: pod_v2::serialize::OwnedPod) {
+        let (obj, _) = pod_v2::PodDeserializer::new(&param.0);
+        let id = obj.as_object().unwrap().object_id();
 
         let msg = pw_device::methods::SetParam {
-            id: Id(value.id),
+            id: Id(id),
             flags: 0,
             param,
         };

@@ -5,7 +5,7 @@ use std::io::{self, Read};
 use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
-use libspa_consts::{SpaDirection, SpaEnum, SpaParamType};
+use libspa_consts::{SpaDirection, SpaEnum, SpaParamRoute, SpaParamType, SpaProp, SpaType};
 use pod::Value;
 
 use ripewire::connection::MessageBuffer;
@@ -383,16 +383,35 @@ impl PipewireState {
 
             device.set_param(
                 ctx,
-                pod::params::RouteParamBuilder::route()
-                    .index(4)
-                    .device(4)
-                    .props(
-                        pod::props::PropsBuilder::new()
-                            .mute(false)
-                            .volume(0.1)
-                            .build(),
-                    )
-                    .build(),
+                // TODO: Not very fun to write
+                pod_v2::Builder::with(|b| {
+                    b.write_object_with(
+                        SpaType::ObjectParamRoute,
+                        SpaParamType::Route as u32,
+                        |b| {
+                            b.write_property(SpaParamRoute::Index as u32, 0, |b| {
+                                b.write_u32(4);
+                            });
+                            b.write_property(SpaParamRoute::Device as u32, 0, |b| {
+                                b.write_u32(4);
+                            });
+                            b.write_property(SpaParamRoute::Props as u32, 0, |b| {
+                                b.write_object_with(
+                                    SpaType::ObjectProps,
+                                    SpaParamType::Route as u32,
+                                    |b| {
+                                        b.write_property(SpaProp::Mute as u32, 0, |b| {
+                                            b.write_bool(false);
+                                        });
+                                        b.write_property(SpaProp::Volume as u32, 0, |b| {
+                                            b.write_float(0.1);
+                                        });
+                                    },
+                                );
+                            });
+                        },
+                    );
+                }),
             );
 
             ctx.set_object_callback(&device, Self::device_event);

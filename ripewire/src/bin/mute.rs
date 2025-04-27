@@ -1,5 +1,6 @@
 use std::{collections::HashMap, io::Write as _, os::fd::AsRawFd};
 
+use libspa_consts::{SpaParamRoute, SpaParamType, SpaProp, SpaType};
 use ripewire::{
     connection::MessageBuffer, context::Context, global_list::GlobalList, object_map::ObjectType,
     protocol::pw_core, proxy::PwDevice, HashMapExt,
@@ -125,16 +126,31 @@ fn main() {
 
         device.set_param(
             &mut ctx,
-            pod::params::RouteParamBuilder::route()
-                .index(4)
-                .device(4)
-                .props(
-                    pod::props::PropsBuilder::new()
-                        .mute(false)
-                        .volume(0.5)
-                        .build(),
-                )
-                .build(),
+            // TODO: Not very fun to write
+            pod_v2::Builder::with(|b| {
+                b.write_object_with(SpaType::ObjectParamRoute, SpaParamType::Route as u32, |b| {
+                    b.write_property(SpaParamRoute::Index as u32, 0, |b| {
+                        b.write_u32(4);
+                    });
+                    b.write_property(SpaParamRoute::Device as u32, 0, |b| {
+                        b.write_u32(4);
+                    });
+                    b.write_property(SpaParamRoute::Props as u32, 0, |b| {
+                        b.write_object_with(
+                            SpaType::ObjectProps,
+                            SpaParamType::Route as u32,
+                            |b| {
+                                b.write_property(SpaProp::Mute as u32, 0, |b| {
+                                    b.write_bool(false);
+                                });
+                                b.write_property(SpaProp::Volume as u32, 0, |b| {
+                                    b.write_float(0.1);
+                                });
+                            },
+                        );
+                    });
+                });
+            }),
         );
 
         state.is_done = true;
