@@ -7,6 +7,7 @@ edition = "2021"
 calloop = "0.10.5"
 nix = "0.26"
 bitflags = "2.0.0"
+rustix = { version = "1.0.7", features = ["net"] }
 
 num-traits = "0.2"
 num-derive = "0.4"
