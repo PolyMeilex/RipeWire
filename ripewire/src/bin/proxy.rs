@@ -5,71 +5,59 @@
 use std::{
     collections::{HashMap, VecDeque},
     io::{IoSlice, IoSliceMut},
+    mem::MaybeUninit,
     os::{
-        fd::{AsRawFd, RawFd},
+        fd::{AsFd, AsRawFd, OwnedFd},
         unix::net::{UnixListener, UnixStream},
     },
     sync::{Arc, Mutex},
 };
 
-use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
 use pod::deserialize::PodDeserializerKind;
 use ripewire::{connection::Message, object_map::ObjectType};
+use rustix::net::{
+    RecvAncillaryBuffer, RecvAncillaryMessage, RecvFlags, SendAncillaryBuffer,
+    SendAncillaryMessage, SendFlags,
+};
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
 pub const MAX_BUFFER_SIZE: usize = 500000;
 pub const MAX_FDS: usize = 1024;
 pub const MAX_FDS_MSG: usize = 28;
 
-fn recvmsg<'a>(
-    stream: &UnixStream,
-    buffer: &'a mut [u8],
-) -> (&'a [u8], Vec<ControlMessageOwned>, VecDeque<RawFd>) {
-    let (len, cmsgs) = {
-        let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_MSG]);
-        let mut iov = [IoSliceMut::new(buffer)];
+fn recvmsg<'a>(stream: &UnixStream, buffer: &'a mut [u8]) -> (&'a [u8], VecDeque<OwnedFd>) {
+    let mut space = [MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(MAX_FDS_MSG))];
+    let mut cmsgs = RecvAncillaryBuffer::new(&mut space);
+    let mut iov = [IoSliceMut::new(buffer)];
 
-        let msg = socket::recvmsg::<()>(
-            stream.as_raw_fd(),
-            &mut iov,
-            Some(&mut cmsg),
-            MsgFlags::MSG_CMSG_CLOEXEC,
-        )
-        .unwrap();
-
-        let cmsgs: Vec<ControlMessageOwned> = msg.cmsgs().collect();
-        (msg.bytes, cmsgs)
-    };
+    let len = rustix::net::recvmsg(stream, &mut iov, &mut cmsgs, RecvFlags::CMSG_CLOEXEC)
+        .unwrap()
+        .bytes;
 
     let mut fds = VecDeque::new();
-    for fd in cmsgs.iter().flat_map(|cmsg| match cmsg {
-        socket::ControlMessageOwned::ScmRights(s) => s.as_slice(),
-        _ => &[],
-    }) {
-        fds.push_back(*fd);
-    }
 
-    (&buffer[..len], cmsgs, fds)
-}
-
-fn sendmsg(stream: &UnixStream, bytes: &[u8], cmsgs: &[ControlMessageOwned]) {
-    let cmsgs: Vec<ControlMessage> = cmsgs
-        .iter()
-        .map(|cmsg| match cmsg {
-            ControlMessageOwned::ScmRights(s) => ControlMessage::ScmRights(s),
+    let received_fds = cmsgs
+        .drain()
+        .filter_map(|cmsg| match cmsg {
+            RecvAncillaryMessage::ScmRights(fds) => Some(fds),
             _ => todo!(),
         })
-        .collect();
+        .flatten();
+    fds.extend(received_fds);
+
+    (&buffer[..len], fds)
+}
+
+fn sendmsg(stream: &UnixStream, bytes: &[u8], cmsgs: VecDeque<OwnedFd>) {
+    let fds: Vec<_> = cmsgs.iter().map(|fd| fd.as_fd()).collect();
     let iov = [IoSlice::new(bytes)];
 
-    socket::sendmsg::<()>(
-        stream.as_raw_fd(),
-        &iov,
-        &cmsgs,
-        MsgFlags::MSG_NOSIGNAL,
-        None,
-    )
-    .unwrap();
+    let mut space = vec![MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(fds.len()))];
+    let mut cmsgs = SendAncillaryBuffer::new(&mut space);
+
+    cmsgs.push(SendAncillaryMessage::ScmRights(&fds));
+
+    rustix::net::sendmsg(stream, &iov, &mut cmsgs, SendFlags::NOSIGNAL).unwrap();
 }
 
 fn main() {
@@ -90,16 +78,17 @@ fn main() {
         let interfaces = interfaces();
         move || loop {
             buffer.fill(0);
-            let (bytes, cmsgs, mut fds) = recvmsg(&client, &mut buffer);
+            let (bytes, mut fds) = recvmsg(&client, &mut buffer);
 
             let mut reader = bytes;
+            // TODO: this drains VecDeq, while we want to keep our FD
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
                 reader = rest;
                 inspect_method(&objects, &interfaces, &msg);
                 // pod::dbg_print::dbg_print(&msg.body);
             }
 
-            sendmsg(&server, bytes, &cmsgs);
+            sendmsg(&server, bytes, fds);
         }
     });
 
@@ -111,16 +100,17 @@ fn main() {
         let interfaces = interfaces();
         move || loop {
             buffer.fill(0);
-            let (bytes, cmsgs, mut fds) = recvmsg(&server, &mut buffer);
+            let (bytes, mut fds) = recvmsg(&server, &mut buffer);
 
             let mut reader = bytes;
+            // TODO: this drains VecDeq, while we want to keep our FD
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
                 reader = rest;
                 inspect_event(&objects, &interfaces, &msg);
                 // pod::dbg_print::dbg_print(&msg.body);
             }
 
-            sendmsg(&client, bytes, &cmsgs);
+            sendmsg(&client, bytes, fds);
         }
     });
 
@@ -250,8 +240,9 @@ fn inspect_event(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messag
 
 fn inspect_core_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_core::Event;
+    let fds: Vec<_> = msg.fds.iter().map(|fd| fd.as_raw_fd()).collect();
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &fds).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Done(v) => println!("{v:?}"),
         Event::Ping(v) => println!("{v:?}"),
@@ -267,7 +258,7 @@ fn inspect_core_event(opcode: u8, msg: &Message) {
 fn inspect_client_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_client::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Permissions(v) => println!("{v:#?}"),
     }
@@ -276,7 +267,7 @@ fn inspect_client_event(opcode: u8, msg: &Message) {
 fn inspect_client_node_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_client_node::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Transport(v) => println!("{v:#?}"),
         Event::SetParam(v) => println!("{v:#?}"),
         Event::SetIo(v) => println!("{v:#?}"),
@@ -295,7 +286,7 @@ fn inspect_client_node_event(opcode: u8, msg: &Message) {
 fn inspect_device_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_device::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
     }
@@ -304,7 +295,7 @@ fn inspect_device_event(opcode: u8, msg: &Message) {
 fn inspect_factory_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_factory::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
 }
@@ -312,7 +303,7 @@ fn inspect_factory_event(opcode: u8, msg: &Message) {
 fn inspect_link_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_link::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
 }
@@ -320,7 +311,7 @@ fn inspect_link_event(opcode: u8, msg: &Message) {
 fn inspect_module_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_module::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
     }
 }
@@ -328,7 +319,7 @@ fn inspect_module_event(opcode: u8, msg: &Message) {
 fn inspect_node_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_node::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
     }
@@ -337,7 +328,7 @@ fn inspect_node_event(opcode: u8, msg: &Message) {
 fn inspect_port_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_port::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Info(v) => println!("{v:#?}"),
         Event::Param(v) => println!("{v:#?}"),
     }
@@ -346,7 +337,7 @@ fn inspect_port_event(opcode: u8, msg: &Message) {
 fn inspect_registry_event(opcode: u8, msg: &Message) {
     use ripewire::protocol::pw_registry::Event;
     let mut pod = msg.body.clone();
-    match Event::deserialize(opcode, &mut pod, &msg.fds).unwrap() {
+    match Event::deserialize(opcode, &mut pod, &msg.raw_fds()).unwrap() {
         Event::Global(v) => println!("{v:#?}"),
         Event::GlobalRemove(v) => println!("{v:?}"),
     }

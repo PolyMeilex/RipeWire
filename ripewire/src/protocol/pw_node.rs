@@ -154,10 +154,7 @@ pub mod events {
     impl EventDeserialize for Info {
         const OPCODE: u8 = 0;
 
-        fn deserialize(
-            pod: &mut PodDeserializer,
-            fds: &[RawFd],
-        ) -> pod::deserialize::Result<Self> {
+        fn deserialize(pod: &mut PodDeserializer, fds: &[RawFd]) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 id: pod.pop_field()?.as_u32()?,
@@ -195,10 +192,7 @@ pub mod events {
     impl EventDeserialize for Param {
         const OPCODE: u8 = 1;
 
-        fn deserialize(
-            pod: &mut PodDeserializer,
-            fds: &[RawFd],
-        ) -> pod::deserialize::Result<Self> {
+        fn deserialize(pod: &mut PodDeserializer, fds: &[RawFd]) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
                 seq: pod.pop_field()?.as_i32()?,

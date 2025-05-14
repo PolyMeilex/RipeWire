@@ -85,11 +85,12 @@ impl<D> Context<D> {
     pub fn dispatch_event(&mut self, state: &mut D, msg: Message) {
         let id = ObjectId::new(msg.header.object_id);
 
+        let fds: Vec<_> = msg.fds.iter().map(|fd| fd.as_raw_fd()).collect();
+
         match self.object_type(&id).unwrap() {
             ObjectType::Core => {
                 let mut pod = msg.body;
-                let event =
-                    pw_core::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+                let event = pw_core::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
 
                 let remove_id = if let pw_core::Event::RemoveId(ref event) = event {
                     Some(event.id)
@@ -107,7 +108,7 @@ impl<D> Context<D> {
             ObjectType::Client => {
                 let mut pod = msg.body;
                 let event =
-                    pw_client::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+                    pw_client::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
 
                 let client = PwClient::from_id(id);
                 self.dispatch_event_inner(state, client, event);
@@ -115,15 +116,14 @@ impl<D> Context<D> {
             ObjectType::ClientNode => {
                 let mut pod = msg.body;
                 let event =
-                    pw_client_node::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds)
-                        .unwrap();
+                    pw_client_node::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
                 let client_node = PwClientNode::from_id(id);
                 self.dispatch_event_inner(state, client_node, event);
             }
             ObjectType::Registry => {
                 let mut pod = msg.body;
                 let event =
-                    pw_registry::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+                    pw_registry::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
 
                 let registry = PwRegistry::from_id(id);
                 self.dispatch_event_inner(state, registry, event);
@@ -131,31 +131,28 @@ impl<D> Context<D> {
             ObjectType::Device => {
                 let mut pod = msg.body;
                 let event =
-                    pw_device::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+                    pw_device::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
 
                 let device = PwDevice::from_id(id);
                 self.dispatch_event_inner(state, device, event);
             }
             ObjectType::Node => {
                 let mut pod = msg.body;
-                let event =
-                    pw_node::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+                let event = pw_node::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
 
                 let device = PwNode::from_id(id);
                 self.dispatch_event_inner(state, device, event);
             }
             ObjectType::Link => {
                 let mut pod = msg.body;
-                let event =
-                    pw_link::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+                let event = pw_link::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
 
                 let device = PwLink::from_id(id);
                 self.dispatch_event_inner(state, device, event);
             }
             ObjectType::Port => {
                 let mut pod = msg.body;
-                let event =
-                    pw_port::Event::deserialize(msg.header.opcode, &mut pod, &msg.fds).unwrap();
+                let event = pw_port::Event::deserialize(msg.header.opcode, &mut pod, &fds).unwrap();
 
                 let device = PwPort::from_id(id);
                 self.dispatch_event_inner(state, device, event);
