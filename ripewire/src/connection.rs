@@ -1,16 +1,19 @@
 use std::{
     collections::VecDeque,
     io::{self, IoSlice, IoSliceMut},
-    mem,
+    mem::{self, MaybeUninit},
     os::{
-        fd::{AsRawFd, RawFd},
+        fd::{AsRawFd, BorrowedFd, IntoRawFd, RawFd},
         unix::net::UnixStream,
     },
     path::Path,
 };
 
-use nix::sys::socket::{self, ControlMessage, MsgFlags};
 use pod::PodDeserializer;
+use rustix::net::{
+    RecvAncillaryBuffer, RecvAncillaryMessage, RecvFlags, SendAncillaryBuffer,
+    SendAncillaryMessage, SendFlags,
+};
 
 pub const MAX_FDS_OUT: usize = 28;
 
@@ -214,26 +217,29 @@ pub fn read_msg<'a>(buff: &'a [u8], fds: &mut VecDeque<RawFd>) -> Option<(&'a [u
 }
 
 fn send_msg(stream: &UnixStream, bytes: &[u8], fds: &[RawFd]) -> io::Result<usize> {
-    // let flags = MsgFlags::MSG_DONTWAIT | MsgFlags::MSG_NOSIGNAL;
-    let flags = MsgFlags::MSG_NOSIGNAL;
     let iov = [IoSlice::new(bytes)];
 
     if !fds.is_empty() {
-        let cmsgs = [ControlMessage::ScmRights(fds)];
-        Ok(socket::sendmsg::<()>(
-            stream.as_raw_fd(),
+        let mut space = vec![MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(fds.len()))];
+        let mut cmsgs = SendAncillaryBuffer::new(&mut space);
+
+        // TODO: Just aceept BorrowedFd
+        let fds = unsafe { std::mem::transmute::<&[RawFd], &[BorrowedFd]>(fds) };
+
+        cmsgs.push(SendAncillaryMessage::ScmRights(fds));
+        Ok(rustix::net::sendmsg(
+            stream,
             &iov,
-            &cmsgs,
-            flags,
-            None,
+            &mut cmsgs,
+            SendFlags::NOSIGNAL,
         )?)
     } else {
-        Ok(socket::sendmsg::<()>(
-            stream.as_raw_fd(),
+        let mut cmsgs = SendAncillaryBuffer::new(&mut []);
+        Ok(rustix::net::sendmsg(
+            stream,
             &iov,
-            &[],
-            flags,
-            None,
+            &mut cmsgs,
+            SendFlags::NOSIGNAL,
         )?)
     }
 }
@@ -244,22 +250,22 @@ fn fill_buf(stream: &UnixStream, buffer: &mut MessageBuffer, mut needed: usize) 
             buffer.start = 0;
             buffer.end = 0;
 
-            let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_OUT]);
+            let mut space = [MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(MAX_FDS_OUT))];
+            let mut cmsgs = RecvAncillaryBuffer::new(&mut space);
+
             let mut iov = [IoSliceMut::new(&mut buffer.buffer)];
 
-            let msg = nix::sys::socket::recvmsg::<()>(
-                stream.as_raw_fd(),
-                &mut iov,
-                Some(&mut cmsg),
-                MsgFlags::MSG_CMSG_CLOEXEC | socket::MsgFlags::MSG_NOSIGNAL,
-            )?;
+            let msg = rustix::net::recvmsg(stream, &mut iov, &mut cmsgs, RecvFlags::CMSG_CLOEXEC)?;
 
-            for fd in msg.cmsgs().flat_map(|cmsg| match cmsg {
-                socket::ControlMessageOwned::ScmRights(s) => s,
-                _ => Vec::new(),
-            }) {
-                buffer.fds.push_back(fd);
-            }
+            let received_fds = cmsgs
+                .drain()
+                .filter_map(|cmsg| match cmsg {
+                    RecvAncillaryMessage::ScmRights(fds) => Some(fds),
+                    _ => None,
+                })
+                .flatten()
+                .map(|fd| fd.into_raw_fd());
+            buffer.fds.extend(received_fds);
 
             buffer.end = msg.bytes;
 

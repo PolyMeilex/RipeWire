@@ -1,8 +1,10 @@
 #![allow(clippy::single_match)]
 
 use std::collections::HashMap;
+use std::ffi::CStr;
 use std::io::{self, Read};
-use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd};
+use std::os::fd::{AsRawFd, BorrowedFd, FromRawFd, IntoRawFd};
+use std::ptr::NonNull;
 
 use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
 use libspa_consts::{
@@ -26,13 +28,19 @@ use ripewire::proxy::{ObjectId, PwClient, PwClientNode, PwCore, PwDevice, PwNode
 use ripewire::HashMapExt;
 
 fn properties() -> HashMap<String, String> {
-    let host = nix::unistd::gethostname().unwrap();
-    let host: &str = &host.to_string_lossy();
+    let host = rustix::system::uname();
+    let host: &str = &host.nodename().to_string_lossy();
 
-    let uid = nix::unistd::getuid();
-    let user = nix::unistd::User::from_uid(uid).unwrap().unwrap();
+    let user = unsafe {
+        let uid = libc::geteuid();
+        let passwd = NonNull::new(libc::getpwuid(uid)).unwrap();
 
-    let pid = nix::unistd::getpid().to_string();
+        CStr::from_ptr(passwd.as_ref().pw_name)
+            .to_str()
+            .expect("Failed to convert CStr to str")
+    };
+
+    let pid = rustix::process::getpid().as_raw_nonzero().to_string();
 
     HashMap::from_dict([
         ("log.level", "0"),
@@ -56,7 +64,7 @@ fn properties() -> HashMap<String, String> {
         ("application.process.binary", "ripewire"),
         ("application.language", "en_US.UTF-8"),
         ("application.process.id", &pid),
-        ("application.process.user", &user.name),
+        ("application.process.user", user),
         ("application.process.host", host),
         ("window.x11.display", ":0"),
         ("core.version", "0.3.58"),
@@ -96,7 +104,11 @@ pub fn run_rust() {
     let mut buffer = MessageBuffer::new();
     ev.handle()
         .insert_source(
-            Generic::new(fd, Interest::READ, Mode::Level),
+            Generic::new(
+                unsafe { BorrowedFd::borrow_raw(fd) },
+                Interest::READ,
+                Mode::Level,
+            ),
             move |_, _, state| {
                 loop {
                     let msg = state.ctx.rcv_msg(&mut buffer);
