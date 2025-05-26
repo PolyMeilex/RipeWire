@@ -5,71 +5,64 @@
 use std::{
     collections::{HashMap, VecDeque},
     io::{IoSlice, IoSliceMut},
+    mem::MaybeUninit,
     os::{
-        fd::{AsRawFd, RawFd},
+        fd::{BorrowedFd, IntoRawFd, RawFd},
         unix::net::{UnixListener, UnixStream},
     },
     sync::{Arc, Mutex},
 };
 
-use nix::sys::socket::{self, ControlMessage, ControlMessageOwned, MsgFlags};
 use pod::deserialize::PodDeserializerKind;
 use ripewire::{connection::Message, object_map::ObjectType};
+use rustix::net::{
+    RecvAncillaryBuffer, RecvAncillaryMessage, RecvFlags, SendAncillaryBuffer,
+    SendAncillaryMessage, SendFlags,
+};
 
 // pub const MAX_BUFFER_SIZE: usize = 1024 * 32;
 pub const MAX_BUFFER_SIZE: usize = 500000;
 pub const MAX_FDS: usize = 1024;
 pub const MAX_FDS_MSG: usize = 28;
 
-fn recvmsg<'a>(
-    stream: &UnixStream,
-    buffer: &'a mut [u8],
-) -> (&'a [u8], Vec<ControlMessageOwned>, VecDeque<RawFd>) {
-    let (len, cmsgs) = {
-        let mut cmsg = nix::cmsg_space!([RawFd; MAX_FDS_MSG]);
-        let mut iov = [IoSliceMut::new(buffer)];
+fn recvmsg<'a>(stream: &UnixStream, buffer: &'a mut [u8]) -> (&'a [u8], VecDeque<RawFd>) {
+    let mut space = [MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(MAX_FDS_MSG))];
+    let mut cmsgs = RecvAncillaryBuffer::new(&mut space);
+    let mut iov = [IoSliceMut::new(buffer)];
 
-        let msg = socket::recvmsg::<()>(
-            stream.as_raw_fd(),
-            &mut iov,
-            Some(&mut cmsg),
-            MsgFlags::MSG_CMSG_CLOEXEC,
-        )
-        .unwrap();
-
-        let cmsgs: Vec<ControlMessageOwned> = msg.cmsgs().collect();
-        (msg.bytes, cmsgs)
-    };
+    let len = rustix::net::recvmsg(stream, &mut iov, &mut cmsgs, RecvFlags::CMSG_CLOEXEC)
+        .unwrap()
+        .bytes;
 
     let mut fds = VecDeque::new();
-    for fd in cmsgs.iter().flat_map(|cmsg| match cmsg {
-        socket::ControlMessageOwned::ScmRights(s) => s.as_slice(),
-        _ => &[],
-    }) {
-        fds.push_back(*fd);
-    }
 
-    (&buffer[..len], cmsgs, fds)
-}
+    let received_fds = cmsgs
+        .drain()
+        .filter_map(|cmsg| match cmsg {
+            RecvAncillaryMessage::ScmRights(fds) => Some(fds),
 
-fn sendmsg(stream: &UnixStream, bytes: &[u8], cmsgs: &[ControlMessageOwned]) {
-    let cmsgs: Vec<ControlMessage> = cmsgs
-        .iter()
-        .map(|cmsg| match cmsg {
-            ControlMessageOwned::ScmRights(s) => ControlMessage::ScmRights(s),
             _ => todo!(),
         })
+        .flatten()
+        .map(|fd| fd.into_raw_fd());
+    fds.extend(received_fds);
+
+    (&buffer[..len], fds)
+}
+
+fn sendmsg(stream: &UnixStream, bytes: &[u8], fds: VecDeque<RawFd>) {
+    let fds: Vec<_> = fds
+        .iter()
+        .map(|fd| unsafe { BorrowedFd::borrow_raw(*fd) })
         .collect();
     let iov = [IoSlice::new(bytes)];
 
-    socket::sendmsg::<()>(
-        stream.as_raw_fd(),
-        &iov,
-        &cmsgs,
-        MsgFlags::MSG_NOSIGNAL,
-        None,
-    )
-    .unwrap();
+    let mut space = vec![MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(fds.len()))];
+    let mut cmsgs = SendAncillaryBuffer::new(&mut space);
+
+    cmsgs.push(SendAncillaryMessage::ScmRights(&fds));
+
+    rustix::net::sendmsg(stream, &iov, &mut cmsgs, SendFlags::NOSIGNAL).unwrap();
 }
 
 fn main() {
@@ -90,7 +83,7 @@ fn main() {
         let interfaces = interfaces();
         move || loop {
             buffer.fill(0);
-            let (bytes, cmsgs, mut fds) = recvmsg(&client, &mut buffer);
+            let (bytes, mut fds) = recvmsg(&client, &mut buffer);
 
             let mut reader = bytes;
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
@@ -99,7 +92,7 @@ fn main() {
                 // pod::dbg_print::dbg_print(&msg.body);
             }
 
-            sendmsg(&server, bytes, &cmsgs);
+            sendmsg(&server, bytes, fds);
         }
     });
 
@@ -111,7 +104,7 @@ fn main() {
         let interfaces = interfaces();
         move || loop {
             buffer.fill(0);
-            let (bytes, cmsgs, mut fds) = recvmsg(&server, &mut buffer);
+            let (bytes, mut fds) = recvmsg(&server, &mut buffer);
 
             let mut reader = bytes;
             while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
@@ -120,7 +113,7 @@ fn main() {
                 // pod::dbg_print::dbg_print(&msg.body);
             }
 
-            sendmsg(&client, bytes, &cmsgs);
+            sendmsg(&client, bytes, fds);
         }
     });
 
