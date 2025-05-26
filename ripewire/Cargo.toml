@@ -4,18 +4,19 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-calloop = "0.14.2"
 libc = "0.2"
 bitflags = "2.0.0"
 rustix = { version = "1.0.7", features = ["net", "process", "system"] }
 
 num-traits = "0.2"
 num-derive = "0.4"
-thiserror = "1"
+thiserror = "2"
 libspa-consts = { path = "../libspa-consts" }
 pod = { path = "../pod" }
 pod-derive = { path = "../pod-derive" }
-quick-xml = "0.28.0"
+
+[dev-dependencies]
+calloop = "0.14.2"
 tokio = { version = "1", features = [
   "rt",
   "rt-multi-thread",
@@ -23,6 +24,4 @@ tokio = { version = "1", features = [
   "macros",
   "sync",
 ] }
-
-serde = { version = "1", features = ["derive"] }
-ron = "0.8.0"
+ron = "0.10"
