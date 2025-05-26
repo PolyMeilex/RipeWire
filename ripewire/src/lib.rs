@@ -7,12 +7,11 @@ pub mod protocol;
 pub mod proxy;
 
 pub mod reexports {
+    pub use libc;
     pub use libspa_consts;
-    pub use nix;
     pub use pod;
 }
 
-use nix::libc;
 use std::{collections::HashMap, os::fd::RawFd};
 
 pub fn set_blocking(fd: RawFd, blocking: bool) {
