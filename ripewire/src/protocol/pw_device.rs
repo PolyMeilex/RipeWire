@@ -6,9 +6,9 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl MethodSerialize for AddListener {
+    impl MethodSerializeSimple for AddListener {
         const OPCODE: u8 = 0;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             unreachable!()
         }
     }
@@ -27,9 +27,9 @@ pub mod methods {
         pub ids: Vec<Id>,
     }
 
-    impl MethodSerialize for SubscribeParams {
+    impl MethodSerializeSimple for SubscribeParams {
         const OPCODE: u8 = 1;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_array_with(|b| {
                     for id in self.ids.iter() {
@@ -60,9 +60,9 @@ pub mod methods {
         pub filter: pod::serialize::OwnedPod,
     }
 
-    impl MethodSerialize for EnumParams {
+    impl MethodSerializeSimple for EnumParams {
         const OPCODE: u8 = 2;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_i32(self.seq);
                 b.write_id(self.id);
@@ -87,9 +87,9 @@ pub mod methods {
         pub param: pod::serialize::OwnedPod,
     }
 
-    impl MethodSerialize for SetParam {
+    impl MethodSerializeSimple for SetParam {
         const OPCODE: u8 = 3;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_id(self.id);
                 b.write_u32(self.flags);

@@ -6,9 +6,9 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl MethodSerialize for AddListener {
+    impl MethodSerializeSimple for AddListener {
         const OPCODE: u8 = 0;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             unreachable!()
         }
     }
@@ -30,9 +30,9 @@ pub mod methods {
         pub new_id: u32,
     }
 
-    impl MethodSerialize for Bind {
+    impl MethodSerializeSimple for Bind {
         const OPCODE: u8 = 1;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_str(&self.interface);
@@ -54,9 +54,9 @@ pub mod methods {
         pub id: u32,
     }
 
-    impl MethodSerialize for Destroy {
+    impl MethodSerializeSimple for Destroy {
         const OPCODE: u8 = 2;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             pod::Builder::new(buf).push_struct_with(|b| {
                 b.write_u32(self.id);
             });

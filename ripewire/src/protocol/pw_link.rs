@@ -6,9 +6,9 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl MethodSerialize for AddListener {
+    impl MethodSerializeSimple for AddListener {
         const OPCODE: u8 = 0;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             unreachable!()
         }
     }

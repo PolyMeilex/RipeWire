@@ -21,9 +21,9 @@ pub mod methods {
         pub new_id: u32,
     }
 
-    impl MethodSerialize for GetNode {
+    impl MethodSerializeSimple for GetNode {
         const OPCODE: u8 = 1;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.version);
                 b.write_u32(self.new_id);
@@ -128,9 +128,9 @@ pub mod methods {
         pub info: Option<NodeInfo>,
     }
 
-    impl MethodSerialize for Update {
+    impl MethodSerializeSimple for Update {
         const OPCODE: u8 = 2;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.change_mask.bits());
                 b.write_u32(self.params.len() as u32);
@@ -296,9 +296,9 @@ pub mod methods {
         pub info: Option<PortInfo>,
     }
 
-    impl MethodSerialize for PortUpdate {
+    impl MethodSerializeSimple for PortUpdate {
         const OPCODE: u8 = 3;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.direction.as_raw());
                 b.write_u32(self.port_id);
@@ -357,9 +357,9 @@ pub mod methods {
         pub active: bool,
     }
 
-    impl MethodSerialize for SetActive {
+    impl MethodSerializeSimple for SetActive {
         const OPCODE: u8 = 4;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_bool(self.active);
             });
@@ -373,9 +373,9 @@ pub mod methods {
         event: pod::serialize::OwnedPod,
     }
 
-    impl MethodSerialize for Event {
+    impl MethodSerializeSimple for Event {
         const OPCODE: u8 = 5;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_pod(&self.event);
             });
@@ -412,10 +412,10 @@ pub mod methods {
         pub buffers: Vec<Vec<PortBufferDataPlane>>,
     }
 
-    impl MethodSerializeWithFd for PortBuffers {
+    impl MethodSerialize for PortBuffers {
         const OPCODE: u8 = 6;
 
-        fn serialize_with_fds(&self, mut buf: impl Write + Seek, fds: &mut Vec<RawFd>) {
+        fn serialize(&self, mut buf: impl Write + Seek, fds: &mut Vec<RawFd>) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.direction.as_raw());
                 b.write_u32(self.port_id);

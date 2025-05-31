@@ -38,9 +38,9 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl MethodSerialize for AddListener {
+    impl MethodSerializeSimple for AddListener {
         const OPCODE: u8 = 0;
-        fn serialize(&self, buf: impl Write + Seek) {
+        fn serialize_simple(&self, buf: impl Write + Seek) {
             unreachable!()
         }
     }
@@ -58,9 +58,9 @@ pub mod methods {
         pub error: String,
     }
 
-    impl MethodSerialize for Error {
+    impl MethodSerializeSimple for Error {
         const OPCODE: u8 = 1;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.res);
@@ -78,9 +78,9 @@ pub mod methods {
         pub properties: HashMap<String, String>,
     }
 
-    impl MethodSerialize for UpdateProperties {
+    impl MethodSerializeSimple for UpdateProperties {
         const OPCODE: u8 = 2;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.push_struct_with(|b| {
                     b.write_u32(self.properties.len() as u32);
@@ -104,9 +104,9 @@ pub mod methods {
         pub num: u32,
     }
 
-    impl MethodSerialize for GetPermissions {
+    impl MethodSerializeSimple for GetPermissions {
         const OPCODE: u8 = 3;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.index);
                 b.write_u32(self.num);
@@ -120,9 +120,9 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct UpdatePermissions(pub Vec<Permission>);
 
-    impl MethodSerialize for UpdatePermissions {
+    impl MethodSerializeSimple for UpdatePermissions {
         const OPCODE: u8 = 4;
-        fn serialize(&self, mut buf: impl Write + Seek) {
+        fn serialize_simple(&self, mut buf: impl Write + Seek) {
             pod::Builder::new(&mut buf).push_struct_with(|b| {
                 b.write_u32(self.0.len() as u32);
                 for Permission { id, permissions } in self.0.iter() {

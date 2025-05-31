@@ -10,9 +10,9 @@ pub mod methods {
     #[derive(Debug, Clone)]
     pub struct AddListener {}
 
-    impl MethodSerialize for AddListener {
+    impl MethodSerializeSimple for AddListener {
         const OPCODE: u8 = 0;
-        fn serialize(&self, buff: impl Write + Seek) {
+        fn serialize_simple(&self, buff: impl Write + Seek) {
             unreachable!()
         }
     }
@@ -25,9 +25,9 @@ pub mod methods {
         pub version: u32,
     }
 
-    impl MethodSerialize for Hello {
+    impl MethodSerializeSimple for Hello {
         const OPCODE: u8 = 1;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize_simple(&self, mut buff: impl Write + Seek) {
             pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.version);
             });
@@ -49,9 +49,9 @@ pub mod methods {
         pub seq: u32,
     }
 
-    impl MethodSerialize for Sync {
+    impl MethodSerializeSimple for Sync {
         const OPCODE: u8 = 2;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize_simple(&self, mut buff: impl Write + Seek) {
             pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.seq);
@@ -70,9 +70,9 @@ pub mod methods {
         pub seq: u32,
     }
 
-    impl MethodSerialize for Pong {
+    impl MethodSerializeSimple for Pong {
         const OPCODE: u8 = 3;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize_simple(&self, mut buff: impl Write + Seek) {
             pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.seq);
@@ -93,9 +93,9 @@ pub mod methods {
         pub message: String,
     }
 
-    impl MethodSerialize for Error {
+    impl MethodSerializeSimple for Error {
         const OPCODE: u8 = 4;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize_simple(&self, mut buff: impl Write + Seek) {
             pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
                 b.write_u32(self.seq);
@@ -116,9 +116,9 @@ pub mod methods {
         pub new_id: u32,
     }
 
-    impl MethodSerialize for GetRegistry {
+    impl MethodSerializeSimple for GetRegistry {
         const OPCODE: u8 = 5;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize_simple(&self, mut buff: impl Write + Seek) {
             pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.version);
                 b.write_u32(self.new_id);
@@ -141,9 +141,9 @@ pub mod methods {
         pub new_id: u32,
     }
 
-    impl MethodSerialize for CreateObject {
+    impl MethodSerializeSimple for CreateObject {
         const OPCODE: u8 = 6;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize_simple(&self, mut buff: impl Write + Seek) {
             pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_str(&self.factory_name);
                 b.write_str(&self.interface);
@@ -170,9 +170,9 @@ pub mod methods {
         pub id: u32,
     }
 
-    impl MethodSerialize for Destroy {
+    impl MethodSerializeSimple for Destroy {
         const OPCODE: u8 = 7;
-        fn serialize(&self, mut buff: impl Write + Seek) {
+        fn serialize_simple(&self, mut buff: impl Write + Seek) {
             pod::Builder::new(&mut buff).push_struct_with(|b| {
                 b.write_u32(self.id);
             });
