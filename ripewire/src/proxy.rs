@@ -7,7 +7,8 @@ use crate::{
     context::Context,
     object_map::ObjectType,
     protocol::{
-        self, pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node, pw_port, pw_registry,
+        self, pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node, pw_port,
+        pw_registry, MethodSerializeWithFd,
     },
 };
 
@@ -49,47 +50,41 @@ impl PwCore {
         self.object_id.clone()
     }
 
+    pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerializeWithFd) {
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
+
     pub fn hello<D>(&self, context: &mut Context<D>) {
-        let data = pw_core::methods::Hello { version: 3 };
-        context
-            .send_msg(&protocol::create_msg(0, &data), &[])
-            .unwrap();
+        self.send(context, pw_core::methods::Hello { version: 3 });
     }
 
     pub fn sync<D>(&self, context: &mut Context<D>, id: u32, seq: u32) {
-        let data = pw_core::methods::Sync { id, seq };
-        context
-            .send_msg(&protocol::create_msg(0, &data), &[])
-            .unwrap();
+        self.send(context, pw_core::methods::Sync { id, seq });
     }
 
     pub fn pong<D>(&self, context: &mut Context<D>, id: u32, seq: u32) {
-        let data = pw_core::methods::Pong { id, seq };
-        context
-            .send_msg(&protocol::create_msg(0, &data), &[])
-            .unwrap();
+        self.send(context, pw_core::methods::Pong { id, seq });
     }
 
     pub fn get_registry<D>(&self, context: &mut Context<D>) -> PwRegistry {
-        let data = pw_core::methods::GetRegistry {
-            version: 3,
-            new_id: context.new_object(ObjectType::Registry).protocol_id(),
-        };
+        let new_id = context.new_object(ObjectType::Registry).protocol_id();
 
-        context
-            .send_msg(&protocol::create_msg(0, &data), &[])
-            .unwrap();
+        self.send(
+            context,
+            pw_core::methods::GetRegistry { version: 3, new_id },
+        );
 
-        PwRegistry::new(data.new_id)
+        PwRegistry::new(new_id)
     }
 
     pub fn destroy_object<D>(&self, context: &mut Context<D>, object_id: ObjectId) {
-        let data = pw_core::methods::Destroy {
-            id: object_id.protocol_id(),
-        };
-        context
-            .send_msg(&protocol::create_msg(0, &data), &[])
-            .unwrap();
+        self.send(
+            context,
+            pw_core::methods::Destroy {
+                id: object_id.protocol_id(),
+            },
+        );
     }
 
     pub fn create_object<I: Proxy, D>(
@@ -100,9 +95,7 @@ impl PwCore {
         let new_id = context.new_object(ObjectType::from_interface_name(&data.interface));
         data.new_id = new_id.object_id;
 
-        context
-            .send_msg(&protocol::create_msg(0, &data), &[])
-            .unwrap();
+        self.send(context, data);
 
         I::from_id(new_id)
     }
@@ -136,22 +129,21 @@ impl PwClient {
         self.object_id.clone()
     }
 
+    pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerializeWithFd) {
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
+
     pub fn update_properties<D>(
         &self,
         context: &mut Context<D>,
         properties: HashMap<String, String>,
     ) {
-        let data = pw_client::methods::UpdateProperties { properties };
-        context
-            .send_msg(&protocol::create_msg(1, &data), &[])
-            .unwrap();
+        self.send(context, pw_client::methods::UpdateProperties { properties });
     }
 
     pub fn get_permissions<D>(&self, context: &mut Context<D>, index: u32, num: u32) {
-        let data = pw_client::methods::GetPermissions { index, num };
-        context
-            .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
-            .unwrap();
+        self.send(context, pw_client::methods::GetPermissions { index, num });
     }
 }
 
@@ -183,35 +175,33 @@ impl PwRegistry {
         self.object_id.clone()
     }
 
+    pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerializeWithFd) {
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
+
     pub fn bind<I: Proxy, D>(
         &self,
         context: &mut Context<D>,
         global: &pw_registry::events::Global,
     ) -> I {
-        let data = pw_registry::methods::Bind {
-            id: global.id,
-            interface: global.interface.as_interface_name().to_string(),
-            version: global.version,
-            new_id: context.new_object(global.interface.clone()).protocol_id(),
-        };
+        let new_id = context.new_object(global.interface.clone()).protocol_id();
 
-        context
-            .send_msg(&protocol::create_msg(self.object_id.object_id, &data), &[])
-            .unwrap();
+        self.send(
+            context,
+            pw_registry::methods::Bind {
+                id: global.id,
+                interface: global.interface.as_interface_name().to_string(),
+                version: global.version,
+                new_id,
+            },
+        );
 
-        I::from_id(ObjectId::new(data.new_id))
+        I::from_id(ObjectId::new(new_id))
     }
 
     pub fn destroy_global<D>(&self, context: &mut Context<D>, global: u32) {
-        context
-            .send_msg(
-                &protocol::create_msg(
-                    self.object_id.object_id,
-                    &pw_registry::methods::Destroy { id: global },
-                ),
-                &[],
-            )
-            .unwrap();
+        self.send(context, pw_registry::methods::Destroy { id: global });
     }
 }
 
@@ -249,33 +239,38 @@ impl PwDevice {
         self.object_id.clone()
     }
 
-    pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
-        let msg = pw_device::methods::EnumParams {
-            seq: 0,
-            id: Id(id as u32),
-            index: 0,
-            num: 0,
-            filter: pod::Builder::with(|b| {
-                b.write_none();
-            }),
-        };
+    pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerializeWithFd) {
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
-        context.send_msg(&msg, &[]).unwrap();
+    pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
+        self.send(
+            context,
+            pw_device::methods::EnumParams {
+                seq: 0,
+                id: Id(id as u32),
+                index: 0,
+                num: 0,
+                filter: pod::Builder::with(|b| {
+                    b.write_none();
+                }),
+            },
+        );
     }
 
     pub fn set_param<D>(&self, context: &mut Context<D>, param: pod::serialize::OwnedPod) {
         let (obj, _) = pod::PodDeserializer::new(&param.0);
         let id = obj.as_object().unwrap().object_id();
 
-        let msg = pw_device::methods::SetParam {
-            id: Id(id),
-            flags: 0,
-            param,
-        };
-
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
-        context.send_msg(&msg, &[]).unwrap();
+        self.send(
+            context,
+            pw_device::methods::SetParam {
+                id: Id(id),
+                flags: 0,
+                param,
+            },
+        );
     }
 }
 
@@ -301,33 +296,38 @@ impl PwNode {
         self.object_id.clone()
     }
 
-    pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
-        let msg = pw_node::methods::EnumParams {
-            seq: 0,
-            id: Id(id as u32),
-            index: 0,
-            num: 0,
-            filter: pod::Builder::with(|b| {
-                b.write_none();
-            }),
-        };
+    pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerializeWithFd) {
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
-        context.send_msg(&msg, &[]).unwrap();
+    pub fn enum_param<D>(&self, context: &mut Context<D>, id: SpaParamType) {
+        self.send(
+            context,
+            pw_node::methods::EnumParams {
+                seq: 0,
+                id: Id(id as u32),
+                index: 0,
+                num: 0,
+                filter: pod::Builder::with(|b| {
+                    b.write_none();
+                }),
+            },
+        );
     }
 
     pub fn set_param<D>(&self, context: &mut Context<D>, param: pod::serialize::OwnedPod) {
         let (obj, _) = pod::PodDeserializer::new(&param.0);
         let id = obj.as_object().unwrap().object_id();
 
-        let msg = pw_node::methods::SetParam {
-            id: Id(id),
-            flags: 0,
-            param,
-        };
-
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
-        context.send_msg(&msg, &[]).unwrap();
+        self.send(
+            context,
+            pw_node::methods::SetParam {
+                id: Id(id),
+                flags: 0,
+                param,
+            },
+        );
     }
 }
 
@@ -353,6 +353,11 @@ impl PwClientNode {
         self.object_id.clone()
     }
 
+    pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerializeWithFd) {
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
+
     pub fn port_buffers<D>(
         &self,
         context: &mut Context<D>,
@@ -360,15 +365,15 @@ impl PwClientNode {
         port_id: u32,
         mix_id: u32,
     ) {
-        let msg = pw_client_node::methods::PortBuffers {
-            direction: SpaEnum::Value(direction),
-            port_id,
-            mix_id,
-            buffers: vec![],
-        };
-
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &msg);
-        context.send_msg(&msg, &fds).unwrap();
+        self.send(
+            context,
+            pw_client_node::methods::PortBuffers {
+                direction: SpaEnum::Value(direction),
+                port_id,
+                mix_id,
+                buffers: vec![],
+            },
+        );
     }
 }
 
@@ -417,18 +422,23 @@ impl PwPort {
         self.object_id.clone()
     }
 
-    pub fn enum_params<D>(&self, context: &mut Context<D>, id: SpaParamType) {
-        let msg = pw_device::methods::EnumParams {
-            seq: 0,
-            id: Id(id as u32),
-            index: 0,
-            num: 0,
-            filter: pod::Builder::with(|b| {
-                b.write_none();
-            }),
-        };
+    pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerializeWithFd) {
+        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
 
-        let msg = protocol::create_msg(self.object_id.object_id, &msg);
-        context.send_msg(&msg, &[]).unwrap();
+    pub fn enum_params<D>(&self, context: &mut Context<D>, id: SpaParamType) {
+        self.send(
+            context,
+            pw_device::methods::EnumParams {
+                seq: 0,
+                id: Id(id as u32),
+                index: 0,
+                num: 0,
+                filter: pod::Builder::with(|b| {
+                    b.write_none();
+                }),
+            },
+        );
     }
 }
