@@ -83,10 +83,11 @@ fn main() {
         let interfaces = interfaces();
         move || loop {
             buffer.fill(0);
-            let (bytes, mut fds) = recvmsg(&client, &mut buffer);
+            let (bytes, fds) = recvmsg(&client, &mut buffer);
 
             let mut reader = bytes;
-            while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
+            let mut fds_read = fds.clone();
+            while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds_read) {
                 reader = rest;
                 inspect_method(&objects, &interfaces, &msg);
                 // pod::dbg_print::dbg_print(&msg.body);
@@ -104,10 +105,11 @@ fn main() {
         let interfaces = interfaces();
         move || loop {
             buffer.fill(0);
-            let (bytes, mut fds) = recvmsg(&server, &mut buffer);
+            let (bytes, fds) = recvmsg(&server, &mut buffer);
 
             let mut reader = bytes;
-            while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds) {
+            let mut fds_read = fds.clone();
+            while let Some((rest, msg)) = ripewire::connection::read_msg(reader, &mut fds_read) {
                 reader = rest;
                 inspect_event(&objects, &interfaces, &msg);
                 // pod::dbg_print::dbg_print(&msg.body);
