@@ -1,4 +1,4 @@
-use crate::Id;
+use crate::{Id, PodDeserializer};
 
 use super::pad_to_8;
 use libspa_consts::{SpaEnum, SpaType};
@@ -16,8 +16,22 @@ pub trait TypedPod {
 pub trait Primitive: TypedPod + PodWrite {}
 impl<T: PodWrite + TypedPod> Primitive for T {}
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct OwnedPod(pub Vec<u8>);
+
+impl std::fmt::Debug for OwnedPod {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.as_deserializer().fmt(f)
+    }
+}
+
+impl OwnedPod {
+    fn as_deserializer(&self) -> PodDeserializer<'_> {
+        let (pod, rest) = PodDeserializer::new(&self.0);
+        debug_assert!(rest.is_empty());
+        pod
+    }
+}
 
 #[derive(Clone, Copy)]
 struct BuilderFrame {
