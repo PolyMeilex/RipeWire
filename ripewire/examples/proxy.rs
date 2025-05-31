@@ -124,6 +124,7 @@ fn main() {
 }
 
 fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Message) {
+    print!("<- ");
     let mut objects = objects.lock().unwrap();
     if let Some(interface) = objects.get(&msg.header.object_id) {
         print!("{:?}@{}.", interface, msg.header.object_id);
@@ -133,67 +134,76 @@ fn inspect_method(objects: &Mutex<Objects>, interfaces: &Interfaces, msg: &Messa
             print!("{}", method);
 
             match interface {
-                ObjectType::Core => match *method {
-                    "GetRegistry" => {
-                        let pod = &msg.body;
-                        let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
-                            unreachable!("Non struct method call");
-                        };
+                ObjectType::Client => {
+                    print!(" {:#?}", msg.body);
+                }
+                ObjectType::Core => {
+                    print!(" {:?}", msg.body);
+                    match *method {
+                        "GetRegistry" => {
+                            let pod = &msg.body;
+                            let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                                unreachable!("Non struct method call");
+                            };
 
-                        let _version = pod.next().unwrap();
-                        let new_id = pod.next().unwrap();
-                        let PodDeserializerKind::Int(new_id) = new_id.kind() else {
-                            unreachable!("Non int new_id");
-                        };
+                            let _version = pod.next().unwrap();
+                            let new_id = pod.next().unwrap();
+                            let PodDeserializerKind::Int(new_id) = new_id.kind() else {
+                                unreachable!("Non int new_id");
+                            };
 
-                        objects.insert(new_id as u32, ObjectType::Registry);
+                            objects.insert(new_id as u32, ObjectType::Registry);
+                        }
+                        "CreateObject" => {
+                            let pod = &msg.body;
+                            let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                                unreachable!("Non struct method call");
+                            };
+
+                            let _factory_name = pod.next().unwrap().as_str().unwrap();
+                            let interface_type = pod.next().unwrap().as_str().unwrap();
+                            let _version = pod.next().unwrap();
+                            let _props = pod.next().unwrap();
+                            let new_id = pod.next().unwrap();
+                            let PodDeserializerKind::Int(new_id) = new_id.kind() else {
+                                unreachable!("Non int new_id");
+                            };
+
+                            objects.insert(
+                                new_id as u32,
+                                ObjectType::from_interface_name(&interface_type.to_string()),
+                            );
+                        }
+                        _ => {}
                     }
-                    "CreateObject" => {
-                        let pod = &msg.body;
-                        let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
-                            unreachable!("Non struct method call");
-                        };
+                }
+                ObjectType::Registry => {
+                    print!(" {:?}", msg.body);
+                    match *method {
+                        "Bind" => {
+                            let pod = &msg.body;
+                            let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
+                                unreachable!("Non struct method call");
+                            };
 
-                        let _factory_name = pod.next().unwrap().as_str().unwrap();
-                        let interface_type = pod.next().unwrap().as_str().unwrap();
-                        let _version = pod.next().unwrap();
-                        let _props = pod.next().unwrap();
-                        let new_id = pod.next().unwrap();
-                        let PodDeserializerKind::Int(new_id) = new_id.kind() else {
-                            unreachable!("Non int new_id");
-                        };
+                            let _id = pod.next().unwrap();
+                            let interface_type = pod.next().unwrap().as_str().unwrap();
+                            let interface_type = interface_type.to_string();
 
-                        objects.insert(
-                            new_id as u32,
-                            ObjectType::from_interface_name(&interface_type.to_string()),
-                        );
+                            let _version = pod.next().unwrap();
+                            let new_id = pod.next().unwrap();
+                            let PodDeserializerKind::Int(new_id) = new_id.kind() else {
+                                unreachable!("Non int new_id");
+                            };
+
+                            objects.insert(
+                                new_id as u32,
+                                ObjectType::from_interface_name(&interface_type.to_string()),
+                            );
+                        }
+                        _ => {}
                     }
-                    _ => {}
-                },
-                ObjectType::Registry => match *method {
-                    "Bind" => {
-                        let pod = &msg.body;
-                        let PodDeserializerKind::Struct(mut pod) = pod.kind() else {
-                            unreachable!("Non struct method call");
-                        };
-
-                        let _id = pod.next().unwrap();
-                        let interface_type = pod.next().unwrap().as_str().unwrap();
-                        let interface_type = interface_type.to_string();
-
-                        let _version = pod.next().unwrap();
-                        let new_id = pod.next().unwrap();
-                        let PodDeserializerKind::Int(new_id) = new_id.kind() else {
-                            unreachable!("Non int new_id");
-                        };
-
-                        objects.insert(
-                            new_id as u32,
-                            ObjectType::from_interface_name(&interface_type.to_string()),
-                        );
-                    }
-                    _ => {}
-                },
+                }
                 ObjectType::ClientNode => {
                     print!(" ");
                     inspect_client_node_method(msg.header.opcode, msg);
