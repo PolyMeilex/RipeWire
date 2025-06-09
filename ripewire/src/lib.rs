@@ -48,6 +48,7 @@ pub fn poll(fd: RawFd, timeout: i32) {
 
 pub trait HashMapExt {
     fn from_dict<'a>(v: impl IntoIterator<Item = (&'a str, &'a str)>) -> PwDictionary;
+    fn from_arr<'a>(v: impl IntoIterator<Item = &'a str>) -> PwDictionary;
 }
 
 impl HashMapExt for PwDictionary {
@@ -56,6 +57,17 @@ impl HashMapExt for PwDictionary {
         for (key, value) in v {
             map.insert(key.into(), value.into());
         }
+        map
+    }
+
+    fn from_arr<'a>(v: impl IntoIterator<Item = &'a str>) -> PwDictionary {
+        let mut map = PwDictionary::new();
+
+        let mut iter = v.into_iter();
+        while let (Some(k), Some(v)) = (iter.next(), iter.next()) {
+            map.insert(k.into(), v.into());
+        }
+
         map
     }
 }

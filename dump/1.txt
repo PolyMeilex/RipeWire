@@ -1,0 +1,469 @@
+<- Core@0.Hello Struct(4_i32)()
+<- Client@1.UpdateProperties Struct(
+    Struct(
+        27_i32,
+        "application.name",
+        "pipewire_playground",
+        "application.process.binary",
+        "pipewire_playground",
+        "application.language",
+        "en_US.UTF-8",
+        "application.process.id",
+        "206854",
+        "application.process.user",
+        "poly",
+        "application.process.host",
+        "fedora",
+        "window.x11.display",
+        ":0",
+        "log.level",
+        "0",
+        "cpu.max-align",
+        "64",
+        "default.clock.rate",
+        "48000",
+        "default.clock.quantum",
+        "1024",
+        "default.clock.min-quantum",
+        "32",
+        "default.clock.max-quantum",
+        "2048",
+        "default.clock.quantum-limit",
+        "8192",
+        "default.clock.quantum-floor",
+        "4",
+        "default.video.width",
+        "640",
+        "default.video.height",
+        "480",
+        "default.video.rate.num",
+        "25",
+        "default.video.rate.denom",
+        "1",
+        "clock.power-of-two-quantum",
+        "true",
+        "link.max-buffers",
+        "64",
+        "mem.warn-mlock",
+        "false",
+        "mem.allow-mlock",
+        "true",
+        "settings.check-quantum",
+        "false",
+        "settings.check-rate",
+        "false",
+        "core.version",
+        "1.4.4",
+        "core.name",
+        "pipewire-poly-206854",
+    ),
+)()
+<- Core@0.CreateObject Struct("client-node", "PipeWire:Interface:ClientNode", 6_i32, Struct(6_i32, "media.type", "Midi", "media.category", "Filter", "media.role", "DSP", "media.name", "midi-dump", "node.name", "pipewire_playground", "node.want-driver", "true"), 2_i32)()
+<- ClientNode@2.Update Update {
+    change_mask: UpdateChangeMask(
+        PARAMS | INFO,
+    ),
+    params: [],
+    info: Some(
+        NodeInfo {
+            max_input_ports: 4294967295,
+            max_output_ports: 4294967295,
+            change_mask: NodeInfoChangeMask(
+                FLAGS | PROPS | PARAMS,
+            ),
+            flags: NodeFlags(
+                RT,
+            ),
+            props: {
+                "media.category": "Filter",
+                "media.name": "midi-dump",
+                "media.role": "DSP",
+                "media.type": "Midi",
+                "node.name": "pipewire_playground",
+                "node.want-driver": "true",
+            },
+            params: [
+                ParamInfo {
+                    id: PropInfo,
+                    flags: ParamFlags(
+                        0x0,
+                    ),
+                },
+                ParamInfo {
+                    id: Props,
+                    flags: ParamFlags(
+                        WRITE,
+                    ),
+                },
+                ParamInfo {
+                    id: ProcessLatency,
+                    flags: ParamFlags(
+                        0x0,
+                    ),
+                },
+                ParamInfo {
+                    id: EnumFormat,
+                    flags: ParamFlags(
+                        0x0,
+                    ),
+                },
+                ParamInfo {
+                    id: Format,
+                    flags: ParamFlags(
+                        WRITE,
+                    ),
+                },
+            ],
+        },
+    ),
+}()
+<- ClientNode@2.PortUpdate PortUpdate {
+    direction: Input,
+    port_id: 0,
+    change_mask: PortUpdateChangeMask(
+        PARAMS | INFO,
+    ),
+    params: [
+        Object {
+            object_ty: ObjectFormat,
+            object_id: 3,
+            properties: {
+                MediaType: Id(
+                    6,
+                ),
+                MediaSubtype: Id(
+                    393217,
+                ),
+                ControlTypes: Choice {
+                    choice_ty: Flags,
+                    flags: 0,
+                    child_ty: Int,
+                    value: [
+                        4_i32,
+                    ],
+                },
+            },
+        },
+        Object {
+            object_ty: ObjectParamIo,
+            object_id: 7,
+            properties: {
+                Id: Id(
+                    1,
+                ),
+                Size: 8_i32,
+            },
+        },
+        Object {
+            object_ty: ObjectParamIo,
+            object_id: 7,
+            properties: {
+                Id: Id(
+                    10,
+                ),
+                Size: 8_i32,
+            },
+        },
+    ],
+    info: Some(
+        PortInfo {
+            change_mask: PortInfoChangeMask(
+                FLAGS | RATE | PROPS | PARAMS,
+            ),
+            flags: PortFlags(
+                0x0,
+            ),
+            rate_num: 0,
+            rate_denom: 1,
+            items: {
+                "format.dsp": "8 bit raw midi",
+                "object.path": "pipewire_playground:input_0",
+                "port.alias": "pipewire_playground:input",
+                "port.direction": "in",
+                "port.group": "stream.0",
+                "port.id": "0",
+                "port.name": "input",
+            },
+            params: [
+                ParamInfo {
+                    id: EnumFormat,
+                    flags: ParamFlags(
+                        SERIAL | READ,
+                    ),
+                },
+                ParamInfo {
+                    id: Meta,
+                    flags: ParamFlags(
+                        0x0,
+                    ),
+                },
+                ParamInfo {
+                    id: Io,
+                    flags: ParamFlags(
+                        SERIAL | READ,
+                    ),
+                },
+                ParamInfo {
+                    id: Format,
+                    flags: ParamFlags(
+                        WRITE,
+                    ),
+                },
+                ParamInfo {
+                    id: Buffers,
+                    flags: ParamFlags(
+                        0x0,
+                    ),
+                },
+                ParamInfo {
+                    id: Latency,
+                    flags: ParamFlags(
+                        WRITE,
+                    ),
+                },
+                ParamInfo {
+                    id: Tag,
+                    flags: ParamFlags(
+                        WRITE,
+                    ),
+                },
+            ],
+        },
+    ),
+}()
+<- ClientNode@2.SetActive ()
+-> Core@0.Info {
+    id: 0,
+    cookie: 3008259676,
+    user_name: "poly",
+    host_name: "fedora",
+    version: "1.4.4",
+    name: "pipewire-0",
+    change_mask: ChangeMask(
+        PROPS,
+    ),
+    properties: {
+        "application.language": "en_US.UTF-8",
+        "application.name": "pipewire",
+        "application.process.binary": "pipewire",
+        "application.process.host": "fedora",
+        "application.process.id": "2509",
+        "application.process.user": "poly",
+        "clock.power-of-two-quantum": "true",
+        "config.name": "pipewire.conf",
+        "core.daemon": "true",
+        "core.name": "pipewire-0",
+        "cpu.max-align": "64",
+        "default.clock.max-quantum": "2048",
+        "default.clock.min-quantum": "32",
+        "default.clock.quantum": "1024",
+        "default.clock.quantum-floor": "4",
+        "default.clock.quantum-limit": "8192",
+        "default.clock.rate": "48000",
+        "default.video.height": "480",
+        "default.video.rate.denom": "1",
+        "default.video.rate.num": "25",
+        "default.video.width": "640",
+        "link.max-buffers": "16",
+        "log.level": "2",
+        "mem.allow-mlock": "true",
+        "mem.warn-mlock": "false",
+        "object.id": "0",
+        "object.serial": "0",
+        "settings.check-quantum": "false",
+        "settings.check-rate": "false",
+    },
+}
+-> Core@0.BoundProps {
+    id: 1,
+    global_id: 82,
+    properties: {
+        "module.id": "2",
+        "object.serial": "2809",
+        "pipewire.protocol": "protocol-native",
+        "pipewire.sec.gid": "1000",
+        "pipewire.sec.label": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+        "pipewire.sec.pid": "206514",
+        "pipewire.sec.socket": "pipewire-0",
+        "pipewire.sec.uid": "1000",
+    },
+}
+-> Client@1.Info {
+    id: 82,
+    change_mask: ChangeMask(
+        PROPS,
+    ),
+    properties: {
+        "core.name": "pipewire-0",
+        "module.id": "2",
+        "object.id": "82",
+        "object.serial": "2809",
+        "pipewire.protocol": "protocol-native",
+        "pipewire.sec.gid": "1000",
+        "pipewire.sec.label": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+        "pipewire.sec.pid": "206514",
+        "pipewire.sec.socket": "pipewire-0",
+        "pipewire.sec.uid": "1000",
+    },
+}
+-> Client@1.Info {
+    id: 82,
+    change_mask: ChangeMask(
+        PROPS,
+    ),
+    properties: {
+        "application.language": "en_US.UTF-8",
+        "application.name": "pipewire_playground",
+        "application.process.binary": "pipewire_playground",
+        "application.process.host": "fedora",
+        "application.process.id": "206854",
+        "application.process.user": "poly",
+        "clock.power-of-two-quantum": "true",
+        "core.name": "pipewire-poly-206854",
+        "core.version": "1.4.4",
+        "cpu.max-align": "64",
+        "default.clock.max-quantum": "2048",
+        "default.clock.min-quantum": "32",
+        "default.clock.quantum": "1024",
+        "default.clock.quantum-floor": "4",
+        "default.clock.quantum-limit": "8192",
+        "default.clock.rate": "48000",
+        "default.video.height": "480",
+        "default.video.rate.denom": "1",
+        "default.video.rate.num": "25",
+        "default.video.width": "640",
+        "link.max-buffers": "64",
+        "log.level": "0",
+        "mem.allow-mlock": "true",
+        "mem.warn-mlock": "false",
+        "module.id": "2",
+        "object.id": "82",
+        "object.serial": "2809",
+        "pipewire.protocol": "protocol-native",
+        "pipewire.sec.gid": "1000",
+        "pipewire.sec.label": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+        "pipewire.sec.pid": "206514",
+        "pipewire.sec.socket": "pipewire-0",
+        "pipewire.sec.uid": "1000",
+        "settings.check-quantum": "false",
+        "settings.check-rate": "false",
+        "window.x11.display": ":0",
+    },
+}
+-> Client@1.Info {
+    id: 82,
+    change_mask: ChangeMask(
+        PROPS,
+    ),
+    properties: {
+        "application.language": "en_US.UTF-8",
+        "application.name": "pipewire_playground",
+        "application.process.binary": "pipewire_playground",
+        "application.process.host": "fedora",
+        "application.process.id": "206854",
+        "application.process.user": "poly",
+        "clock.power-of-two-quantum": "true",
+        "core.name": "pipewire-poly-206854",
+        "core.version": "1.4.4",
+        "cpu.max-align": "64",
+        "default.clock.max-quantum": "2048",
+        "default.clock.min-quantum": "32",
+        "default.clock.quantum": "1024",
+        "default.clock.quantum-floor": "4",
+        "default.clock.quantum-limit": "8192",
+        "default.clock.rate": "48000",
+        "default.video.height": "480",
+        "default.video.rate.denom": "1",
+        "default.video.rate.num": "25",
+        "default.video.width": "640",
+        "link.max-buffers": "64",
+        "log.level": "0",
+        "mem.allow-mlock": "true",
+        "mem.warn-mlock": "false",
+        "module.id": "2",
+        "object.id": "82",
+        "object.serial": "2809",
+        "pipewire.access": "unrestricted",
+        "pipewire.protocol": "protocol-native",
+        "pipewire.sec.gid": "1000",
+        "pipewire.sec.label": "unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023",
+        "pipewire.sec.pid": "206514",
+        "pipewire.sec.socket": "pipewire-0",
+        "pipewire.sec.uid": "1000",
+        "settings.check-quantum": "false",
+        "settings.check-rate": "false",
+        "window.x11.display": ":0",
+    },
+}
+-> Core@0.Done { id: None, seq: 0 }
+-> Core@0.Ping { id: 2, seq: 1073741830 }
+<- Core@0.Pong Struct(2_i32, 1073741830_i32)()
+-> Core@0.AddMem {
+    id: 0,
+    ty: MemFd,
+    fd: Fd {
+        id: 0,
+        fd: Some(
+            6,
+        ),
+    },
+    flags: MemblockFlags(
+        READABLE | WRITABLE,
+    ),
+}
+-> ClientNode@2.SetActivation {
+    node_id: 123,
+    signalfd: Fd {
+        id: 0,
+        fd: Some(
+            7,
+        ),
+    },
+    memid: 0,
+    offset: 0,
+    size: 2312,
+}
+-> Core@0.BoundProps {
+    id: 2,
+    global_id: 123,
+    properties: {
+        "client.id": "82",
+        "media.category": "Filter",
+        "media.role": "DSP",
+        "media.type": "Midi",
+        "node.name": "pipewire_playground",
+        "object.serial": "2810",
+    },
+}
+-> ClientNode@2.Transport {
+    readfd: Fd {
+        id: 1,
+        fd: Some(
+            9,
+        ),
+    },
+    writefd: Fd {
+        id: 0,
+        fd: Some(
+            8,
+        ),
+    },
+    memid: 0,
+    offset: 0,
+    size: 2312,
+}
+-> Core@0.Done { id: None, seq: 0 }
+-> ClientNode@2.SetIo {
+    id: 3,
+    memid: 0,
+    offset: 560,
+    size: 160,
+}
+-> ClientNode@2.SetIo {
+    id: 7,
+    memid: 0,
+    offset: 560,
+    size: 1688,
+}
+-> Core@0.Done { id: None, seq: 0 }
+<- ClientNode@2.SetActive ()

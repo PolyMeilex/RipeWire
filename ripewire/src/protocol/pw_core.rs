@@ -137,7 +137,7 @@ pub mod methods {
         pub factory_name: String,
         pub interface: String,
         pub version: u32,
-        pub properties: HashMap<String, String>,
+        pub properties: PwDictionary,
         pub new_id: u32,
     }
 
