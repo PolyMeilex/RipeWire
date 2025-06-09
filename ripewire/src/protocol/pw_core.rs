@@ -442,8 +442,11 @@ pub mod events {
     /// This event is emitted when a local object ID is bound to a global ID. It is emitted before the global becomes visible in the registry.
     #[derive(Debug, Clone)]
     pub struct BoundProps {
+        /// Proxy id
         pub id: u32,
+        /// The global_id as it will appear in the registry.
         pub global_id: u32,
+        /// The properties of the global
         pub properties: PwDictionary,
     }
 

@@ -56,7 +56,7 @@ impl PwCore {
     }
 
     pub fn hello<D>(&self, context: &mut Context<D>) {
-        self.send(context, pw_core::methods::Hello { version: 3 });
+        self.send(context, pw_core::methods::Hello { version: 4 });
     }
 
     pub fn sync<D>(&self, context: &mut Context<D>, id: u32, seq: u32) {
