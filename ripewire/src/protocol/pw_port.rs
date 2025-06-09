@@ -94,7 +94,7 @@ pub mod events {
         pub id: u32,
         pub direction: SpaEnum<SpaDirection>,
         pub change_mask: ChangeMask,
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
         pub params: Vec<ParamInfo>,
     }
 

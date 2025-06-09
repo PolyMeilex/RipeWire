@@ -1,9 +1,14 @@
-use std::{collections::HashMap, io::Write as _, os::fd::AsRawFd};
+use std::{io::Write as _, os::fd::AsRawFd};
 
 use libspa_consts::{SpaParamRoute, SpaParamType, SpaProp, SpaType};
 use ripewire::{
-    connection::MessageBuffer, context::Context, global_list::GlobalList, object_map::ObjectType,
-    protocol::pw_core, proxy::PwDevice, HashMapExt,
+    connection::MessageBuffer,
+    context::Context,
+    global_list::GlobalList,
+    object_map::ObjectType,
+    protocol::{pw_core, PwDictionary},
+    proxy::PwDevice,
+    HashMapExt,
 };
 
 struct State {
@@ -21,7 +26,7 @@ fn main() {
     core.hello(&mut ctx);
     client.update_properties(
         &mut ctx,
-        HashMap::from_dict([
+        PwDictionary::from_dict([
             ("application.name", "ripewire"),
             ("application.process.binary", "ripewire"),
         ]),

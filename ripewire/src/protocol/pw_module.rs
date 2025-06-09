@@ -35,7 +35,7 @@ pub mod events {
         pub filename: Option<String>,
         pub args: Option<String>,
         pub change_mask: ChangeMask,
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
     }
 
     impl EventDeserialize for Info {

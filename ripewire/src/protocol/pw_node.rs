@@ -147,7 +147,7 @@ pub mod events {
         pub n_output_ports: u32,
         pub state: SpaEnum<PwNodeState, i32>,
         pub error: Option<String>,
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
         pub params: Vec<ParamInfo>,
     }
 

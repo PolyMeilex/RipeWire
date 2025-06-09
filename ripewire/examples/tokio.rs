@@ -10,7 +10,7 @@ use tokio::io::unix::AsyncFd;
 
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
-use ripewire::protocol::{pw_client, pw_core, pw_device, pw_registry};
+use ripewire::protocol::{pw_client, pw_core, pw_device, pw_registry, PwDictionary};
 use ripewire::proxy::{PwClient, PwCore, PwDevice, PwRegistry};
 
 struct PipewireState {
@@ -138,7 +138,7 @@ async fn main() {
 
     ctx.client().update_properties(
         &mut ctx,
-        HashMap::from_dict([
+        PwDictionary::from_dict([
             ("application.name", "ripewire"),
             ("application.process.binary", "ripewire"),
         ]),

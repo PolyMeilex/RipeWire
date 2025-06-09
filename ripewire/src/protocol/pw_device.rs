@@ -118,7 +118,7 @@ pub mod events {
     pub struct Info {
         pub id: u32,
         pub change_mask: ChangeMask,
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
         pub params: Vec<ParamInfo>,
     }
 

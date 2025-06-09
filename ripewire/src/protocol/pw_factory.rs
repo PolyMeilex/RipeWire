@@ -35,7 +35,7 @@ pub mod events {
         pub interface: String,
         pub version: u32,
         pub change_mask: ChangeMask,
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
     }
 
     impl EventDeserialize for Info {

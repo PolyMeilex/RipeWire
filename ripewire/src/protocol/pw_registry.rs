@@ -85,7 +85,7 @@ pub mod events {
         pub permissions: PermissionFlags,
         pub interface: ObjectType,
         pub version: u32,
-        pub properties: HashMap<String, String>,
+        pub properties: PwDictionary,
     }
 
     impl EventDeserialize for Global {

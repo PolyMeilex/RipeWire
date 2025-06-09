@@ -175,7 +175,7 @@ pub mod events {
         /// The changes emitted by this event
         pub change_mask: ChangeMask,
         /// properties of this object, valid when change_mask has PROPS
-        pub properties: HashMap<String, String>,
+        pub properties: PwDictionary,
     }
 
     impl EventDeserialize for Info {

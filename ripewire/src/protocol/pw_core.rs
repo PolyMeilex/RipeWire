@@ -224,7 +224,7 @@ pub mod events {
         pub version: String,
         pub name: String,
         pub change_mask: ChangeMask,
-        pub properties: HashMap<String, String>,
+        pub properties: PwDictionary,
     }
 
     impl EventDeserialize for Info {
@@ -444,7 +444,7 @@ pub mod events {
     pub struct BoundProps {
         pub id: u32,
         pub global_id: u32,
-        pub properties: HashMap<String, String>,
+        pub properties: PwDictionary,
     }
 
     impl EventDeserialize for BoundProps {

@@ -12,7 +12,9 @@ pub mod reexports {
     pub use pod;
 }
 
-use std::{collections::HashMap, os::fd::RawFd};
+use std::os::fd::RawFd;
+
+use protocol::PwDictionary;
 
 pub fn set_blocking(fd: RawFd, blocking: bool) {
     // Save the current flags
@@ -45,12 +47,12 @@ pub fn poll(fd: RawFd, timeout: i32) {
 }
 
 pub trait HashMapExt {
-    fn from_dict<'a>(v: impl IntoIterator<Item = (&'a str, &'a str)>) -> HashMap<String, String>;
+    fn from_dict<'a>(v: impl IntoIterator<Item = (&'a str, &'a str)>) -> PwDictionary;
 }
 
-impl HashMapExt for HashMap<&str, &str> {
-    fn from_dict<'a>(v: impl IntoIterator<Item = (&'a str, &'a str)>) -> HashMap<String, String> {
-        let mut map = HashMap::new();
+impl HashMapExt for PwDictionary {
+    fn from_dict<'a>(v: impl IntoIterator<Item = (&'a str, &'a str)>) -> PwDictionary {
+        let mut map = PwDictionary::new();
         for (key, value) in v {
             map.insert(key.into(), value.into());
         }

@@ -42,7 +42,7 @@ pub mod events {
         pub error: Option<String>,
         /// Pod bytes
         pub format: OwnedPod,
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
     }
 
     impl EventDeserialize for Info {

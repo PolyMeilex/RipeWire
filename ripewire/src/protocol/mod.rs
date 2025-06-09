@@ -69,13 +69,15 @@ pub trait Deserialize: Sized {
     ) -> pod::deserialize::Result<Self>;
 }
 
-fn parse_dict(
-    pod: &mut PodStructDeserializer,
-) -> pod::deserialize::Result<HashMap<String, String>> {
+// It's easier to debug whenever keys are ordered
+// pub type PwDictionary = BTreeMap<String, String>;
+pub type PwDictionary = HashMap<String, String>;
+
+fn parse_dict(pod: &mut PodStructDeserializer) -> pod::deserialize::Result<PwDictionary> {
     let count = pod.pop_field()?;
     let count = count.as_i32()?;
 
-    let mut map = HashMap::new();
+    let mut map = PwDictionary::new();
     for _ in 0..count {
         let key = pod.pop_field()?.as_str()?.to_string();
         let value = pod.pop_field()?.as_str()?.to_string();

@@ -1,6 +1,5 @@
 #![allow(clippy::single_match)]
 
-use std::collections::HashMap;
 use std::ffi::CStr;
 use std::io::{self, Read};
 use std::os::fd::{AsRawFd, BorrowedFd, FromRawFd, IntoRawFd};
@@ -22,12 +21,12 @@ use ripewire::protocol::pw_client_node::methods::{
 };
 use ripewire::protocol::{
     self, pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry, ParamFlags,
-    ParamInfo,
+    ParamInfo, PwDictionary,
 };
 use ripewire::proxy::{ObjectId, PwClient, PwClientNode, PwCore, PwDevice, PwNode, PwRegistry};
 use ripewire::HashMapExt;
 
-fn properties() -> HashMap<String, String> {
+fn properties() -> PwDictionary {
     let host = rustix::system::uname();
     let host: &str = &host.nodename().to_string_lossy();
 
@@ -42,7 +41,7 @@ fn properties() -> HashMap<String, String> {
 
     let pid = rustix::process::getpid().as_raw_nonzero().to_string();
 
-    HashMap::from_dict([
+    PwDictionary::from_dict([
         ("log.level", "0"),
         ("cpu.max-align", "32"),
         ("default.clock.rate", "48000"),
@@ -438,7 +437,7 @@ impl PipewireState {
                     factory_name: "client-node".into(),
                     interface: "PipeWire:Interface:ClientNode".into(),
                     version: 3,
-                    properties: HashMap::from_dict([
+                    properties: PwDictionary::from_dict([
                         ("application.name", "rustypipe"),
                         ("media.type", "Midi"),
                         ("format.dsp", "8 bit raw midi"),
@@ -462,7 +461,7 @@ impl PipewireState {
                         | NodeInfoChangeMask::PROPS
                         | NodeInfoChangeMask::PARAMS,
                     flags: pw_client_node::methods::NodeFlags::RT,
-                    props: HashMap::from_dict([
+                    props: PwDictionary::from_dict([
                         ("object.register", "false"),
                         ("media.type", "Midi"),
                         ("media.category", "Filter"),
@@ -542,7 +541,7 @@ impl PipewireState {
                         flags: pw_client_node::methods::PortFlags::empty(),
                         rate_num: 0,
                         rate_denom: 1,
-                        items: HashMap::from_dict([
+                        items: PwDictionary::from_dict([
                             ("format.dsp", "8 bit raw midi"),
                             ("port.name", "output"),
                             ("port.id", "0"),

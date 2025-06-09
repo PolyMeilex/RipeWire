@@ -70,7 +70,7 @@ pub mod methods {
         pub max_output_ports: u32,
         pub change_mask: NodeInfoChangeMask,
         pub flags: NodeFlags,
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
         pub params: Vec<ParamInfo>,
     }
 
@@ -231,7 +231,7 @@ pub mod methods {
         /// Updated rate denominator, when info.change_mask has (1<<1)
         pub rate_denom: u32,
         /// Updated properties, valid when info.change_mask has (1<<2)
-        pub items: HashMap<String, String>,
+        pub items: PwDictionary,
         /// Updated struct spa_param_info, valid when info.change_mask has (1<<3)
         pub params: Vec<ParamInfo>,
     }
@@ -599,7 +599,7 @@ pub mod events {
         /// The port id of the new port
         pub port_id: u32,
         /// Optional extra properties for the port
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
     }
 
     impl EventDeserialize for AddPort {
@@ -879,7 +879,7 @@ pub mod events {
         /// The id of the peer port
         pub peer_id: u32,
         /// Optional properties
-        pub props: HashMap<String, String>,
+        pub props: PwDictionary,
     }
 
     impl EventDeserialize for PortSetMixInfo {
