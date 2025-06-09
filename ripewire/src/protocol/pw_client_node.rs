@@ -733,7 +733,7 @@ pub mod events {
                     let n_metas = pod.pop_field()?.as_u32()? as usize;
                     let mut metas = Vec::with_capacity(n_metas);
                     for _ in 0..n_metas {
-                        let id = SpaEnum::from_raw(pod.pop_field()?.as_u32()?);
+                        let id = SpaEnum::from_raw(pod.pop_field()?.as_id()?);
                         let size = pod.pop_field()?.as_u32()?;
                         metas.push((id, size));
                     }
