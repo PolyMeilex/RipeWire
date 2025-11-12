@@ -5,12 +5,13 @@ use std::io::{self, Read};
 use std::os::fd::{AsRawFd, BorrowedFd, FromRawFd, IntoRawFd};
 use std::ptr::NonNull;
 
-use calloop::{generic::Generic, EventLoop, Interest, Mode, PostAction};
+use calloop::{EventLoop, Interest, Mode, PostAction, generic::Generic};
 use libspa_consts::{
     SpaDirection, SpaEnum, SpaFormat, SpaIoType, SpaMediaSubtype, SpaMediaType, SpaParamIo,
     SpaParamRoute, SpaParamType, SpaProp, SpaType,
 };
 
+use ripewire::HashMapExt;
 use ripewire::connection::MessageBuffer;
 use ripewire::context::Context;
 use ripewire::global_list::GlobalList;
@@ -20,11 +21,10 @@ use ripewire::protocol::pw_client_node::methods::{
     NodeInfoChangeMask, PortInfoChangeMask, PortUpdateChangeMask,
 };
 use ripewire::protocol::{
-    self, pw_client, pw_client_node, pw_core, pw_device, pw_node, pw_registry, ParamFlags,
-    ParamInfo, PwDictionary,
+    self, ParamFlags, ParamInfo, PwDictionary, pw_client, pw_client_node, pw_core, pw_device,
+    pw_node, pw_registry,
 };
 use ripewire::proxy::{ObjectId, PwClient, PwClientNode, PwCore, PwDevice, PwNode, PwRegistry};
-use ripewire::HashMapExt;
 
 fn properties() -> PwDictionary {
     let host = rustix::system::uname();
@@ -168,9 +168,19 @@ impl PipewireState {
             pw_core::Event::Ping(ping) => {
                 core.pong(ctx, ping.id, ping.seq);
             }
+            pw_core::Event::RemoveId(remove_id) => {
+                println!(
+                    "{:?} {:?}",
+                    ctx.object_type(&ObjectId::new(remove_id.id)),
+                    remove_id
+                );
+            }
             pw_core::Event::Error(error) => {
-                dbg!(ctx.object_type(&ObjectId::new(error.id)));
-                dbg!(error);
+                println!(
+                    "{:?} {:?}",
+                    ctx.object_type(&ObjectId::new(error.id)),
+                    error
+                );
             }
             _ => {}
         }
@@ -314,6 +324,10 @@ impl PipewireState {
         _registry: PwRegistry,
         registry_event: pw_registry::Event,
     ) {
+        if let pw_registry::Event::GlobalRemove(msg) = &registry_event {
+            dbg!(&msg);
+            // dbg!(self.globals.iter().find(|g| g.id == msg.id));
+        }
         // dbg!(&registry_event);
         self.globals.handle_event(&registry_event);
     }
@@ -376,14 +390,17 @@ impl PipewireState {
                     == Some("alsa_card.pci-0000_0b_00.6")
             });
 
-        for node in self
+        for global in self
             .globals
             .iter()
             .filter(|global| global.interface == ObjectType::Node)
         {
-            let node: PwNode = self.registry.bind(ctx, node);
+            let node: PwNode = self.registry.bind(ctx, global);
+            println!("bind {global:?} to {:?}", node.id());
             ctx.set_object_callback(&node, Self::node_event);
         }
+
+        return;
 
         if let Some(global) = client {
             let client: PwClient = self.registry.bind(ctx, global);
@@ -491,7 +508,7 @@ impl PipewireState {
                 }),
             };
 
-            let msg = protocol::create_msg(id, &msg);
+            let msg = protocol::create_msg(id, &msg, ctx.take_pending_generation());
 
             ctx.send_msg(&msg, &[]).unwrap();
 
@@ -576,12 +593,16 @@ impl PipewireState {
                         ],
                     }),
                 },
+                ctx.take_pending_generation(),
             );
 
             ctx.send_msg(&msg, &[]).unwrap();
 
-            let msg =
-                protocol::create_msg(id, &pw_client_node::methods::SetActive { active: true });
+            let msg = protocol::create_msg(
+                id,
+                &pw_client_node::methods::SetActive { active: true },
+                ctx.take_pending_generation(),
+            );
             ctx.send_msg(&msg, &[]).unwrap();
         }
     }

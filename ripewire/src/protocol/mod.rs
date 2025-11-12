@@ -3,8 +3,8 @@
 use crate::object_map::ObjectType;
 use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
 use pod::{
-    deserialize::{OwnedPod, PodStructDeserializer},
     Fd, Id, PodDeserializer,
+    deserialize::{OwnedPod, PodStructDeserializer},
 };
 use std::{
     collections::HashMap,
@@ -138,20 +138,34 @@ pub mod pw_node;
 pub mod pw_port;
 pub mod pw_registry;
 
-pub fn create_msg<MSG>(object_id: u32, value: &MSG) -> Vec<u8>
+pub fn create_msg<MSG>(object_id: u32, value: &MSG, generation: Option<u64>) -> Vec<u8>
 where
     MSG: MethodSerialize,
 {
-    create_msg_with_fds(object_id, value).0
+    create_msg_with_fds(object_id, value, generation).0
 }
 
-pub fn create_msg_with_fds<MSG>(object_id: u32, value: &MSG) -> (Vec<u8>, Vec<RawFd>)
+pub fn create_msg_with_fds<MSG>(
+    object_id: u32,
+    value: &MSG,
+    generation: Option<u64>,
+) -> (Vec<u8>, Vec<RawFd>)
 where
     MSG: MethodSerialize,
 {
     let mut fds = vec![];
     let mut buff = std::io::Cursor::new(vec![]);
     value.serialize(&mut buff, &mut fds);
+
+    if let Some(generation) = generation {
+        pod::Builder::new(&mut buff).push_struct_with(|b| {
+            // Client Generation (Footer Opcode 0)
+            b.write_id(0);
+            b.push_struct_with(|b| {
+                b.write_u64(generation);
+            });
+        });
+    }
 
     let mut pod = buff.into_inner();
 

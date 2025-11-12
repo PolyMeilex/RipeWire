@@ -33,6 +33,7 @@ struct ObjectState<D> {
 pub struct Context<D = ()> {
     conn: Connection,
     map: ObjectMap<Option<ObjectState<D>>>,
+    pending_generation: Option<u64>,
 }
 
 impl<D> Context<D> {
@@ -40,6 +41,7 @@ impl<D> Context<D> {
         let mut this = Self {
             conn: Connection::connect(path)?,
             map: ObjectMap::new(),
+            pending_generation: None,
         };
 
         let core_id = this.new_object(ObjectType::Core).protocol_id();
@@ -57,6 +59,10 @@ impl<D> Context<D> {
 
     pub fn client(&self) -> PwClient {
         PwClient::new(pw_client::OBJECT_ID)
+    }
+
+    pub fn take_pending_generation(&mut self) -> Option<u64> {
+        self.pending_generation.take()
     }
 
     pub fn new_object(&mut self, kind: ObjectType) -> ObjectId {
@@ -84,6 +90,24 @@ impl<D> Context<D> {
 
     pub fn dispatch_event(&mut self, state: &mut D, msg: Message) {
         let id = ObjectId::new(msg.header.object_id);
+
+        if let Some(generation) = msg.footer.and_then(|f| {
+            let mut footer = f.as_struct().ok()?;
+            let opcode = footer.pop_field().ok()?.as_id().ok()?;
+            let mut inner = footer.pop_field().ok()?.as_struct().ok()?;
+
+            // Core Generation (Footer Opcode 0)
+            if opcode != 0 {
+                return None;
+            }
+
+            let generation_field = inner.pop_field().ok()?;
+            let generation = generation_field.as_u64().ok()?;
+
+            Some(generation)
+        }) {
+            self.pending_generation = Some(generation);
+        }
 
         match self.object_type(&id).unwrap() {
             ObjectType::Core => {

@@ -7,8 +7,8 @@ use crate::{
     context::Context,
     object_map::ObjectType,
     protocol::{
-        self, pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node, pw_port,
-        pw_registry, MethodSerialize,
+        self, MethodSerialize, pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node,
+        pw_port, pw_registry,
     },
 };
 
@@ -51,7 +51,11 @@ impl PwCore {
     }
 
     pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerialize) {
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        let (msg, fds) = protocol::create_msg_with_fds(
+            self.object_id.object_id,
+            &message,
+            context.take_pending_generation(),
+        );
         context.send_msg(&msg, fds.as_slice()).unwrap();
     }
 
@@ -130,7 +134,11 @@ impl PwClient {
     }
 
     pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerialize) {
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        let (msg, fds) = protocol::create_msg_with_fds(
+            self.object_id.object_id,
+            &message,
+            context.take_pending_generation(),
+        );
         context.send_msg(&msg, fds.as_slice()).unwrap();
     }
 
@@ -176,7 +184,11 @@ impl PwRegistry {
     }
 
     pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerialize) {
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        let (msg, fds) = protocol::create_msg_with_fds(
+            self.object_id.object_id,
+            &message,
+            context.take_pending_generation(),
+        );
         context.send_msg(&msg, fds.as_slice()).unwrap();
     }
 
@@ -240,7 +252,11 @@ impl PwDevice {
     }
 
     pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerialize) {
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        let (msg, fds) = protocol::create_msg_with_fds(
+            self.object_id.object_id,
+            &message,
+            context.take_pending_generation(),
+        );
         context.send_msg(&msg, fds.as_slice()).unwrap();
     }
 
@@ -297,7 +313,11 @@ impl PwNode {
     }
 
     pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerialize) {
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        let (msg, fds) = protocol::create_msg_with_fds(
+            self.object_id.object_id,
+            &message,
+            context.take_pending_generation(),
+        );
         context.send_msg(&msg, fds.as_slice()).unwrap();
     }
 
@@ -354,7 +374,11 @@ impl PwClientNode {
     }
 
     pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerialize) {
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        let (msg, fds) = protocol::create_msg_with_fds(
+            self.object_id.object_id,
+            &message,
+            context.take_pending_generation(),
+        );
         context.send_msg(&msg, fds.as_slice()).unwrap();
     }
 
@@ -423,7 +447,11 @@ impl PwPort {
     }
 
     pub fn send<D>(&self, context: &mut Context<D>, message: impl MethodSerialize) {
-        let (msg, fds) = protocol::create_msg_with_fds(self.object_id.object_id, &message);
+        let (msg, fds) = protocol::create_msg_with_fds(
+            self.object_id.object_id,
+            &message,
+            context.take_pending_generation(),
+        );
         context.send_msg(&msg, fds.as_slice()).unwrap();
     }
 
