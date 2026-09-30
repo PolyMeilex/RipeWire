@@ -1,7 +1,7 @@
 use crate::{Id, PodDeserializer};
 
 use super::pad_to_8;
-use libspa_consts::{SpaEnum, SpaType};
+use libspa_consts::{SpaChoiceType, SpaEnum, SpaType};
 use std::io;
 
 pub trait PodWrite {
@@ -222,6 +222,19 @@ where
         self
     }
 
+    /// All values written in `cb` have to be of the same type
+    pub fn write_choice_with(
+        &mut self,
+        choice_ty: SpaChoiceType,
+        flags: u32,
+        cb: impl FnOnce(&mut ChoiceBuilder<'_, Buff>),
+    ) -> &mut Self {
+        let mut builder = ChoiceBuilder::new(self, choice_ty, flags);
+        cb(&mut builder);
+        builder.done().unwrap();
+        self
+    }
+
     pub fn push_struct_with(&mut self, cb: impl FnOnce(&mut StructBuilder<'_, Buff>)) -> &mut Self {
         let mut builder = StructBuilder::new(self);
         cb(&mut builder);
@@ -357,6 +370,65 @@ where
         _cb: impl FnOnce(&mut StructBuilder<'_, Buff>),
     ) -> &mut Self {
         todo!()
+    }
+
+    fn done(self) -> io::Result<()> {
+        let pos = self.builder.buff.stream_position()?;
+        let size = (pos - self.body_start) as u32;
+        lazy_init_size(self.header_start, &mut self.builder.buff, size)?;
+
+        self.builder.frame = self.parent_frame;
+        self.builder.write_padding(pad_to_8(size)).unwrap();
+
+        Ok(())
+    }
+}
+
+pub struct ChoiceBuilder<'a, Buff> {
+    builder: &'a mut Builder<Buff>,
+    header_start: u64,
+    body_start: u64,
+    parent_frame: BuilderFrame,
+}
+
+impl<Buff> std::ops::Deref for ChoiceBuilder<'_, Buff> {
+    type Target = Builder<Buff>;
+    fn deref(&self) -> &Self::Target {
+        self.builder
+    }
+}
+impl<Buff> std::ops::DerefMut for ChoiceBuilder<'_, Buff> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.builder
+    }
+}
+
+impl<'a, Buff> ChoiceBuilder<'a, Buff>
+where
+    Buff: io::Write + io::Seek,
+{
+    fn new(builder: &'a mut Builder<Buff>, choice_ty: SpaChoiceType, flags: u32) -> Self {
+        let header_start = builder.buff.stream_position().unwrap();
+        builder.write_header(0, SpaType::Choice).unwrap();
+        let body_start = builder.buff.stream_position().unwrap();
+
+        builder
+            .buff
+            .write_all(&(choice_ty as u32).to_ne_bytes())
+            .unwrap();
+        builder.buff.write_all(&flags.to_ne_bytes()).unwrap();
+
+        // Just like in array, child header is written only once
+        let parent_frame = std::mem::take(&mut builder.frame);
+        builder.frame.is_first = true;
+        builder.frame.array_mode = true;
+
+        Self {
+            builder,
+            header_start,
+            body_start,
+            parent_frame,
+        }
     }
 
     fn done(self) -> io::Result<()> {
