@@ -33,7 +33,7 @@ pub enum SpaChoiceType {
     Step = 2,
     #[doc = "< list: default, alternative,..."]
     Enum = 3,
-    #[doc = "< flags: default, possible flags,..."]
+    #[doc = "< flags: first value is flags"]
     Flags = 4,
 }
 #[repr(u32)]
@@ -63,6 +63,8 @@ pub enum SpaMetaType {
     SyncTimeline = 9,
     #[doc = "< not part of ABI/API"]
     _SPA_META_LAST = 10,
+    StartCustom = 512,
+    StartFeatures = 65536,
 }
 #[repr(u32)]
 #[doc = " \\addtogroup spa_buffer\n \\{"]
@@ -82,6 +84,19 @@ pub enum SpaDataType {
     #[doc = "< a syncobj, usually requires a spa_meta_sync_timeline metadata\n  with timeline points."]
     SyncObj = 5,
 }
+#[doc = " Chunk of memory, can change for each buffer"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct SpaChunk {
+    #[doc = "< offset of valid data. Should be taken\n  modulo the data maxsize to get the offset\n  in the data memory."]
+    pub offset: u32,
+    #[doc = "< size of valid data. Should be clamped to\n  maxsize."]
+    pub size: u32,
+    #[doc = "< stride of valid data"]
+    pub stride: i32,
+    #[doc = "< chunk flags"]
+    pub flags: i32,
+}
 #[repr(u32)]
 #[doc = " Different Control types"]
 #[derive(
@@ -99,6 +114,32 @@ pub enum SpaControlType {
     Ump = 4,
     #[doc = "< not part of ABI"]
     _SPA_CONTROL_LAST = 5,
+}
+#[repr(u32)]
+#[doc = " \\addtogroup spa_node\n \\{"]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub enum SpaNodeCommand {
+    #[doc = "< suspend a node, this removes all configured\n formats and closes any devices"]
+    Suspend = 0,
+    #[doc = "< pause a node. this makes it stop emitting\n  scheduling events"]
+    Pause = 1,
+    #[doc = "< start a node, this makes it start emitting\n  scheduling events"]
+    Start = 2,
+    Enable = 3,
+    Disable = 4,
+    Flush = 5,
+    Drain = 6,
+    Marker = 7,
+    #[doc = "< begin a set of parameter enumerations or\n  configuration that require the device to\n  remain opened, like query formats and then\n  set a format"]
+    ParamBegin = 8,
+    #[doc = "< end a transaction"]
+    ParamEnd = 9,
+    #[doc = "< Sent to a driver when some other node emitted\n  the RequestProcess event."]
+    RequestProcess = 10,
+    #[doc = "< User defined command"]
+    User = 11,
 }
 #[repr(u32)]
 #[doc = " Different IO area types"]
@@ -128,7 +169,16 @@ pub enum SpaIoType {
     #[doc = "< async area to exchange buffers, struct spa_io_async_buffers"]
     AsyncBuffers = 10,
 }
-#[doc = " Absolute time reporting.\n\n Nodes that can report clocking information will receive this io block.\n The application sets the id. This is usually set as part of the\n position information but can also be set separately.\n\n The clock counts the elapsed time according to the clock provider\n since the provider was last started.\n\n Driver nodes are supposed to update the contents of \\ref SPA_IO_Clock before\n signaling the start of a graph cycle.  These updated clock values become\n visible to other nodes in \\ref SPA_IO_Position. Non-driver nodes do\n not need to update the contents of their \\ref SPA_IO_Clock.\n\n The host generally gives each node a separate \\ref spa_io_clock in \\ref\n SPA_IO_Clock, so that updates made by the driver are not visible in the\n contents of \\ref SPA_IO_Clock of other nodes. Instead, \\ref SPA_IO_Position\n is used to look up the current graph time.\n\n A node is a driver when \\ref spa_io_clock.id in \\ref SPA_IO_Clock and\n \\ref spa_io_position.clock.id in \\ref SPA_IO_Position are the same."]
+#[doc = " IO area to exchange buffers.\n\n A set of buffers should first be configured on the node/port.\n Further references to those buffers will be made by using the\n id of the buffer.\n\n If status is SPA_STATUS_OK, the host should ignore\n the io area.\n\n If status is SPA_STATUS_NEED_DATA, the host should:\n 1) recycle the buffer in buffer_id, if possible\n 2) prepare a new buffer and place the id in buffer_id.\n\n If status is SPA_STATUS_HAVE_DATA, the host should consume\n the buffer in buffer_id and set the state to\n SPA_STATUS_NEED_DATA when new data is requested.\n\n If status is SPA_STATUS_STOPPED, some error occurred on the\n port.\n\n If status is SPA_STATUS_DRAINED, data from the io area was\n used to drain.\n\n Status can also be a negative errno value to indicate errors.\n such as:\n -EINVAL: buffer_id is invalid\n -EPIPE: no more buffers available"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct SpaIoBuffers {
+    #[doc = "< the status code"]
+    pub status: i32,
+    #[doc = "< a buffer id"]
+    pub buffer_id: u32,
+}
+#[doc = " Absolute time reporting.\n\n Nodes that can report clocking information will receive this io block.\n The application sets the id. This is usually set as part of the\n position information but can also be set separately.\n\n The clock counts the elapsed time according to the clock provider\n since the provider was last started.\n\n Driver nodes are supposed to update the contents of \\ref SPA_IO_Clock before\n signaling the start of a graph cycle.  These updated clock values become\n visible to other nodes in \\ref SPA_IO_Position. Non-driver nodes do\n not need to update the contents of their \\ref SPA_IO_Clock. Also\n see \\ref page_driver for further details.\n\n The host generally gives each node a separate \\ref spa_io_clock in \\ref\n SPA_IO_Clock, so that updates made by the driver are not visible in the\n contents of \\ref SPA_IO_Clock of other nodes. Instead, \\ref SPA_IO_Position\n is used to look up the current graph time.\n\n A node is a driver when \\ref spa_io_clock::id and the ID in\n \\ref spa_io_position.clock in \\ref SPA_IO_Position are the same.\n\n The flags are set by the graph driver at the start of each cycle."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct SpaIoClock {
@@ -138,7 +188,7 @@ pub struct SpaIoClock {
     pub id: u32,
     #[doc = "< Clock name prefixed with API, set by node when it receives\n  \\ref SPA_IO_Clock. The clock name is unique per clock and\n  can be used to check if nodes share the same clock."]
     pub name: [::std::os::raw::c_char; 64usize],
-    #[doc = "< Time in nanoseconds against monotonic clock\n (CLOCK_MONOTONIC). This fields reflects a real time instant\n in the past. The value may have jitter."]
+    #[doc = "< Time in nanoseconds against monotonic clock\n (CLOCK_MONOTONIC). This fields reflects a real time instant\n in the past, when the current cycle started. The value may\n have jitter."]
     pub nsec: u64,
     #[doc = "< Rate for position/duration/delay/xrun"]
     pub rate: SpaFraction,
@@ -148,7 +198,7 @@ pub struct SpaIoClock {
     pub duration: u64,
     #[doc = "< Delay between position and hardware, in samples @ \\ref rate"]
     pub delay: i64,
-    #[doc = "< Rate difference between clock and monotonic time, as a ratio of\n  clock speeds."]
+    #[doc = "< Rate difference between clock and monotonic time, as a ratio of\n  clock speeds. A value higher than 1.0 means that the driver's\n  internal clock is faster than the monotonic clock (by that\n  factor), and vice versa."]
     pub rate_diff: f64,
     #[doc = "< Estimated next wakeup time in nanoseconds.\n  This time is a logical start time of the next cycle, and\n  is not necessarily in the future."]
     pub next_nsec: u64,
@@ -231,7 +281,7 @@ pub struct SpaIoSegment {
     pub bar: SpaIoSegmentBar,
     pub video: SpaIoSegmentVideo,
 }
-#[doc = " The position information adds extra meaning to the raw clock times.\n\n It is set on all nodes in \\ref SPA_IO_Position, and the contents of \\ref\n spa_io_position.clock contain the clock updates made by the driving node in\n the graph in its \\ref SPA_IO_Clock.  Also, \\ref spa_io_position.clock.id\n will contain the clock id of the driving node in the graph.\n\n The position clock indicates the logical start time of the current graph\n cycle.\n\n The position information contains 1 or more segments that convert the\n raw clock times to a stream time. They are sorted based on their\n start times, and thus the order in which they will activate in\n the future. This makes it possible to look ahead in the scheduled\n segments and anticipate the changes in the timeline."]
+#[doc = " The position information adds extra meaning to the raw clock times.\n\n It is set on all nodes in \\ref SPA_IO_Position, and the contents of \\ref\n spa_io_position.clock contain the clock updates made by the driving node in\n the graph in its \\ref SPA_IO_Clock.  Also, the ID in \\ref spa_io_position.clock\n will be the clock id of the driving node in the graph.\n\n The position clock indicates the logical start time of the current graph\n cycle.\n\n The position information contains 1 or more segments that convert the\n raw clock times to a stream time. They are sorted based on their\n start times, and thus the order in which they will activate in\n the future. This makes it possible to look ahead in the scheduled\n segments and anticipate the changes in the timeline."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct SpaIoPosition {
@@ -247,6 +297,13 @@ pub struct SpaIoPosition {
     pub n_segments: u32,
     #[doc = "< segments"]
     pub segments: [SpaIoSegment; 8usize],
+}
+#[doc = " async buffers"]
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct SpaIoAsyncBuffers {
+    #[doc = "< async buffers, writers write to current (cycle+1)&1,\n  readers read from (cycle)&1"]
+    pub buffers: [SpaIoBuffers; 2usize],
 }
 #[repr(u32)]
 #[doc = " different parameter types that can be queried"]
@@ -290,6 +347,12 @@ pub enum SpaParamType {
     ProcessLatency = 16,
     #[doc = "< tag reporting, a SPA_TYPE_OBJECT_ParamTag. Since 0.3.79"]
     Tag = 17,
+    #[doc = "< peer formats, a SPA_TYPE_OBJECT_PeerParam with\n  SPA_TYPE_OBJECT_Format. Since 1.5.0"]
+    PeerEnumFormat = 18,
+    #[doc = "< capability info, a SPA_TYPE_OBJECT_ParamDict, Since 1.5.84"]
+    Capability = 19,
+    #[doc = "< peer capabilities, a SPA_TYPE_OBJECT_PeerParam with\n  SPA_TYPE_OBJECT_ParamDict, since 1.5.84"]
+    PeerCapability = 20,
 }
 #[repr(u32)]
 #[derive(
@@ -348,6 +411,8 @@ pub enum SpaParamMeta {
     Type = 1,
     #[doc = "< the expected maximum size the meta (Int)"]
     Size = 2,
+    #[doc = "< meta data features (Features Int)"]
+    Features = 3,
 }
 #[repr(u32)]
 #[doc = " properties for SPA_TYPE_OBJECT_ParamIO"]
@@ -386,6 +451,7 @@ pub enum SpaParamProfile {
     Save = 8,
 }
 #[repr(u32)]
+#[doc = " \\addtogroup spa_param\n \\{"]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -495,6 +561,9 @@ pub enum SpaProp {
     Quality = 269,
     BluetoothAudioCodec = 270,
     BluetoothOffloadActive = 271,
+    ClockId = 272,
+    ClockDevice = 273,
+    ClockInterface = 274,
     WaveType = 65537,
     Frequency = 65538,
     #[doc = "< a volume (Float), 0.0 silence, 1.0 no attenutation"]
@@ -606,44 +675,56 @@ pub enum SpaMediaSubtype {
     #[doc = " since 0.3.65"]
     Opus = 65552,
     #[doc = " since 0.3.68"]
+    Ac3 = 65553,
+    #[doc = " since 1.5.1"]
+    Eac3 = 65554,
+    #[doc = " since 1.5.1"]
+    Truehd = 65555,
+    #[doc = " since 1.5.1"]
+    Dts = 65556,
+    #[doc = " since 1.5.1"]
+    Mpegh = 65557,
+    #[doc = " since 1.5.1"]
     StartVideo = 131072,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     H264 = 131073,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Mjpg = 131074,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Dv = 131075,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Mpegts = 131076,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     H263 = 131077,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Mpeg1 = 131078,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Mpeg2 = 131079,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Mpeg4 = 131080,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Xvid = 131081,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Vc1 = 131082,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Vp8 = 131083,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Vp9 = 131084,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Bayer = 131085,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
+    H265 = 131086,
+    #[doc = " since 1.5.1"]
     StartImage = 196608,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Jpeg = 196609,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     StartBinary = 262144,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     StartStream = 327680,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     Midi = 327681,
-    #[doc = " since 0.3.68"]
+    #[doc = " since 1.5.1"]
     StartApplication = 393216,
     #[doc = "< control stream, data contains\n  spa_pod_sequence with control info."]
     Control = 393217,
@@ -686,6 +767,10 @@ pub enum SpaFormat {
     AudioWmaProfile = 65548,
     #[doc = "< AMR band mode (Id enum spa_audio_amr_band_mode)"]
     AudioAmrBandMode = 65549,
+    #[doc = "< MP3 channel mode, (Id enum spa_audio_mp3_channel_mode)"]
+    AudioMp3ChannelMode = 65550,
+    #[doc = "< DTS extension type (Id enum spa_audio_dts_ext_type)"]
+    AudioDtsExtType = 65551,
     StartVideo = 131072,
     #[doc = "< video format (Id enum spa_video_format)"]
     VideoFormat = 131073,
@@ -725,6 +810,12 @@ pub enum SpaFormat {
     VideoH264StreamFormat = 131090,
     #[doc = "< (Id enum spa_h264_alignment)"]
     VideoH264Alignment = 131091,
+    #[doc = "< (Id enum spa_h265_stream_format)"]
+    VideoH265StreamFormat = 131092,
+    #[doc = "< (Id enum spa_h265_alignment)"]
+    VideoH265Alignment = 131093,
+    #[doc = "< dev_t identifier (Bytes)"]
+    VideoDeviceId = 131094,
     StartImage = 196608,
     StartBinary = 262144,
     StartStream = 327680,
@@ -903,13 +994,21 @@ pub enum SpaAudioIec958Codec {
 )]
 pub enum SpaAudioAacStreamFormat {
     Unknown = 0,
+    #[doc = " Raw AAC frames"]
     Raw = 1,
+    #[doc = " ISO/IEC 13818-7 MPEG-2 Audio Data Transport Stream (ADTS)"]
     Mp2adts = 2,
+    #[doc = " ISO/IEC 14496-3 MPEG-4 Audio Data Transport Stream (ADTS)"]
     Mp4adts = 3,
+    #[doc = " ISO/IEC 14496-3 Low Overhead Audio Stream (LOAS)"]
     Mp4loas = 4,
+    #[doc = " ISO/IEC 14496-3 Low Overhead Audio Transport Multiplex (LATM)"]
     Mp4latm = 5,
+    #[doc = " ISO/IEC 14496-3 Audio Data Interchange Format (ADIF)"]
     Adif = 6,
+    #[doc = " ISO/IEC 14496-12 MPEG-4 file format"]
     Mp4ff = 7,
+    #[doc = " ISO/IEC 14496-12 MPEG-4 file format"]
     Custom = 65536,
 }
 #[repr(u32)]
@@ -967,6 +1066,7 @@ pub enum SpaBluetoothAudioCodec {
     Cvsd = 256,
     Msbc = 257,
     Lc3Swb = 258,
+    Lc3A127 = 259,
     Lc3 = 512,
     G722 = 768,
 }
@@ -1241,7 +1341,7 @@ pub enum SpaProfiler {
     DriverBlock = 65539,
     #[doc = "< follower related profiler properties"]
     StartFollower = 131072,
-    #[doc = "< generic follower info block\n  (Struct(\n      Int : id,\n      String : name,\n      Long : prev_signal,\n      Long : signal,\n      Long : awake,\n      Long : finish,\n      Int : status,\n      Fraction : latency,\n      Int : xrun_count))"]
+    #[doc = "< generic follower info block\n  (Struct(\n      Int : id,\n      String : name,\n      Long : prev_signal,\n      Long : signal,\n      Long : awake,\n      Long : finish,\n      Int : status,\n      Fraction : latency,\n      Int : xrun_count))\n      Bool : async))"]
     FollowerBlock = 131073,
     #[doc = "< follower clock information\n  (Struct(\n      Int : clock id,\n      String: clock name,\n      Long : clock nsec,\n      Fraction : clock rate,\n      Long : clock position,\n      Long : clock duration,\n      Long : clock delay,\n      Double : clock rate_diff,\n      Long : clock next_nsec,\n      Long : xrun duration))"]
     FollowerClock = 131074,

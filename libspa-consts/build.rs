@@ -100,6 +100,9 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_io_segment_video",
         "spa_io_segment",
         "spa_io_position",
+        "spa_io_buffers",
+        "spa_io_async_buffers",
+        "spa_chunk",
     ] {
         builder = builder.allowlist_type(name);
     }
@@ -142,6 +145,7 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
         "spa_audio_wma_profile",
         "spa_audio_aac_stream_format",
         "spa_param_bitorder",
+        "spa_node_command",
     ] {
         builder = builder.allowlist_type(name).rustified_enum(name);
     }
