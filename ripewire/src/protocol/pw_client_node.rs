@@ -523,7 +523,7 @@ pub mod events {
     #[derive(Debug, Clone)]
     pub struct SetIo {
         /// The io area id to set.
-        pub id: u32,
+        pub id: SpaEnum<SpaIoType>,
         /// Memid to use, this is signaled with Core::AddMem
         pub memid: u32,
         /// The start offset in the memory area
@@ -541,7 +541,7 @@ pub mod events {
         ) -> pod::deserialize::Result<Self> {
             let mut pod = pod.as_struct()?;
             Ok(Self {
-                id: pod.pop_field()?.as_id()?,
+                id: SpaEnum::from_raw(pod.pop_field()?.as_id()?),
                 memid: pod.pop_field()?.as_u32()?,
                 offset: pod.pop_field()?.as_u32()?,
                 size: pod.pop_field()?.as_u32()?,
