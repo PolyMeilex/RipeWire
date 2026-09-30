@@ -18,6 +18,14 @@ struct ParseCallbacks;
 
 impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
     fn item_name(&self, original_item_name: &str) -> Option<String> {
+        // Keep #define constants as they are, eg. SPA_NODE_BUFFERS_FLAG_ALLOC
+        let is_define = original_item_name
+            .chars()
+            .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_');
+        if is_define {
+            return None;
+        }
+
         Some(heck::AsUpperCamelCase(original_item_name).to_string())
     }
 
@@ -151,6 +159,11 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
     }
 
     builder = builder.bitfield_enum("spa_video_multiview_flags");
+
+    // Flags that are only available as #defines
+    for name in ["SPA_NODE_BUFFERS_FLAG_.*"] {
+        builder = builder.allowlist_var(name);
+    }
 
     let builder = libs
         .iter()

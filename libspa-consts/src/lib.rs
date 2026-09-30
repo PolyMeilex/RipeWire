@@ -249,6 +249,16 @@ bitflags! {
     }
 }
 
+bitflags! {
+    /// Flags to pass to the use_buffers functions
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct SpaNodeBuffersFlags: u32 {
+        /// Allocate memory for the buffers. This flag is ignored when the port does not have the
+        /// `SPA_PORT_FLAG_CAN_ALLOC_BUFFERS` set.
+        const ALLOC = SPA_NODE_BUFFERS_FLAG_ALLOC;
+    }
+}
+
 /// Well this is private API/ABI, I'm not sure how libpipewire makes sure this does not blow up acrros ABI braking updates
 pub mod abi_unstable {
     use super::*;
