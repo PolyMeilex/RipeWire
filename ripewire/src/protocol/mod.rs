@@ -3,8 +3,8 @@
 use crate::object_map::ObjectType;
 use libspa_consts::{SpaDataType, SpaEnum, SpaIoType, SpaMetaType, SpaParamType};
 use pod::{
-    Fd, Id, PodDeserializer,
     deserialize::{OwnedPod, PodStructDeserializer},
+    Fd, Id, PodDeserializer,
 };
 use std::{
     collections::HashMap,

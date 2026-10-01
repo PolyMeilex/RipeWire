@@ -7,8 +7,8 @@ use crate::{
     context::Context,
     object_map::ObjectType,
     protocol::{
-        self, MethodSerialize, pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node,
-        pw_port, pw_registry,
+        self, pw_client, pw_client_node, pw_core, pw_device, pw_link, pw_node, pw_port,
+        pw_registry, MethodSerialize,
     },
 };
 
@@ -380,6 +380,25 @@ impl PwClientNode {
             context.take_pending_generation(),
         );
         context.send_msg(&msg, fds.as_slice()).unwrap();
+    }
+
+    /// Update the params and info of the node.
+    pub fn update<D>(&self, context: &mut Context<D>, update: pw_client_node::methods::Update) {
+        self.send(context, update);
+    }
+
+    /// Create, update or destroy a node port.
+    pub fn port_update<D>(
+        &self,
+        context: &mut Context<D>,
+        port_update: pw_client_node::methods::PortUpdate,
+    ) {
+        self.send(context, port_update);
+    }
+
+    /// Set the node active or inactive.
+    pub fn set_active<D>(&self, context: &mut Context<D>, active: bool) {
+        self.send(context, pw_client_node::methods::SetActive { active });
     }
 
     pub fn port_buffers<D>(
