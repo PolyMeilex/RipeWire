@@ -219,18 +219,19 @@ bitflags! {
     /// Property flags
     #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct SpaPropFlags: u32 {
-        // These flags are redefinitions from
-        // https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/spa/include/spa/pod/pod.h
         /// Property is read-only.
-        const READONLY = 1;
+        const READONLY = SPA_POD_PROP_FLAG_READONLY;
         /// Property is some sort of hardware parameter.
-        const HARDWARE = 2;
+        const HARDWARE = SPA_POD_PROP_FLAG_HARDWARE;
         /// Property contains a dictionary struct.
-        const HINT_DICT = 4;
-        /// Property is mandatory.
-        const MANDATORY = 8;
+        const HINT_DICT = SPA_POD_PROP_FLAG_HINT_DICT;
+        /// Property is mandatory, when filtering, both sides need this property or filtering
+        /// fails.
+        const MANDATORY = SPA_POD_PROP_FLAG_MANDATORY;
         /// Property choices need no fixation.
-        const DONT_FIXATE = 16;
+        const DONT_FIXATE = SPA_POD_PROP_FLAG_DONT_FIXATE;
+        /// Drop property, when filtering, both sides need the property or it will be dropped.
+        const DROP = SPA_POD_PROP_FLAG_DROP;
     }
 }
 
@@ -241,11 +242,11 @@ bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct SpaStatus: i32 {
         /// Same as [`SpaStatus::empty`], as it has no bits set
-        const OK = 0;
-        const NEED_DATA = 1 << 0;
-        const HAVE_DATA = 1 << 1;
-        const STOPPED = 1 << 2;
-        const DRAINED = 1 << 3;
+        const OK = SPA_STATUS_OK;
+        const NEED_DATA = SPA_STATUS_NEED_DATA;
+        const HAVE_DATA = SPA_STATUS_HAVE_DATA;
+        const STOPPED = SPA_STATUS_STOPPED;
+        const DRAINED = SPA_STATUS_DRAINED;
     }
 }
 

@@ -3,7 +3,7 @@
 
 use std::path::PathBuf;
 
-use bindgen::callbacks::EnumVariantCustomBehavior;
+use bindgen::callbacks::{EnumVariantCustomBehavior, IntKind};
 
 fn main() {
     let libs = system_deps::Config::new()
@@ -27,6 +27,15 @@ impl bindgen::callbacks::ParseCallbacks for ParseCallbacks {
         }
 
         Some(heck::AsUpperCamelCase(original_item_name).to_string())
+    }
+
+    fn int_macro(&self, name: &str, _value: i64) -> Option<IntKind> {
+        // Status fields can also contain a negative errno, so those are signed
+        if name.starts_with("SPA_STATUS_") {
+            return Some(IntKind::I32);
+        }
+
+        None
     }
 
     fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
@@ -161,7 +170,11 @@ fn run_bindgen(libs: &system_deps::Dependencies) {
     builder = builder.bitfield_enum("spa_video_multiview_flags");
 
     // Flags that are only available as #defines
-    for name in ["SPA_NODE_BUFFERS_FLAG_.*"] {
+    for name in [
+        "SPA_NODE_BUFFERS_FLAG_.*",
+        "SPA_POD_PROP_FLAG_.*",
+        "SPA_STATUS_.*",
+    ] {
         builder = builder.allowlist_var(name);
     }
 
