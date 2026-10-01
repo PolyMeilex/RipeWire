@@ -73,6 +73,7 @@ impl OwnedPod {
         buff.write_all(&self.size.to_le_bytes()).unwrap();
         buff.write_all(&self.ty.as_raw().to_le_bytes()).unwrap();
         buff.write_all(&self.body).unwrap();
+        buff.resize(buff.len() + pad_to_8(self.size) as usize, 0);
         buff
     }
 
