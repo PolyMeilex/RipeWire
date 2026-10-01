@@ -234,36 +234,125 @@ bitflags! {
     }
 }
 
+bitflags! {
+    /// Result of processing a node or status of an IO area.
+    ///
+    /// Fields that store it can also contain a negative errno value, so those stay `i32`,
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct SpaStatus: i32 {
+        /// Same as [`SpaStatus::empty`], as it has no bits set
+        const OK = 0;
+        const NEED_DATA = 1 << 0;
+        const HAVE_DATA = 1 << 1;
+        const STOPPED = 1 << 2;
+        const DRAINED = 1 << 3;
+    }
+}
+
 /// Well this is private API/ABI, I'm not sure how libpipewire makes sure this does not blow up acrros ABI braking updates
 pub mod abi_unstable {
     use super::*;
 
+    /// Versions:
+    /// - 0 baseline
+    /// - 1 the activation status needs to be CAS
+    pub const PW_VERSION_NODE_ACTIVATION: u32 = 1;
+
+    /// Value of [`PwNodeActivation::status`], see its docs for the possible transitions
+    #[repr(u32)]
+    #[derive(
+        Debug, Clone, Copy, PartialEq, Eq, num_derive::FromPrimitive, num_derive::ToPrimitive,
+    )]
+    pub enum PwNodeActivationStatus {
+        NotTriggered = 0,
+        Triggered = 1,
+        Awake = 2,
+        Finished = 3,
+        Inactive = 4,
+    }
+
+    impl PwNodeActivationStatus {
+        /// Node was prepared by the driver but has not triggered its peers yet
+        pub fn is_pending_trigger(self) -> bool {
+            matches!(self, Self::NotTriggered | Self::Triggered | Self::Awake)
+        }
+    }
+
+    bitflags! {
+        /// Value of [`PwNodeActivation::flags`]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct PwNodeActivationFlags: u32 {
+            /// The profiler is running
+            const PROFILER = 1 << 0;
+            /// The node is async
+            const ASYNC = 1 << 1;
+        }
+    }
+
     #[repr(C)]
     #[derive(Debug)]
     pub struct PwNodeActivationState {
+        /// Current status, the result of spa_node_process()
         pub status: std::ffi::c_int,
+        /// Required number of signals
         pub required: i32,
+        /// Number of pending signals
         pub pending: i32,
     }
 
+    /// Nodes start as INACTIVE, when they are ready to be scheduled, they add their
+    /// fd to the loop and change status to FINISHED. When the node shuts down, the
+    /// status is set back to INACTIVE.
+    ///
+    /// We have status changes (using compare-and-swap) from
+    ///
+    /// - INACTIVE -> FINISHED (node is added to loop and can be scheduled)
+    /// - * -> INACTIVE (node can not be scheduled anymore)
+    ///
+    /// - !INACTIVE -> NOT_TRIGGERED (node is prepared by the driver)
+    /// - NOT_TRIGGERED -> TRIGGERED (eventfd is written)
+    /// - TRIGGERED -> AWAKE (eventfd is read, node starts processing)
+    /// - AWAKE -> FINISHED (node completed processing and triggered the peers)
     #[repr(C)]
     #[derive(Debug)]
     pub struct PwNodeActivation {
         pub status: u32,
 
-        pub flags: std::ffi::c_uint,
+        /// Bitfield: version:1, pending_sync:1, pending_new_pos:1
+        pub bits: std::ffi::c_uint,
 
+        /// One current state and one next state, as version flag
         pub state: [PwNodeActivationState; 2],
 
+        /// Time at which the node was triggered
         pub signal_time: u64,
+        /// Time at which processing actually started
         pub awake_time: u64,
+        /// Time at which processing was completed
         pub finish_time: u64,
+        /// Previous time at which the node was triggered
         pub prev_signal_time: u64,
 
         pub reposition: SpaIoSegment,
         pub segment: SpaIoSegment,
 
-        pub segment_owner: [u32; 32],
+        pub segment_owner: [u32; 16],
+        pub prev_awake_time: u64,
+        pub prev_finish_time: u64,
+        /// Must be 0
+        pub padding: [u32; 7],
+
+        /// Version of client, see [`PW_VERSION_NODE_ACTIVATION`]
+        pub client_version: u32,
+        /// Version of server, see [`PW_VERSION_NODE_ACTIVATION`]
+        pub server_version: u32,
+
+        /// Driver active on client
+        pub active_driver_id: u32,
+        /// The current node driver id
+        pub driver_id: u32,
+        pub flags: u32,
+
         pub position: SpaIoPosition,
 
         pub sync_timeout: u64,
