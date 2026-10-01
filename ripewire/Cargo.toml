@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 libc = "0.2"
 bitflags = "2.0.0"
-rustix = { version = "1.0.7", features = ["net", "process", "system", "param", "mm"] }
+rustix = { version = "1.0.7", features = ["net", "process", "system", "param", "mm", "time"] }
 log = "0.4"
 
 num-traits = "0.2"
