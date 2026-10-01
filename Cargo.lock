@@ -486,6 +486,7 @@ dependencies = [
  "calloop",
  "libc",
  "libspa-consts",
+ "log",
  "num-derive",
  "num-traits",
  "pod",
