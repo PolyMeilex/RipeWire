@@ -3,6 +3,7 @@ use std::{
     os::fd::{AsFd, BorrowedFd, OwnedFd},
     ptr::{addr_of, addr_of_mut, NonNull},
     sync::atomic::{AtomicI32, AtomicU32, Ordering},
+    time::Duration,
 };
 
 use libspa_consts::{
@@ -13,9 +14,9 @@ use libspa_consts::{
 use crate::memory_registry::MemMap;
 
 /// Current time
-pub fn monotonic_ns() -> u64 {
+pub fn monotonic_ns() -> Duration {
     let ts = rustix::time::clock_gettime(rustix::time::ClockId::Monotonic);
-    ts.tv_sec as u64 * 1_000_000_000 + ts.tv_nsec as u64
+    Duration::new(ts.tv_sec as u64, ts.tv_nsec as u32)
 }
 
 /// Read and reset the counter of eventfd
@@ -106,15 +107,18 @@ impl Activation {
         unsafe { addr_of!((*self.ptr.as_ptr()).server_version).read_volatile() }
     }
 
-    pub fn set_signal_time(&self, nsec: u64) {
+    pub fn set_signal_time(&self, nsec: Duration) {
+        let nsec = nsec.as_nanos() as u64;
         unsafe { addr_of_mut!((*self.ptr.as_ptr()).signal_time).write_volatile(nsec) }
     }
 
-    pub fn set_awake_time(&self, nsec: u64) {
+    pub fn set_awake_time(&self, nsec: Duration) {
+        let nsec = nsec.as_nanos() as u64;
         unsafe { addr_of_mut!((*self.ptr.as_ptr()).awake_time).write_volatile(nsec) }
     }
 
-    pub fn set_finish_time(&self, nsec: u64) {
+    pub fn set_finish_time(&self, nsec: Duration) {
+        let nsec = nsec.as_nanos() as u64;
         unsafe { addr_of_mut!((*self.ptr.as_ptr()).finish_time).write_volatile(nsec) }
     }
 
@@ -133,7 +137,7 @@ impl Activation {
     /// more of those wake it up by writing to its eventfd.
     ///
     /// Returns `true` if the node got woken up.
-    fn trigger(&self, signalfd: BorrowedFd, nsec: u64) -> io::Result<bool> {
+    fn trigger(&self, signalfd: BorrowedFd, nsec: Duration) -> io::Result<bool> {
         let pending = self.pending_atomic().fetch_sub(1, Ordering::SeqCst) - 1;
         if pending != 0 {
             return Ok(false);
@@ -182,7 +186,7 @@ impl Target {
     }
 
     /// Signal that we are done with processing, returns `true` if the target got woken up.
-    pub fn trigger(&self, nsec: u64) -> io::Result<bool> {
+    pub fn trigger(&self, nsec: Duration) -> io::Result<bool> {
         self.activation.trigger(self.signalfd.as_fd(), nsec)
     }
 }
